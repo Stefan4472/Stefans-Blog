@@ -1,0 +1,30 @@
+<!--
+Displays site navbar.
+See https://getbootstrap.com/docs/4.3/examples/navbars/# 
+-->
+<nav class="navbar navbar-expand-lg navbar-light bg-light rounded" style="margin-bottom: 2rem;">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExample09" aria-controls="navbarsExample09" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarsExample09">
+        <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+            <a class="nav-link" href="{{ url_for('blog.index') }}">Home <span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item active">
+            <a class="nav-link" href="{{ url_for('blog.posts_page') }}">Posts</a>
+        </li>
+        <li class="nav-item active">
+            <a class="nav-link" href="{{ url_for('blog.portfolio_page') }}">Portfolio</a>
+        </li>
+        <li class="nav-item active">
+            <a class="nav-link" href="{{ url_for('blog.about_page') }}">About</a>
+        </li>
+        
+        </ul>
+        <form class="form-inline my-2 my-md-0"> <!-- TODO: SEARCH FUNCTIONALITY  -->
+        <input class="form-control" type="text" placeholder="Search (coming soon)" aria-label="Search" readonly>
+        </form>
+    </div>
+</nav>

@@ -1,0 +1,16 @@
+<!--
+Displays a Post "thumbnail" (except there's no image).
+post: post data
+tags: list of tag data objects for the post
+-->
+{% macro post_widget(post, tags) -%}
+<h3><a href="{{ url_for('blog.post_view', slug='sample-post') }}">{{ post['post_title'] }}</a></h3>
+<p><em> {{ post['post_date'] }}</em> {% if tags %}Tagged Under{% endif %}
+  {% for tag in tags %}
+    <span style="background-color: {{ tag['tag_color'] }}">
+    <a href="{{ url_for('blog.tag_view', slug=tag['tag_slug']) }}">{{ tag['tag_title'] }}</a>
+    </span>&nbsp
+  {% endfor %}
+</p>
+<p>{{ post['post_byline'] }}... <a href="{{ url_for('blog.post_view', slug='sample-post') }}">Read More</a></p>
+{%- endmacro %}

@@ -1,0 +1,22 @@
+.link-override {
+  text-decoration: none; 
+  color: white;
+}
+
+.link-override:hover {
+  text-decoration: none; 
+  color: white;
+}
+
+.carousel-image {    
+  max-height: 500px;
+  max-width: 100%;
+  height: auto;
+  width: auto;
+  margin: 0 auto;
+}
+
+.carousel-div {
+  background-color: black;
+  text-align: center;
+}

@@ -1,0 +1,79 @@
+{% extends "blog/base_template.html" %}
+{% import "blog/macros.html" as macros %}
+
+{% block content %}
+
+<h3>Featured</h3>
+
+<!-- Carousel with a few featured articles -->
+<!-- Carousel docs: https://getbootstrap.com/docs/4.3/components/carousel/ -->
+<!-- TODO: Any need to tweak settings for better display? -->
+<!-- A good ratio seems to be width = 1.5 * height-->
+<!-- NOTE: banners should be 1440 x 600 (?)-->
+<div class="bd-example" style="margin-bottom: 2rem;">
+	<div id="carouselExampleCaptions" class="carousel slide" data-ride="carousel" data-interval="7500">
+		<ol class="carousel-indicators">
+			<li data-target="#carouselExampleCaptions" data-slide-to="0" class="active"></li>
+			<li data-target="#carouselExampleCaptions" data-slide-to="1"></li>
+			<li data-target="#carouselExampleCaptions" data-slide-to="2"></li>
+			<li data-target="#carouselExampleCaptions" data-slide-to="3"></li>
+			<li data-target="#carouselExampleCaptions" data-slide-to="4"></li>
+		</ol>
+		<div class="carousel-inner">
+			<div class="carousel-item active carousel-div">
+				<img src="thumbnail1.jpg" class="d-block carousel-image" alt="...">
+				<div class="carousel-caption text-left">
+					<h1>Project Overview: Spaceships</h1>
+					<p><em>Spaceships</em> is/has been my biggest programming project so far, and currently stands at 600+ commits and 35,000 lines of code. It hasn't been published yet, because I'm taking a break from the project while I work on other things...</p>
+					<p><a class="btn btn-lg btn-primary" href="post1.html" role="button">Read More</a></p>
+				</div>
+			</div>
+			<div class="carousel-item carousel-div">
+				<img src="thumbnail2.jpg" class="d-block carousel-image" alt="...">
+				<div class="carousel-caption text-left">
+					<h1>Example headline.</h1>
+					<p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
+					<p><a class="btn btn-lg btn-primary" href="#" role="button">Sign up today</a></p>
+				</div>
+			</div>
+			<div class="carousel-item carousel-div">
+				<img src="thumbnail3.jpg" class="d-block carousel-image" alt="...">
+				<div class="carousel-caption text-left">
+					<h1>Example headline.</h1>
+					<p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
+					<p><a class="btn btn-lg btn-primary" href="#" role="button">Sign up today</a></p>
+				</div>
+			</div>
+			<div class="carousel-item carousel-div">
+				<img src="https://boygeniusreport.files.wordpress.com/2016/11/puppy-dog.jpg?quality=98&strip=all" class="d-block carousel-image" alt="...">
+				<div class="carousel-caption text-left">
+					<h1>Example headline.</h1>
+					<p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
+					<p><a class="btn btn-lg btn-primary" href="#" role="button">Sign up today</a></p>
+				</div>
+			</div>
+			<div class="carousel-item carousel-div">
+				<img src="https://boygeniusreport.files.wordpress.com/2016/11/puppy-dog.jpg?quality=98&strip=all" class="d-block carousel-image" alt="...">
+				<div class="carousel-caption text-left">
+					<h1>Example headline.</h1>
+					<p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
+					<p><a class="btn btn-lg btn-primary" href="#" role="button">Sign up today</a></p>
+				</div>
+			</div>
+		</div>
+		<a class="carousel-control-prev" href="#carouselExampleCaptions" role="button" data-slide="prev">
+			<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+			<span class="sr-only">Previous</span>
+		</a>
+		<a class="carousel-control-next" href="#carouselExampleCaptions" role="button" data-slide="next">
+			<span class="carousel-control-next-icon" aria-hidden="true"></span>
+			<span class="sr-only">Next</span>
+		</a>
+	</div>
+</div>
+
+<h3>The Latest</h3>
+
+<p>TODO: THE LATEST FIVE ARTICLES. BTW, I LIKE THE BOLD STYLING OF LINKS ON JOELONSOFTWARE</p>
+
+{% endblock %}

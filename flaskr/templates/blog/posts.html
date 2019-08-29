@@ -1,0 +1,10 @@
+{% extends "blog/base_template.html" %}
+{% import "blog/macros.html" as macros %}
+
+{% block content %}
+
+{% for post in posts %}
+	{{ macros.post_widget(post, tags[post['post_slug']]) }}
+{% endfor %}
+
+{% endblock %}
