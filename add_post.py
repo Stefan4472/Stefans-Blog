@@ -31,7 +31,7 @@ def generate_slug(string):
     return string.replace(' ', '-').replace(':', '').lower()
 
 def get_static_url(filepath):
-    return 'url_for(\'static\', \'{}\')'.format(filepath)
+    return '{{{{ url_for(\'static\', filename=\'{}\') }}}}'.format(filepath)
 
 # Takes the path to a Markdown file, read it, and renders it to HTML.
 # Returns (rendered HTML as a string, list of image sources found in <img> tags).
@@ -54,13 +54,13 @@ def render_md_file(file_path, img_save_dir):
                 img_caption = figure_match.group(2)
 
                 print (img_path, img_caption)
-                img_url = get_static_url(os.path.join(img_save_dir, os.path.basename(img_path)))  # TODO: CLEAN UP
+                img_url = get_static_url(img_save_dir + '/' + os.path.basename(img_path))  # TODO: CLEAN UP
                 print ('url is {}'.format(img_url))
                 # TODO: HANDLE alt, and make this string a constant (?)
                 line_html = \
 r'''<figure class="figure">
     <img src="{}" class="figure-img img-fluid rounded" alt="">
-    <figcaption class="figure-caption text-right">{}</figcaption>
+    <figcaption class="figure-caption text-center">{}</figcaption>
 </figure>'''.format(img_url, img_caption)
                 images.append(img_path)
             # Handle standard Markdown->HTML
