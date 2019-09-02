@@ -1,34 +1,31 @@
 import sys
+sys.path.append('../flaskr')  # TODO: INCLUDE FLASKR USING AN __INIT__ IN THE PROJECT DIRECTORY. SEE https://stackoverflow.com/questions/4383571/importing-files-from-different-folder
 import re
 import os
 import shutil
 from datetime import date, datetime
 import json
 import markdown2 as md
-#from stefanonsoftware.database import Database
+#from flaskr.database import Database
 
 # Path to the directory this script is being executed in 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 
-# Relative path to flask's static folder.
+# Path to the static folder.
 # A new directory will be created in the static folder under this post's slug.
 PATH_TO_STATIC = os.path.realpath(os.path.join(this_dir, '..', 'flaskr', 'static'))
+
+# Path to the database.
 PATH_TO_DATABASE = os.path.realpath(os.path.join(this_dir, '..', 'flaskr', 'instance', 'posts.db'))
 
-# keys used in post-meta.json
+# Keys used in post-meta.json
 KEY_TITLE = 'title'
 KEY_BYLINE = 'byline'
 KEY_SLUG = 'slug'
 KEY_DATE = 'date'
 KEY_TAGS = 'tags'
 
-print (PATH_TO_DATABASE)
-print (PATH_TO_STATIC)
-'''
-# matches a reference tag in markdown
-MD_REFERENCE_REGEX = re.compile(r'\[(.*?)\]: (\S+)')
-
-# generate's a slug given a string
+# generates a slug given a string
 # slugs are used to create urls
 def generate_slug(string):
     return string.replace(' ', '-').replace(':', '').lower()
@@ -46,87 +43,135 @@ def extract_filenames_from_md(md_string):
 
     return file_names
 
+# Takes the path to a Markdown file, read it, and renders it to HTML.
+# Returns (rendered HTML as a string, list of image sources found in <img> tags).
+# This function will render images as Bootstrap figures. TODO: EXPLAIN HOW TO ADD A CAPTION
+def render_md_file(file_path):
+    # Regex used to match custom "[figure]" lines
+    figure_regex = re.compile(r'\[figure: ([^,]+), ([^\]]+)]')
+    line_html = ''
+    html_snippets = []
+    images = []
+    # print ('Reading file...')
+    with open(file_path, 'r', encoding='utf8') as md_file:
+        for line in md_file:
+            # print ('>>{}'.format(line))
+            figure_match = figure_regex.match(line)
+            # Handle figures
+            if figure_match:
+                # print ('Got a match')
+                img_path = figure_match.group(1)
+                img_caption = figure_match.group(2)
+                print (img_path, img_caption)
+                # TODO: HANDLE alt, and make this string a constant (?)
+                line_html = \
+r'''<figure class="figure">
+    <img src="{}" class="figure-img img-fluid rounded" alt="">
+    <figcaption class="figure-caption text-right">{}</figcaption>
+</figure>'''.format(img_path, img_caption)
+                images.append(img_path)
+            # Handle standard Markdown->HTML
+            else:
+                line_html = md.markdown(line)
+  
+            html_snippets.append(line_html)
+
+    return ''.join(html_snippets), images
+
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        print ('Expected an argument, /abs/path/to/post/folder')
+        print ('ERROR: Expected an argument, /abs/path/to/post/folder')
         sys.exit()
 
     post_dir = sys.argv[1]
     print ('got post_dir {}'.format(post_dir))
-    # TODO: ENSURE IT'S A VALID DIR
 
+    # Ensure the provided path is a directory that exists 
+    if not os.path.isdir(post_dir):
+        print ('ERROR: The provided path is not a directory or does not exist')
+        sys.exit()
+
+    # Determine absolute path to the post file and the meta file
     post_path = os.path.join(post_dir, 'post.md')
     meta_path = os.path.join(post_dir, 'post-meta.json')
     print (post_path, meta_path)
 
     md_post_text = ''
     html_post_text = ''
-
-    # read the post file and convert to html
-    with open(post_path, 'r', encoding='utf8') as post_file:
-        md_post_text = post_file.read()
-
-    # handle files in the markdown
-    files_to_copy = extract_filenames_from_md(md_post_text)
-    print (files_to_copy)
-
-    html_post_text = md.markdown(md_post_text)
-
-    print (html_post_text)
-
     post_data = {}
-    # read the meta-data file and generate values
-    with open(meta_path, 'r') as meta_file:
-        post_data = json.load(meta_file)
 
-    # make sure title is defined
+    # Read the meta-data file
+    try:
+        with open(meta_path, 'r') as meta_file:
+            post_data = json.load(meta_file)
+    except IOError:
+        print ('ERROR: Could not read the meta-data file ("{}")'.format(meta_path))
+        sys.exit()
+
+    # Read and process the post Markdown file 
+    try:
+        article_html, article_imgs = render_md_file(post_path)
+        print (article_html)
+        print (article_imgs)
+    except IOError:
+        print ('ERROR: Could not read the post file ("{}")'.format(post_path))
+        sys.exit()
+  
+    # Make sure title is defined
     if KEY_TITLE not in post_data:
-        raise ValueError('post-meta.json must contain a "{}" field'.format(KEY_TITLE))
+        print ('ERROR: post-meta.json must contain a "{}" field'.format(KEY_TITLE))
+        sys.exit()
     title = post_data[KEY_TITLE]
 
-    # make sure biline is not more than 200 characters
+    # Get byline
     if KEY_BYLINE in post_data:
-        if len(post_data[KEY_BYLINE]) > 200:
-            raise ValueError('Biline cannot be more than 200 chars long')
         byline = post_data[KEY_BYLINE]
-    # default byline is the first 200 chars of the post
-    # TODO: GET THE FIRST PARAGRAPH
+        # Make sure byline is not more than 200 characters
+        if len(byline) > 200:
+            print('ERROR: Byline cannot be more than 200 characters long')
+            sys.exit()     
     else:
+        # Default byline is the first 200 chars of the post
+        # TODO: GET THE FIRST PARAGRAPH
         byline = md_post_text[:200]
 
-    # generate slug from title if needed
+    # Get slug
     if KEY_SLUG in post_data:
         slug = post_data[KEY_SLUG]
     else:
-        slug = generate_slug(post_data[KEY_TITLE])
+        # Generate slug from title if needed
+        slug = generate_slug(title)
 
+    # Get publish date
     # TODO: CONVERT TO DATE AND VALIDATE
     if KEY_DATE in post_data:
         post_date = post_data[KEY_DATE]
-    else:
+    else:  
+        # Default to today's date
         post_date = date.today()
 
     print ([title, byline, slug, post_date])
-
-    # get connection to the post database
+'''
+    # Get connection to the post database
     database = Database(PATH_TO_DATABASE)
 
-    # add post to the database
-    # this will fail if there is a problem with the post data
+    # Add post to the database.
+    # This will fail if there is a problem with the post data
     database.add_post(title, byline, slug, post_date)
 
     if KEY_TAGS in post_data:
         tags = post_data[KEY_TAGS]
 
-    # add tags to the database
+    # Add tags to the database
     for tag in tags:
         print ('Handling tag {}'.format(tag))
         tag_slug = generate_slug(tag)
-        # add tag to the database if not already there
+        # Add tag to the database if not already there
         if not database.has_tag(tag_slug):
             database.add_tag(tag, tag_slug)
-        # add mapping to database
+        # Add post->tag mapping to database
         database.add_tag_to_post(tag_slug, slug)
+
 
     # TODO: VALIDATE?
     # get path where the post data will live
