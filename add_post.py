@@ -1,22 +1,22 @@
-import sys
-sys.path.append('../flaskr')  # TODO: INCLUDE FLASKR USING AN __INIT__ IN THE PROJECT DIRECTORY. SEE https://stackoverflow.com/questions/4383571/importing-files-from-different-folder
+import sys  # TODO: PUT THIS IN ITS OWN FOLDER
 import re
 import os
 import shutil
 from datetime import date, datetime
 import json
 import markdown2 as md
-#from flaskr.database import Database
+from flaskr.database import Database
 
 # Path to the directory this script is being executed in 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Path to the static folder.
 # A new directory will be created in the static folder under this post's slug.
-PATH_TO_STATIC = os.path.realpath(os.path.join(this_dir, '..', 'flaskr', 'static'))
+# Note that this can handle relative paths, including those that start with '../'
+PATH_TO_STATIC = os.path.realpath(os.path.join(this_dir, 'flaskr', 'static'))
 
 # Path to the database.
-PATH_TO_DATABASE = os.path.realpath(os.path.join(this_dir, '..', 'flaskr', 'instance', 'posts.db'))
+PATH_TO_DATABASE = os.path.realpath(os.path.join(this_dir, 'instance', 'posts.db'))
 
 # Keys used in post-meta.json
 KEY_TITLE = 'title'
@@ -30,23 +30,13 @@ KEY_TAGS = 'tags'
 def generate_slug(string):
     return string.replace(' ', '-').replace(':', '').lower()
 
-# find and return a list of all file names found in the markdown
-# link/image references
-def extract_filenames_from_md(md_string):
-    file_names = []
-    # iterate over link references
-    for match in re.finditer(MD_REFERENCE_REGEX, md_string):
-        link_ref = match.group(2)
-        # ignore urls
-        if not link_ref.startswith('http') and not link_ref.startswith('www'):
-            file_names.append(link_ref)
-
-    return file_names
+def get_static_url(filepath):
+    return 'url_for(\'static\', \'{}\')'.format(filepath)
 
 # Takes the path to a Markdown file, read it, and renders it to HTML.
 # Returns (rendered HTML as a string, list of image sources found in <img> tags).
 # This function will render images as Bootstrap figures. TODO: EXPLAIN HOW TO ADD A CAPTION
-def render_md_file(file_path):
+def render_md_file(file_path, img_save_dir):
     # Regex used to match custom "[figure]" lines
     figure_regex = re.compile(r'\[figure: ([^,]+), ([^\]]+)]')
     line_html = ''
@@ -62,13 +52,16 @@ def render_md_file(file_path):
                 # print ('Got a match')
                 img_path = figure_match.group(1)
                 img_caption = figure_match.group(2)
+
                 print (img_path, img_caption)
+                img_url = get_static_url(os.path.join(img_save_dir, os.path.basename(img_path)))  # TODO: CLEAN UP
+                print ('url is {}'.format(img_url))
                 # TODO: HANDLE alt, and make this string a constant (?)
                 line_html = \
 r'''<figure class="figure">
     <img src="{}" class="figure-img img-fluid rounded" alt="">
     <figcaption class="figure-caption text-right">{}</figcaption>
-</figure>'''.format(img_path, img_caption)
+</figure>'''.format(img_url, img_caption)
                 images.append(img_path)
             # Handle standard Markdown->HTML
             else:
@@ -93,7 +86,7 @@ if __name__ == '__main__':
 
     # Determine absolute path to the post file and the meta file
     post_path = os.path.join(post_dir, 'post.md')
-    meta_path = os.path.join(post_dir, 'post-meta.json')
+    meta_path = os.path.join(post_dir, 'post-meta.json')  # TODO: CONSISTENT USAGE OF EITHER 'POST' OR 'ARTICLE'
     print (post_path, meta_path)
 
     md_post_text = ''
@@ -108,11 +101,10 @@ if __name__ == '__main__':
         print ('ERROR: Could not read the meta-data file ("{}")'.format(meta_path))
         sys.exit()
 
-    # Read and process the post Markdown file 
+    # Read the Markdown file 
     try:
-        article_html, article_imgs = render_md_file(post_path)
-        print (article_html)
-        print (article_imgs)
+        with open(post_path, 'r') as post_file:
+            post_markdown = post_file.read()
     except IOError:
         print ('ERROR: Could not read the post file ("{}")'.format(post_path))
         sys.exit()
@@ -133,7 +125,7 @@ if __name__ == '__main__':
     else:
         # Default byline is the first 200 chars of the post
         # TODO: GET THE FIRST PARAGRAPH
-        byline = md_post_text[:200]
+        byline = post_markdown[:200]
 
     # Get slug
     if KEY_SLUG in post_data:
@@ -151,8 +143,8 @@ if __name__ == '__main__':
         post_date = date.today()
 
     print ([title, byline, slug, post_date])
-'''
-    # Get connection to the post database
+    
+     # Get connection to the post database
     database = Database(PATH_TO_DATABASE)
 
     # Add post to the database.
@@ -171,40 +163,65 @@ if __name__ == '__main__':
             database.add_tag(tag, tag_slug)
         # Add post->tag mapping to database
         database.add_tag_to_post(tag_slug, slug)
-
-
+    
     # TODO: VALIDATE?
-    # get path where the post data will live
+    
+    # Get path to where the article data will live ('/static/[slug]')
     post_static_path = os.path.join(PATH_TO_STATIC, slug)
 
-    # create the directory
+    # Create the directory for the article data
     try:
         os.mkdir(post_static_path)
     except FileExistsError:  # TODO: THROW VALUEERROR
-        print ('Post directory already exists')
+        pass
+        #print ('ERROR: Post directory already exists')
+        #sys.exit(0)
 
-    # copy local files to the post's folder
-    # also update their positions in the html
-    for filename in files_to_copy:
-        src_path = os.path.join(post_dir, filename)
-        dest_path = os.path.join(post_static_path, filename)
-        print ('copying {} to {}'.format(src_path, dest_path))
-        shutil.copyfile(src_path, dest_path)
 
-    # correct file refs in the html
-    for filename in files_to_copy:
-        file_url = os.path.join('/static', slug, filename)
-        print ('Replacing {} with {}'.format(filename, file_url))
-        html_post_text = html_post_text.replace(filename, file_url)
+    article_html, article_imgs = render_md_file(post_path, slug)
+    print (article_html)
+    print (article_imgs)
 
-    # write the html file to the post's directory
-    post_html_path = os.path.join(post_static_path, slug) + '.html'
-    with open(post_html_path, 'w') as html_file:
-        html_file.write(html_post_text)
+    # Copy image files to the article's directory
+    for img_path in article_imgs:
+        # Ignore image links
+        if img_path.startswith('http') or img_path.startswith('www'):
+            continue 
+        
+        # Get absolute path to image
+        img_path = os.path.realpath(os.path.join(post_dir, img_path))
 
+        # Make sure the file exists
+        if not (os.path.exists(img_path) and os.path.isfile(img_path)):
+            print ('ERROR: The image path "{}" is not a real file')
+            continue 
+
+        # Build destination path for the image
+        dest_path = os.path.join(post_static_path, os.path.basename(img_path))
+        print (dest_path)
+        
+        # Copy the image to the folder
+        shutil.copyfile(img_path, dest_path)
+    
+    # Write the html file to the article directory
+    article_dest_path = os.path.join(post_static_path, slug) + '.html'
+    print (article_dest_path)
+    with open(article_dest_path, 'w') as html_file:
+        html_file.write(article_html)
+
+    
     print ('Retrieved from database, I got: {}'.format(database.get_post_by_slug(slug)[:]))
-    print ('5 most recent: {}'.format(database.get_recent_posts(5)[:]))
+    
+    while True:
+        confirm_input = input('Commit changes? (y/n)').strip().lower()
+        if confirm_input == 'y':
+            database.commit()
+            break
+        elif confirm_input == 'n':
+            print ('Aborted committing post. The files will still be in the static folder.')
+            sys.exit(0)
+        else:
+            print ('Not a valid input')
 
-
-    database.commit()
-'''
+    # TODO: UPDATE SEARCH ENGINE INDEX
+    # TODO: PUSH NEW FILES TO THE SERVER
