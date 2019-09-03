@@ -7,7 +7,8 @@ def create_app(test_config=None):
     app.config.from_mapping(
         SECRET_KEY='dev',
         DATABASE=os.path.join(app.instance_path, 'posts.db'),
-        VISIT_LOG=os.path.join(app.instance_path, 'sitelog.txt')
+        VISIT_LOG=os.path.join(app.instance_path, 'sitelog.txt'),
+        FEATURED_POSTS_FILE=os.path.join(app.instance_path, 'featured_posts.txt'),
     )
 
     if test_config is None:

@@ -1,4 +1,3 @@
-# adds functionality to run the blog
 from flask import (
     Blueprint, flash, g, redirect, render_template, render_template_string,
     request, url_for
@@ -7,6 +6,8 @@ from werkzeug.exceptions import abort
 from flaskr.database import get_db
 from flaskr.site_logger import log_visit
 import os
+import flaskr.featured_posts as fp
+
 
 bp = Blueprint('blog', __name__)
 
@@ -14,11 +15,16 @@ bp = Blueprint('blog', __name__)
 def index():
     log_visit()  # TODO: ANY WAY TO CALL log_visit BY DEFAULT?
     db = get_db()
-    posts = db.get_recent_posts(5)
-    # create dict mapping post_slug -> list of tags
+
+    # Retrieve recent and featured posts
+    recent_posts = db.get_recent_posts(5)
+    featured_posts = [db.get_post_by_slug(slug) for slug in fp.get_featured_posts()]
+   
+    # Create dict mapping post_slug -> list of tags
     tags = { post['post_slug']: db.get_tags_by_post_slug(post['post_slug']) \
-             for post in posts }
-    return render_template('blog/index.html', posts=posts, tags=tags)
+             for post in recent_posts + featured_posts }
+    return render_template('blog/index.html', featured_posts=featured_posts, \
+                            recent_posts=recent_posts, tags=tags)
 
 @bp.route('/posts')
 def posts_page():
