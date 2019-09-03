@@ -24,6 +24,7 @@ KEY_BYLINE = 'byline'
 KEY_SLUG = 'slug'
 KEY_DATE = 'date'
 KEY_TAGS = 'tags'
+KEY_IMAGE = 'image'
 
 # generates a slug given a string
 # slugs are used to create urls
@@ -71,6 +72,19 @@ r'''<figure class="figure">
 
     return ''.join(html_snippets), images
 
+def copy_to_static(file_path, static_path):  # TODO: IMPROVE
+    # Make sure the file exists
+    if not (os.path.exists(file_path) and os.path.isfile(file_path)):
+        print ('ERROR: The image path "{}" is not a real file')  # TODO: RAISE EXCEPTION
+        return
+
+    # Build destination path for the image
+    dest_path = os.path.join(static_path, os.path.basename(file_path))
+    print (dest_path)
+    
+    # Copy the image to the folder
+    shutil.copyfile(file_path, dest_path)
+
 if __name__ == '__main__':
     if len(sys.argv) != 2:
         print ('ERROR: Expected an argument, /abs/path/to/post/folder')
@@ -110,10 +124,11 @@ if __name__ == '__main__':
         sys.exit()
   
     # Make sure title is defined
-    if KEY_TITLE not in post_data:
+    if KEY_TITLE in post_data:
+        title = post_data[KEY_TITLE]
+    else:
         print ('ERROR: post-meta.json must contain a "{}" field'.format(KEY_TITLE))
         sys.exit()
-    title = post_data[KEY_TITLE]
 
     # Get byline
     if KEY_BYLINE in post_data:
@@ -142,14 +157,20 @@ if __name__ == '__main__':
         # Default to today's date
         post_date = date.today()
 
-    print ([title, byline, slug, post_date])
+    if KEY_IMAGE in post_data:
+        post_img = post_data[KEY_IMAGE]
+    else:
+        print ('ERROR: post-meta.json must contain a "{}" field'.format(KEY_IMAGE))
+        sys.exit()
+    post_img_name = 'post-image' + os.path.splitext(post_img)[1]
+    print ([title, byline, slug, post_date, post_img])
     
      # Get connection to the post database
     database = Database(PATH_TO_DATABASE)
 
     # Add post to the database.
     # This will fail if there is a problem with the post data
-    database.add_post(title, byline, slug, post_date)
+    database.add_post(title, byline, slug, post_date, post_img_name)
 
     if KEY_TAGS in post_data:
         tags = post_data[KEY_TAGS]
@@ -177,10 +198,24 @@ if __name__ == '__main__':
         #print ('ERROR: Post directory already exists')
         #sys.exit(0)
 
-
+    # Render the Markdown file to HTML
     article_html, article_imgs = render_md_file(post_path, slug)
     print (article_html)
     print (article_imgs)
+
+    # Get absolute path to the post image
+    img_abs_path = os.path.realpath(os.path.join(post_dir, post_img))
+    
+    # Make sure the image exists
+    if not (os.path.exists(img_abs_path) and os.path.isfile(img_abs_path)):
+        print ('ERROR: The image path "{}" is not a real file'.format(img_abs_path))  # TODO: RAISE EXCEPTION
+        sys.exit(0)
+
+    # Build absolute path for the post image in the static directory
+    img_dest_path = os.path.join(post_static_path, post_img_name)
+    print (img_dest_path)
+    # Copy the post image to the post directory 
+    shutil.copyfile(img_abs_path, img_dest_path)
 
     # Copy image files to the article's directory
     for img_path in article_imgs:
@@ -189,19 +224,9 @@ if __name__ == '__main__':
             continue 
         
         # Get absolute path to image
-        img_path = os.path.realpath(os.path.join(post_dir, img_path))
-
-        # Make sure the file exists
-        if not (os.path.exists(img_path) and os.path.isfile(img_path)):
-            print ('ERROR: The image path "{}" is not a real file')
-            continue 
-
-        # Build destination path for the image
-        dest_path = os.path.join(post_static_path, os.path.basename(img_path))
-        print (dest_path)
-        
-        # Copy the image to the folder
-        shutil.copyfile(img_path, dest_path)
+        abs_path = os.path.realpath(os.path.join(post_dir, img_path))
+        # Copy to the post's static directory
+        copy_to_static(abs_path, post_static_path)
     
     # Write the html file to the article directory
     article_dest_path = os.path.join(post_static_path, slug) + '.html'

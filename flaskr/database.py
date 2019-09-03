@@ -22,9 +22,9 @@ class Database:
     # attempts to create an entry for a new post with the
     # given data.
     # will throw ValueError if unsuccessful
-    def add_post(self, title, byline, slug, post_date):
-        query = 'insert into Posts values (NULL, ?, ?, ?, ?)'
-        values = (title, byline, slug, post_date)
+    def add_post(self, title, byline, slug, post_date, post_image_name):
+        query = 'insert into Posts values (NULL, ?, ?, ?, ?, ?)'
+        values = (title, byline, slug, post_date, post_image_name)
         self.cur.execute(query, values)
 
     # returns post data for the given slug
