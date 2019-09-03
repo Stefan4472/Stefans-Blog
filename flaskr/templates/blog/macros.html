@@ -4,7 +4,7 @@ post: post data
 tags: list of tag data objects for the post
 -->
 {% macro post_widget(post, tags) -%}
-<h3><a href="{{ url_for('blog.post_view', slug='sample-post') }}">{{ post['post_title'] }}</a></h3>
+<h3><a href="{{ url_for('blog.post_view', slug=post['post_slug']) }}">{{ post['post_title'] }}</a></h3>
 <p><em> {{ post['post_date'] }}</em> {% if tags %}Tagged Under{% endif %}
   {% for tag in tags %}
     <span style="background-color: {{ tag['tag_color'] }}">
@@ -12,5 +12,5 @@ tags: list of tag data objects for the post
     </span>&nbsp
   {% endfor %}
 </p>
-<p>{{ post['post_byline'] }}... <a href="{{ url_for('blog.post_view', slug='sample-post') }}">Read More</a></p>
+<p>{{ post['post_byline'] }}... <a href="{{ url_for('blog.post_view', slug=post['post_slug']) }}">Read More</a></p>
 {%- endmacro %}

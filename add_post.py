@@ -46,6 +46,10 @@ def render_md_file(file_path, img_save_dir):
     # print ('Reading file...')
     with open(file_path, 'r', encoding='utf8') as md_file:
         for line in md_file:
+            # Ignore blank lines
+            if not line:
+                print ('Ignoring a blank line')
+                continue
             # print ('>>{}'.format(line))
             figure_match = figure_regex.match(line)
             # Handle figures
@@ -117,7 +121,7 @@ if __name__ == '__main__':
 
     # Read the Markdown file 
     try:
-        with open(post_path, 'r') as post_file:
+        with open(post_path, 'r', encoding='utf8') as post_file:
             post_markdown = post_file.read()
     except IOError:
         print ('ERROR: Could not read the post file ("{}")'.format(post_path))
@@ -243,7 +247,9 @@ if __name__ == '__main__':
             database.commit()
             break
         elif confirm_input == 'n':
-            print ('Aborted committing post. The files will still be in the static folder.')
+            # Delete the created folder and exit
+            shutil.rmtree(post_static_path)
+            print ('Aborted committing post. Files in the static folder have been deleted.')
             sys.exit(0)
         else:
             print ('Not a valid input')

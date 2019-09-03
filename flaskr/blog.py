@@ -60,9 +60,13 @@ def post_view(slug):
     # retrieve tags this post is tagged under
     tags = db.get_tags_by_post_slug(slug)
 
+    # Retrieve the path to the post's image
+    post_image = url_for('static', filename=slug + '/' + post['post_image'])
+    print (post_image)
+
     # TODO: SOME KIND OF FORMAT_TAG MACRO
-    return render_template('blog/post.html', post=post, \
-        tags=tags, post_html=post_html, prev_post=prev_post, \
+    return render_template('blog/post.html', post=post, tags=tags, \
+        post_html=post_html, image_url=post_image, prev_post=prev_post, \
         next_post=next_post)
 
 # show post widgets for all posts under the given tag
