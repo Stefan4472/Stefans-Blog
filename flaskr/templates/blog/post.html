@@ -14,11 +14,11 @@
 {{ post_html|safe }}
 
 {% if prev_post %}
-<p>Previous Post: <a href="{{ url_for('blog.post_view', slug=prev_post['slug']) }}">{{ prev_post['title'] }}</a></p>
+<p>Previous Post: <a href="{{ url_for('blog.post_view', slug=prev_post['post_slug']) }}">{{ prev_post['post_title'] }}</a></p>
 {% endif %}
 
 {% if next_post %}
-<p>Next Post: <a href="{{ url_for('blog.post_view', slug=next_post['slug']) }}">{{ next_post['title'] }}</a></p>
+<p>Next Post: <a href="{{ url_for('blog.post_view', slug=next_post['post_slug']) }}">{{ next_post['post_title'] }}</a></p>
 {% endif %}
 
 

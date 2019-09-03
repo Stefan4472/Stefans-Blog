@@ -15,18 +15,21 @@
 	<div id="carouselExampleCaptions" class="carousel slide" data-ride="carousel" data-interval="7500">
 		<ol class="carousel-indicators">
 			{% for i in range(0, featured_posts|length) %}
-					<li data-target="#carouselExampleCaptions" data-slide-to="{{ i }}" {% if i == 0 %}class="active"{% endif %}></li>
+				<li data-target="#carouselExampleCaptions" data-slide-to="{{ i }}" {% if i == 0 %}class="active"{% endif %}></li>
 			{% endfor %}
 		</ol>
 		<div class="carousel-inner">  <!-- TODO: GET THIS WORKING ONCE THERE ARE BANNER IMAGES -->
+			{% for i in range(0, featured_posts|length) %}
 			<div class="carousel-item {% if i == 0 %}active{% endif %} carousel-div">
-				<img src="{{ featured_posts['post_banner'] }}" class="d-block carousel-image" alt="...">
+				<!-- TODO: THIS IS CLUMSY. 'POST_IMAGE' SHOULD BE CHANGED TO 'IMAGE_URL' AND HAVE THE FULL URL ALREADY CREATED -->
+				<a href="{{ url_for('blog.post_view', slug=featured_posts[i]['post_slug']) }}"><img src="{{ url_for('static', filename=featured_posts[i]['post_slug'] + '/' + featured_posts[i]['post_image']) }}" class="d-block carousel-image" alt="..."></a>
 				<div class="carousel-caption text-left">
-					<h1>{{ featured_posts['post_title'] }}</h1>
-					<p>{{ featured_posts['post_byline'] }}</p>
-					<p><a class="btn btn-lg btn-primary" href="{{ url_for('blog.post_view', slug=featured_posts['post_slug']) }}" role="button">Read More</a></p>
+					<h1>{{ featured_posts[i]['post_title'] }}</h1>
+					<p>{{ featured_posts[i]['post_byline'] }}</p>
+					<p><a class="btn btn-lg btn-primary" href="{{ url_for('blog.post_view', slug=featured_posts[i]['post_slug']) }}" role="button">Read More</a></p>
 				</div>
 			</div>
+			{% endfor %}
 		</div>
 		<a class="carousel-control-prev" href="#carouselExampleCaptions" role="button" data-slide="prev">
 			<span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -43,5 +46,8 @@
 <h3>The Latest</h3>
 
 <p>TODO: THE LATEST FIVE ARTICLES. BTW, I LIKE THE BOLD STYLING OF LINKS ON JOELONSOFTWARE</p>
+{% for post in recent_posts %}
+	{{ macros.post_widget(post, tags[post['post_slug']]) }}
+{% endfor %}
 
 {% endblock %}
