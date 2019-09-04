@@ -25,7 +25,7 @@ class Index:  # TODO: RENAME SEARCHENGINE?
 
         doc_id = self.num_docs + 1   # TODO: NEED TO RUN TOKENIZER
         position = 0
-        for token in self.tokenizer.tokenize(filepath):
+        for token in self.tokenizer.tokenize_file(filepath):
             print (token)
             if token not in self.index:
                 self.index[token] = InvertedList(token)
@@ -45,35 +45,10 @@ class Index:  # TODO: RENAME SEARCHENGINE?
 
     #def restore_from_file(self, filepath):
 
-    def create_index(self, filename):
-        with open(filename) as file:
-            scenes = json.load(file)['corpus']
-
-        doc_id = 1
-        for scene in scenes:
-            position = 0
-            for token in scene['text'].split():
-                if token not in self.index:
-                    self.index[token] = InvertedList(token)
-                self.index[token].add_posting(doc_id, position)
-                position += 1
-
-            # update number of terms in the index and add entry to doc_data
-            self.num_terms += position
-            self.doc_data[doc_id] = \
-                { 'playId': scene['playId'],
-                  'sceneId': scene['sceneId'],
-                  'numTerms': position }  # TODO: IS NUMTERMS OFF BY ONE?
-
-            doc_id += 1
-            self.num_docs += 1
-            # print ('Printing Inverted Lists:')
-            # for term, list in self.index.items():
-            #     print('{}: {}'.format(term, list.list))
-
     def search(self, query, score_func='ql'):
         # process the query so it can be understood
-        processed_query = q.process_query(query)
+        processed_query = q.process_query(query, self.tokenizer)
+        print ('Query terms: {}'.format(processed_query.terms))
         results = self._run_query(processed_query, score_func)
         return self._format_results(results, processed_query)
 

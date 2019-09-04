@@ -7,10 +7,10 @@ class ProcessedQuery:
         # map query term to number of occurrences
         self.term_counts = term_counts if term_counts else {}
 
-def process_query(str_query):
+def process_query(str_query, tokenizer):
     terms = []
     term_counts = {}
-    for word in str_query.split():
+    for word in tokenizer.tokenize_string(str_query):
         if word not in terms:
             terms.append(word)
         if word in term_counts:
