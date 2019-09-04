@@ -2,7 +2,7 @@ import json
 import math
 from queue import PriorityQueue
 from collections import namedtuple
-from inverted_list import InvertedList
+from inverted_list import InvertedList, inverted_list_from_json
 import result as r
 import query as q
 import tokenizer as t
@@ -10,23 +10,19 @@ import tokenizer as t
 Result = namedtuple('result', 'doc_id score')
 
 class Index:  # TODO: RENAME SEARCHENGINE?
-    def __init__(self):
-        self.index = {}
-        self.doc_data = {}
-        self.num_docs = 0
-        self.num_terms = 0
+    def __init__(self, index=None, doc_data=None):
+        self.index = index if index else {}
+        self.doc_data = doc_data if doc_data else {}
+        self.num_docs = len(doc_data) if index else 0
+        self.num_terms = len(index) if index else 0
         self.tokenizer = t.Tokenizer()  # TODO: USE STOPWORDS?
 
-    def index_html_file(self, filepath, slug):
+    def index_html_file(self, filepath, slug):  # TODO: WORK ON HTML FILES. RETRIEVE TEXT
         file_text = ''
-
-        with open(filepath, encoding='utf8') as html_file:
-            file_text = html_file.readlines()
 
         doc_id = self.num_docs + 1   # TODO: NEED TO RUN TOKENIZER
         position = 0
         for token in self.tokenizer.tokenize_file(filepath):
-            print (token)
             if token not in self.index:
                 self.index[token] = InvertedList(token)
             self.index[token].add_posting(doc_id, position)
@@ -40,10 +36,6 @@ class Index:  # TODO: RENAME SEARCHENGINE?
 
         self.num_docs += 1
         #print (self.index.keys())
-
-    #def save_to_file(self, filepath):
-
-    #def restore_from_file(self, filepath):
 
     def search(self, query, score_func='ql'):
         # process the query so it can be understood
@@ -113,6 +105,38 @@ class Index:  # TODO: RENAME SEARCHENGINE?
             formatted_results.append((self.doc_data[next[1]]['slug'], -next[0]))
         return formatted_results
 
+    def to_json(self):
+        # TODO: SAVE STOPWORD FILE PATH?
+        return {
+            'index': [inverted_index.to_json() for inverted_index in self.index.values()],
+            'doc_data': self.doc_data
+        }
+
+    def save_to_file(self, filepath, indent=0):
+        if not filepath.endswith('.json'):
+            raise ValueError('Must save to a .json file')
+
+        with open(filepath, 'w') as outfile:
+            json.dump(self.to_json(), outfile, indent=indent)
+
+def index_from_json(json_data):
+    index = {}
+    doc_data = json_data['doc_data']
+    serialized_inv_lists = json_data['index']
+
+    # Iterate through the list of serialized InvertedLists.
+    # Deserialize each one and add it to the index dict under its term.
+    for serialized_inv_list in serialized_inv_lists:
+        inv_list = inverted_list_from_json(serialized_inv_list)
+        index[inv_list.term] = inv_list
+
+    return Index(index=index, doc_data=doc_data)
+
+def restore_index_from_file(filepath):
+    json_data = {}
+    with open(filepath, encoding='utf8') as json_file:
+        json_data = json.load(json_file)
+    return index_from_json(json_data)
 
 # scores a single document for a single query term
 # qf: frequency of the term in the query

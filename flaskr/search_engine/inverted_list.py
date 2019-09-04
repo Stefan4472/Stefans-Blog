@@ -1,4 +1,9 @@
+import json 
+
 # ONLY ITERATES FORWARD (for now). You can call reset()
+# Stores the indexes of postings for a certain doc_id.
+# This is used to record the indexes at which a certain token shows up 
+# in the document with the given doc_id.
 class PostingList:
     def __init__(self, doc_id, postings=None):  # postings is a list of integer term indexes
         self.doc_id = doc_id
@@ -7,8 +12,16 @@ class PostingList:
     def append(self, term_index):
         self.postings.append(term_index)
 
+    # Serializes to a dict which can be JSON-ified
+    def to_json(self):
+        return { 'doc_id': self.doc_id, 'postings': self.postings }
+
     def __repr__(self):
         return str(self.postings)
+
+# Deserializes a JSON-ified PostingList
+def posting_list_from_json(json_dict):
+    return PostingList(json_dict['doc_id'], postings=json_dict['postings'])
 
 class InvertedList:
     def __init__(self, term, list=None):
@@ -69,3 +82,11 @@ class InvertedList:
     def __repr__(self):
         return '{}: curr_index {} / {}, curr_id {}' \
             .format(self.term, self.curr_index, self.num_docs - 1, self.list[self.curr_index].doc_id if self.curr_index < self.num_docs else None)
+
+    # Serializes to a dict which can be JSON-ified
+    def to_json(self):
+        return { 'term': self.term,
+                 'posting_list': [posting_list.to_json() for posting_list in self.list] }
+
+def inverted_list_from_json(json_data):
+    return InvertedList(term=json_data['term'], list=[posting_list_from_json(p_list) for p_list in json_data['posting_list']])
