@@ -2,10 +2,10 @@ import json
 import math
 from queue import PriorityQueue
 from collections import namedtuple
-from inverted_list import InvertedList, inverted_list_from_json
-import result as r
-import query as q
-import tokenizer as t
+from flaskr.search_engine.inverted_list import InvertedList, inverted_list_from_json
+import flaskr.search_engine.result as r
+import flaskr.search_engine.query as q
+import flaskr.search_engine.tokenizer as t
 
 Result = namedtuple('result', 'doc_id score')
 
@@ -17,10 +17,11 @@ class Index:  # TODO: RENAME SEARCHENGINE?
         self.num_terms = sum(inv_list.num_postings for inv_list in index.values()) if index else 0  # TODO: RENAME NUM_TOKENS (?)
         self.tokenizer = t.Tokenizer()  # TODO: USE STOPWORDS?
 
-    def index_html_file(self, filepath, slug):  # TODO: WORK ON HTML FILES. RETRIEVE TEXT
+    def index_file(self, filepath, slug):  # TODO: PROVIDE INDEX_HTML_FILE()?
+        # print ('Indexing {}'.format(filepath))
         file_text = ''
 
-        doc_id = self.num_docs + 1   # TODO: NEED TO RUN TOKENIZER
+        doc_id = self.num_docs + 1
         position = 0
         for token in self.tokenizer.tokenize_file(filepath):
             if token not in self.index:
@@ -111,12 +112,12 @@ class Index:  # TODO: RENAME SEARCHENGINE?
             'index': [inverted_index.to_json() for inverted_index in self.index.values()],
         }
 
-    def save_to_file(self, filepath, indent=0):
+    def save_to_file(self, filepath):  # FUNNY: INDEX SIZE WENT FROM 132KB TO 51KB WHEN I WENT FROM INDENT=2 TO NO INDENT
         if not filepath.endswith('.json'):
             raise ValueError('Must save to a .json file')
 
         with open(filepath, 'w') as outfile:
-            json.dump(self.to_json(), outfile, indent=indent)
+            json.dump(self.to_json(), outfile)
 
 def index_from_json(json_data):
     doc_data = {}

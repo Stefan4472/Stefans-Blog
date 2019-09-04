@@ -8,7 +8,6 @@ from flaskr.site_logger import log_visit
 import os
 import flaskr.featured_posts as fp
 
-
 bp = Blueprint('blog', __name__)
 
 @bp.route('/')

@@ -9,6 +9,7 @@ def create_app(test_config=None):
         DATABASE=os.path.join(app.instance_path, 'posts.db'),
         VISIT_LOG=os.path.join(app.instance_path, 'sitelog.txt'),
         FEATURED_POSTS_FILE=os.path.join(app.instance_path, 'featured_posts.txt'),
+        SEARCH_INDEX_FILE=os.path.join(app.instance_path, 'index.json'),
     )
 
     if test_config is None:

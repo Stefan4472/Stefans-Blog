@@ -1,4 +1,4 @@
-import sys  # TODO: PUT THIS IN ITS OWN FOLDER
+import sys  # TODO: PUT THIS IN ITS OWN FOLDER? USE CLICK TO MAKE IT INTO A FLASK COMMAND?
 import re
 import os
 import shutil
@@ -6,6 +6,7 @@ from datetime import date, datetime
 import json
 import markdown2 as md
 from flaskr.database import Database
+from flaskr.search_engine.index import Index, restore_index_from_file  # TODO: BETTER IMPORTS
 
 # Path to the directory this script is being executed in 
 this_dir = os.path.dirname(os.path.abspath(__file__))
@@ -14,9 +15,10 @@ this_dir = os.path.dirname(os.path.abspath(__file__))
 # A new directory will be created in the static folder under this post's slug.
 # Note that this can handle relative paths, including those that start with '../'
 PATH_TO_STATIC = os.path.realpath(os.path.join(this_dir, 'flaskr', 'static'))
-
 # Path to the database.
 PATH_TO_DATABASE = os.path.realpath(os.path.join(this_dir, 'instance', 'posts.db'))
+# Path to the search engine's index file.
+PATH_TO_INDEX = os.path.realpath(os.path.join(this_dir, 'instance', 'index.json'))
 
 # Keys used in post-meta.json
 KEY_TITLE = 'title'
@@ -238,13 +240,20 @@ if __name__ == '__main__':
     with open(article_dest_path, 'w') as html_file:
         html_file.write(article_html)
 
+    # Add the file to the search engine's index.   # TODO: BREAK EACH OF THESE TASKS INTO A SEPARATE FUNCTION
+    # We can index the Markdown file.
+    search_index = restore_index_from_file(PATH_TO_INDEX)
+    search_index.index_file(post_path, slug)
     
     print ('Retrieved from database, I got: {}'.format(database.get_post_by_slug(slug)[:]))
-    
+
     while True:
         confirm_input = input('Commit changes? (y/n)').strip().lower()
         if confirm_input == 'y':
+            # Commit database changes
             database.commit()
+            # Commit search engine index changes
+            search_index.save_to_file(PATH_TO_INDEX)
             break
         elif confirm_input == 'n':
             # Delete the created folder and exit
