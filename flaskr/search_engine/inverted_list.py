@@ -20,16 +20,20 @@ class PostingList:
         return str(self.postings)
 
 # Deserializes a JSON-ified PostingList
-def posting_list_from_json(json_dict):
-    return PostingList(json_dict['doc_id'], postings=json_dict['postings'])
+def posting_list_from_json(json_data):
+    #print ('Posting List received JSON: {}'.format(json_data))
+    return PostingList(json_data['doc_id'], postings=json_data['postings'])
 
 class InvertedList:
-    def __init__(self, term, list=None):
+    def __init__(self, term, posting_lists=None):
         self.term = term
-        self.list = list if list else []  # list of PostingLists
-        self.num_docs = len(self.list)
-        self.num_postings = sum([len(posting_list.postings) for posting_list in self.list])
+        self.posting_lists = posting_lists if posting_lists else []  # list of PostingLists RENAME TO SOMETHING ELSE
+        self.num_docs = len(self.posting_lists)
+        self.num_postings = sum([len(posting_list.postings) for posting_list in self.posting_lists])
         self.curr_index = 0
+        #print ('Inverted List: term is {}'.format(term))
+        #print ('List is {}'.format(self.posting_lists))
+        #print (self.num_docs, self.num_postings)
 
     def reset_pointer(self):
         self.curr_index = 0
@@ -37,16 +41,16 @@ class InvertedList:
     def add_posting(self, doc_id, term_index):
         # print ('{}: Adding posting at {} to doc {}'.format(self.term, term_index, doc_id))
         self.num_postings += 1
-        if not self.list:
-            self.list.append(PostingList(doc_id))
-            self.list[0].append(term_index)
+        if not self.posting_lists:
+            self.posting_lists.append(PostingList(doc_id))
+            self.posting_lists[0].append(term_index)
             self.num_docs = 1
             return
-        if self.list[self.curr_index].doc_id == doc_id:
-            self.list[self.curr_index].append(term_index)
+        if self.posting_lists[self.curr_index].doc_id == doc_id:
+            self.posting_lists[self.curr_index].append(term_index)
         else:
-            self.list.append(PostingList(doc_id))
-            self.list[-1].append(term_index)
+            self.posting_lists.append(PostingList(doc_id))
+            self.posting_lists[-1].append(term_index)
             self.curr_index += 1
             self.num_docs += 1
 
@@ -54,16 +58,16 @@ class InvertedList:
         return self.curr_index >= self.num_docs
 
     def curr_doc_id(self):
-        return self.list[self.curr_index].doc_id if self.curr_index < self.num_docs else None
+        return self.posting_lists[self.curr_index].doc_id if self.curr_index < self.num_docs else None
 
     # iterate forward through the list until reaching doc_id >= the given doc_id
     # returns whether the doc_id was found in the list
     def move_to(self, doc_id):
         while self.curr_index < self.num_docs and \
-              self.list[self.curr_index].doc_id < doc_id:
+              self.posting_lists[self.curr_index].doc_id < doc_id:
             self.curr_index += 1
         return self.curr_index < self.num_docs and \
-               self.list[self.curr_index].doc_id == doc_id
+               self.posting_lists[self.curr_index].doc_id == doc_id
 
     # iterate through the list until the next doc_id
     def move_to_next(self):
@@ -72,21 +76,23 @@ class InvertedList:
 
     def move_past(self, doc_id):
         while self.curr_index < self.num_docs and \
-              self.list[self.curr_index].doc_id <= doc_id:
+              self.posting_lists[self.curr_index].doc_id <= doc_id:
             self.curr_index += 1
 
     # get number of term occurrences in the current doc_id
     def get_term_freq(self):
-        return len(self.list[self.curr_index].postings) if self.curr_index < self.num_docs else 0
+        return len(self.posting_lists[self.curr_index].postings) if self.curr_index < self.num_docs else 0
 
     def __repr__(self):
         return '{}: curr_index {} / {}, curr_id {}' \
-            .format(self.term, self.curr_index, self.num_docs - 1, self.list[self.curr_index].doc_id if self.curr_index < self.num_docs else None)
+            .format(self.term, self.curr_index, self.num_docs - 1, self.posting_lists[self.curr_index].doc_id if self.curr_index < self.num_docs else None)
 
     # Serializes to a dict which can be JSON-ified
     def to_json(self):
         return { 'term': self.term,
-                 'posting_list': [posting_list.to_json() for posting_list in self.list] }
+                 'posting_list': [posting_list.to_json() for posting_list in self.posting_lists] }
 
 def inverted_list_from_json(json_data):
-    return InvertedList(term=json_data['term'], list=[posting_list_from_json(p_list) for p_list in json_data['posting_list']])
+    #print ('Posting list: {}'.format(json_data['posting_list']))
+    return InvertedList(term=json_data['term'], \
+        posting_lists=[posting_list_from_json(p_list) for p_list in json_data['posting_list']])

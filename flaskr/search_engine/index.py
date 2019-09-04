@@ -14,7 +14,7 @@ class Index:  # TODO: RENAME SEARCHENGINE?
         self.index = index if index else {}
         self.doc_data = doc_data if doc_data else {}
         self.num_docs = len(doc_data) if index else 0
-        self.num_terms = len(index) if index else 0
+        self.num_terms = sum(inv_list.num_postings for inv_list in index.values()) if index else 0  # TODO: RENAME NUM_TOKENS (?)
         self.tokenizer = t.Tokenizer()  # TODO: USE STOPWORDS?
 
     def index_html_file(self, filepath, slug):  # TODO: WORK ON HTML FILES. RETRIEVE TEXT
@@ -49,8 +49,8 @@ class Index:  # TODO: RENAME SEARCHENGINE?
         # retrieve the InvertedLists in the same order as the query terms
         inv_lists = {word: self.index[word] if word in self.index else InvertedList(word) for word in processed_query.terms}
 
-        for list in inv_lists.values():
-            list.reset_pointer()
+        for inv_list in inv_lists.values():
+            inv_list.reset_pointer()
 
         # iterate over all documents that contain at least one of the terms
         while True:
@@ -59,22 +59,21 @@ class Index:  # TODO: RENAME SEARCHENGINE?
                 break
 
             score = 0.0
-            for term, list in inv_lists.items():
+            for term, inv_list in inv_lists.items():
                 if score_func == 'bm25':
                     qf = processed_query.term_counts[term]
-                    f = list.get_term_freq() if list.curr_doc_id() == doc_id else 0
-                    n = list.num_docs
+                    f = inv_list.get_term_freq() if inv_list.curr_doc_id() == doc_id else 0
+                    n = inv_list.num_docs
                     N = self.num_docs
                     dl = self.doc_data[doc_id]['numTerms']
                     avdl = self.num_terms / self.num_docs
                     # print (qf, f, n, N, dl, avdl)
                     score += score_bm25(qf, f, n, N, dl, avdl)
                 elif score_func == 'ql':
-                    fqd = list.get_term_freq() if list.curr_doc_id() == doc_id else 0
+                    fqd = inv_list.get_term_freq() if inv_list.curr_doc_id() == doc_id else 0
                     dl = self.doc_data[doc_id]['numTerms']
-                    cq = list.num_postings
+                    cq = inv_list.num_postings
                     C = self.num_terms
-                    # print (fqd, dl, cq, C)
                     score += score_ql(fqd, dl, cq, C)
 
             # put result in list using negative score as priority
@@ -108,8 +107,8 @@ class Index:  # TODO: RENAME SEARCHENGINE?
     def to_json(self):
         # TODO: SAVE STOPWORD FILE PATH?
         return {
+            'doc_data': self.doc_data,
             'index': [inverted_index.to_json() for inverted_index in self.index.values()],
-            'doc_data': self.doc_data
         }
 
     def save_to_file(self, filepath, indent=0):
@@ -120,15 +119,19 @@ class Index:  # TODO: RENAME SEARCHENGINE?
             json.dump(self.to_json(), outfile, indent=indent)
 
 def index_from_json(json_data):
-    index = {}
-    doc_data = json_data['doc_data']
-    serialized_inv_lists = json_data['index']
+    doc_data = {}
+    # Read in doc_data, and make sure to convert the doc_id keys to 'int'
+    for doc_id, doc_info in json_data['doc_data'].items():
+        doc_data[int(doc_id)] = doc_info
 
+    index = {}
     # Iterate through the list of serialized InvertedLists.
     # Deserialize each one and add it to the index dict under its term.
-    for serialized_inv_list in serialized_inv_lists:
+    for serialized_inv_list in json_data['index']:
+        #print (serialized_inv_list)
         inv_list = inverted_list_from_json(serialized_inv_list)
         index[inv_list.term] = inv_list
+        #input()
 
     return Index(index=index, doc_data=doc_data)
 
@@ -158,7 +161,6 @@ def score_bm25(qf, f, n, N, dl, avdl, k1=1.2, k2=100, b=0.75):  # TODO: MOVE TO 
 # cq: number of times the term appears in the corpus
 # C: total number of term occurrences in the corpus
 def score_ql(fqd, dl, cq, C, mu=1500):
-    print (fqd, dl, cq, C, mu)
-    print ((fqd + mu * (cq / C)) / (dl + mu))
+    ql_calc = (fqd + mu * (cq / C)) / (dl + mu)
     # TODO: GUARD AGAINST CQ = 0, C = 0, DL = 0, FQD = 0
-    return math.log10((fqd + mu * (cq / C)) / (dl + mu))
+    return 0.0 if ql_calc == 0 else math.log10(ql_calc)
