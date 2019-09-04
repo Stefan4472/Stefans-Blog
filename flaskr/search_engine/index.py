@@ -5,6 +5,7 @@ from collections import namedtuple
 from inverted_list import InvertedList
 import result as r
 import query as q
+import tokenizer as t
 
 Result = namedtuple('result', 'doc_id score')
 
@@ -14,7 +15,35 @@ class Index:  # TODO: RENAME SEARCHENGINE?
         self.doc_data = {}
         self.num_docs = 0
         self.num_terms = 0
-        return
+        self.tokenizer = t.Tokenizer()  # TODO: USE STOPWORDS?
+
+    def index_html_file(self, filepath, slug):
+        file_text = ''
+
+        with open(filepath, encoding='utf8') as html_file:
+            file_text = html_file.readlines()
+
+        doc_id = self.num_docs + 1   # TODO: NEED TO RUN TOKENIZER
+        position = 0
+        for token in self.tokenizer.tokenize(filepath):
+            print (token)
+            if token not in self.index:
+                self.index[token] = InvertedList(token)
+            self.index[token].add_posting(doc_id, position)
+            position += 1
+
+        # update number of terms in the index and add entry to doc_data
+        self.num_terms += position
+        self.doc_data[doc_id] = \
+            { 'slug': slug,
+              'numTerms': position }
+
+        self.num_docs += 1
+        #print (self.index.keys())
+
+    #def save_to_file(self, filepath):
+
+    #def restore_from_file(self, filepath):
 
     def create_index(self, filename):
         with open(filename) as file:
@@ -42,7 +71,7 @@ class Index:  # TODO: RENAME SEARCHENGINE?
             # for term, list in self.index.items():
             #     print('{}: {}'.format(term, list.list))
 
-    def search(self, query, score_func='bm25'):
+    def search(self, query, score_func='ql'):
         # process the query so it can be understood
         processed_query = q.process_query(query)
         results = self._run_query(processed_query, score_func)
@@ -106,7 +135,7 @@ class Index:  # TODO: RENAME SEARCHENGINE?
         formatted_results = []
         while not results.empty():
             next = results.get()
-            formatted_results.append((self.doc_data[next[1]]['sceneId'], -next[0]))
+            formatted_results.append((self.doc_data[next[1]]['slug'], -next[0]))
         return formatted_results
 
 
@@ -130,4 +159,7 @@ def score_bm25(qf, f, n, N, dl, avdl, k1=1.2, k2=100, b=0.75):  # TODO: MOVE TO 
 # cq: number of times the term appears in the corpus
 # C: total number of term occurrences in the corpus
 def score_ql(fqd, dl, cq, C, mu=1500):
+    print (fqd, dl, cq, C, mu)
+    print ((fqd + mu * (cq / C)) / (dl + mu))
+    # TODO: GUARD AGAINST CQ = 0, C = 0, DL = 0, FQD = 0
     return math.log10((fqd + mu * (cq / C)) / (dl + mu))
