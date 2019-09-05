@@ -1,12 +1,13 @@
 from flask import (
     Blueprint, flash, g, redirect, render_template, render_template_string,
-    request, url_for
+    request, url_for, current_app
 )
 from werkzeug.exceptions import abort
 from flaskr.database import get_db
 from flaskr.site_logger import log_visit
 import os
 import flaskr.featured_posts as fp
+from flaskr.search_engine.index import restore_index_from_file
 
 bp = Blueprint('blog', __name__)
 
@@ -14,7 +15,6 @@ bp = Blueprint('blog', __name__)
 def index():
     log_visit()  # TODO: ANY WAY TO CALL log_visit BY DEFAULT?
     db = get_db()
-
     # Retrieve recent and featured posts
     recent_posts = db.get_recent_posts(5)
     featured_posts = [db.get_post_by_slug(slug) for slug in fp.get_featured_posts()]
@@ -94,6 +94,17 @@ def about_page():
 def highlights_page():
     log_visit()
     return render_template('blog/highlights.html')
+
+@bp.route('/search')
+def search_page():
+    log_visit()
+    query = request.args.get('query')
+    #if search_engine is None:
+    #    search_engine = index.restore_index_from_file(current_app.config['SEARCH_INDEX_FILE'])
+    # TODO: NEED A PERSISTENT INDEX OBJECT!
+    search_engine = restore_index_from_file(current_app.config['SEARCH_INDEX_FILE'])
+    search_result = search_engine.search(query)
+    return '{}: \n{}'.format(query, search_result)
 
 @bp.errorhandler(404)
 def error_page(error):

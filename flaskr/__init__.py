@@ -10,6 +10,7 @@ def create_app(test_config=None):
         VISIT_LOG=os.path.join(app.instance_path, 'sitelog.txt'),
         FEATURED_POSTS_FILE=os.path.join(app.instance_path, 'featured_posts.txt'),
         SEARCH_INDEX_FILE=os.path.join(app.instance_path, 'index.json'),
+        TEST_THING=1000,
     )
 
     if test_config is None:
@@ -31,5 +32,8 @@ def create_app(test_config=None):
     from . import blog
     app.register_blueprint(blog.bp)
     app.add_url_rule('/', endpoint='index')
+
+    #from .search_engine.index import Index
+    # TODO: PROPERLY INIT THE SEARCH ENGINE
 
     return app

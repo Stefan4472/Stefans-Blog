@@ -97,6 +97,7 @@ class Database:
                 'where pt.tag_slug = ?'
         values = (tag_slug,)
         return self.cur.execute(query, values).fetchall()
+        
 # get database for the current request
 # will be stored under 'db' in the current request object "g"
 def get_db():
