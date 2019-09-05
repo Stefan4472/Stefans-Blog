@@ -8,12 +8,22 @@ from flaskr.site_logger import log_visit
 import os
 import flaskr.featured_posts as fp
 from flaskr.search_engine.index import restore_index_from_file
+from functools import wraps
 
 bp = Blueprint('blog', __name__)
 
+# Decorator that logs the url being accessed.
+# Simply calls 'log_visit()'.
+def logged_visit(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        log_visit()
+        return f(*args, **kwargs)
+    return decorated_function
+
 @bp.route('/')
+@logged_visit
 def index():
-    log_visit()  # TODO: ANY WAY TO CALL log_visit BY DEFAULT?
     db = get_db()
     # Retrieve recent and featured posts
     recent_posts = db.get_recent_posts(5)
@@ -26,18 +36,33 @@ def index():
                             recent_posts=recent_posts, tags=tags)
 
 @bp.route('/posts')
+@logged_visit
 def posts_page():
-    log_visit()
     db = get_db()
-    posts = db.get_all_posts()
+    query = request.args.get('query')
+
+    # Get the optional search query, if present, and perform the search
+    if query:
+        print ('Got query {}'.format(query))
+        search_results = current_app.search_engine.search(query)
+        print ('Got the slugs {}'.format(search_results))
+        posts = [db.get_post_by_slug(result_slug) for result_slug, _ in search_results]
+        print ('Got the posts {}'.format(posts))
+    # Otherwise, get all posts
+    else:
+        posts = db.get_all_posts()
+
+    # Retrieve tag data
     tags = { post['post_slug']: db.get_tags_by_post_slug(post['post_slug']) \
              for post in posts }
-    return render_template('blog/posts.html', posts=posts, tags=tags)
+
+    # Render and return
+    return render_template('blog/posts.html', search_query=query, posts=posts, tags=tags)
 
 @bp.route('/post/<slug>')
+@logged_visit
 def post_view(slug):
-    log_visit()
-    print ('Looking up {}'.format(slug))
+    # print ('Looking up {}'.format(slug))
     db = get_db()
     # retrieve post data
     post = db.get_post_by_slug(slug)
@@ -70,8 +95,8 @@ def post_view(slug):
 
 # show post widgets for all posts under the given tag
 @bp.route('/tag/<slug>')
+@logged_visit
 def tag_view(slug):
-    log_visit()
     db = get_db()
     if not db.has_tag(slug):
         abort(404)
@@ -81,32 +106,22 @@ def tag_view(slug):
         tag_title=tag_title)
 
 @bp.route('/portfolio')
+@logged_visit
 def portfolio_page():
-    log_visit()
     return render_template('blog/portfolio.html')
 
 @bp.route('/about')
+@logged_visit
 def about_page():
-    log_visit()
     return render_template('blog/about.html')
 
 @bp.route('/highlights')
+@logged_visit
 def highlights_page():
-    log_visit()
     return render_template('blog/highlights.html')
 
-@bp.route('/search')
-def search_page():
-    log_visit()
-    query = request.args.get('query')
-    #if search_engine is None:
-    #    search_engine = index.restore_index_from_file(current_app.config['SEARCH_INDEX_FILE'])
-    # TODO: NEED A PERSISTENT INDEX OBJECT!
-    search_engine = restore_index_from_file(current_app.config['SEARCH_INDEX_FILE'])
-    search_result = search_engine.search(query)
-    return '{}: \n{}'.format(query, search_result)
-
 @bp.errorhandler(404)
+@logged_visit
 def error_page(error):
-    log_visit()
     return render_template('blog/404.html'), 404
+

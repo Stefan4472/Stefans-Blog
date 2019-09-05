@@ -97,7 +97,7 @@ class Index:  # TODO: RENAME SEARCHENGINE?
         next_doc_id = min([list.curr_doc_id() for list in in_progress])
         return True, next_doc_id
 
-    # returns list of (scene_id, score) ordered decreasing
+    # returns list of (slug, score), ordered decreasing
     def _format_results(self, results, processed_query):
         formatted_results = []
         while not results.empty():

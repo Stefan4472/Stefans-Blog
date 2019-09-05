@@ -3,6 +3,7 @@ import json
 from index import Index, restore_index_from_file
 
 if __name__ == '__main__':
+    print ('Running database main.py')
     index = Index()
     index.index_file(r'C:\Users\Stefan\Github\Blog-Webcode\sample_post\post.md', 'sample-post')
     index.index_file(r'C:\Users\Stefan\Github\Blog-Webcode\sample_post\post.md', 'sample-post-2')
