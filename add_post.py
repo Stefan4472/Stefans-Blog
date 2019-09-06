@@ -5,6 +5,7 @@ import shutil
 from datetime import date, datetime
 import json
 import markdown2 as md
+import randomcolor
 from flaskr.database import Database
 import flaskr.search_engine.index as index  # TODO: BETTER IMPORTS
 
@@ -28,6 +29,8 @@ KEY_DATE = 'date'
 KEY_TAGS = 'tags'
 KEY_IMAGE = 'image'
 
+COLOR_GENERATOR = randomcolor.RandomColor()
+
 # generates a slug given a string
 # slugs are used to create urls
 def generate_slug(string):
@@ -35,6 +38,9 @@ def generate_slug(string):
 
 def get_static_url(filepath):
     return '{{{{ url_for(\'static\', filename=\'{}\') }}}}'.format(filepath)
+
+def generate_random_color():
+    return COLOR_GENERATOR.generate(luminosity='light', count=1)[0]  # TODO: USE 'light' or 'bright' LUMINOSITY?
 
 # Takes the path to a Markdown file, read it, and renders it to HTML.
 # Returns (rendered HTML as a string, list of image sources found in <img> tags).
@@ -50,7 +56,7 @@ def render_md_file(file_path, img_save_dir):
         for line in md_file:
             # Ignore blank lines
             if not line:
-                print ('Ignoring a blank line')
+                # print ('Ignoring a blank line')
                 continue
             # print ('>>{}'.format(line))
             figure_match = figure_regex.match(line)
@@ -60,9 +66,9 @@ def render_md_file(file_path, img_save_dir):
                 img_path = figure_match.group(1)
                 img_caption = figure_match.group(2)
 
-                print (img_path, img_caption)
+                # print (img_path, img_caption)
                 img_url = get_static_url(img_save_dir + '/' + os.path.basename(img_path))  # TODO: CLEAN UP
-                print ('url is {}'.format(img_url))
+                # print ('url is {}'.format(img_url))
                 # TODO: HANDLE alt, and make this string a constant (?)
                 # TODO: ANY WAY TO MAKE THE BACKGROUND COLOR OF THE CAPTION GRAY, AND LIMIT IT TO THE WIDTH OF THE TEXT?
                 line_html = \
@@ -87,7 +93,7 @@ def copy_to_static(file_path, static_path):  # TODO: IMPROVE
 
     # Build destination path for the image
     dest_path = os.path.join(static_path, os.path.basename(file_path))
-    print (dest_path)
+    # print (dest_path)
     
     # Copy the image to the folder
     shutil.copyfile(file_path, dest_path)
@@ -159,7 +165,7 @@ if __name__ == '__main__':
     # Get publish date
     # TODO: CONVERT TO DATE AND VALIDATE, ALLOW ARBITRARY DATE SET
     if KEY_DATE in post_data:
-        post_date = post_data[KEY_DATE]
+        post_date = datetime.strptime(post_data[KEY_DATE], "%m/%d/%y").date()
     else:  
         # Default to today's date
         post_date = date.today()
@@ -169,6 +175,7 @@ if __name__ == '__main__':
     else:
         print ('ERROR: post-meta.json must contain a "{}" field'.format(KEY_IMAGE))
         sys.exit()
+
     post_img_name = 'post-image' + os.path.splitext(post_img)[1]
     print ([title, byline, slug, post_date, post_img])
     
@@ -184,11 +191,12 @@ if __name__ == '__main__':
 
     # Add tags to the database
     for tag in tags:
-        print ('Handling tag {}'.format(tag))
+        # print ('Handling tag {}'.format(tag))
         tag_slug = generate_slug(tag)
+        tag_color = generate_random_color()
         # Add tag to the database if not already there
         if not database.has_tag(tag_slug):
-            database.add_tag(tag, tag_slug)
+            database.add_tag(tag, tag_slug, tag_color)
         # Add post->tag mapping to database
         database.add_tag_to_post(tag_slug, slug)
     
@@ -207,8 +215,8 @@ if __name__ == '__main__':
 
     # Render the Markdown file to HTML
     article_html, article_imgs = render_md_file(post_path, slug)
-    print (article_html)
-    print (article_imgs)
+    # print (article_html)
+    # print (article_imgs)
 
     # Get absolute path to the post image
     img_abs_path = os.path.realpath(os.path.join(post_dir, post_img))
@@ -220,7 +228,7 @@ if __name__ == '__main__':
 
     # Build absolute path for the post image in the static directory
     img_dest_path = os.path.join(post_static_path, post_img_name)
-    print (img_dest_path)
+    # print (img_dest_path)
     # Copy the post image to the post directory 
     shutil.copyfile(img_abs_path, img_dest_path)
 
@@ -237,7 +245,7 @@ if __name__ == '__main__':
     
     # Write the html file to the article directory
     article_dest_path = os.path.join(post_static_path, slug) + '.html'
-    print (article_dest_path)
+    # print (article_dest_path)
     with open(article_dest_path, 'w') as html_file:
         html_file.write(article_html)
 

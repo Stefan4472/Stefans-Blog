@@ -55,11 +55,11 @@ def posts_page():
 
     # Get the optional search query, if present, and perform the search
     if query:
-        print ('Got query {}'.format(query))
+        # print ('Got query {}'.format(query))
         search_results = current_app.search_engine.search(query)
-        print ('Got the slugs {}'.format(search_results))
+        # print ('Got the slugs {}'.format(search_results))
         posts = [db.get_post_by_slug(result_slug) for result_slug, _ in search_results]
-        print ('Got the posts {}'.format(posts))
+        # print ('Got the posts {}'.format(posts))
     # Otherwise, get all posts
     else:
         posts = db.get_all_posts()

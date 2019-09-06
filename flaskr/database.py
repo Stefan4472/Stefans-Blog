@@ -52,8 +52,7 @@ class Database:
         values = (tag_slug,)
         return self.cur.execute(query, values).fetchone() is not None
 
-    def add_tag(self, name, slug, color=''):
-        color = color if color else '#FF0000'  # TODO: RANDOM COLOR GENERATION FROM PALETTE
+    def add_tag(self, name, slug, color):
         query = 'insert into Tags values (NULL, ?, ?, ?)'
         values = (name, slug, color)
         self.cur.execute(query, values)

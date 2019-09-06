@@ -6,6 +6,7 @@ To setup the virtual environment:
 >> python -m venv venv
 >> venv\Scripts\activate
 >> pip install Flask
+>> pip install randomcolor
 
 To run the site:
 >> cd Stefans-Blog

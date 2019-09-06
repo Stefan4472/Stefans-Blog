@@ -44,7 +44,7 @@ class Index:  # TODO: RENAME SEARCHENGINE?
     def search(self, query, score_func='ql'):
         # process the query so it can be understood
         processed_query = q.process_query(query, self.tokenizer)
-        print ('Query terms: {}'.format(processed_query.terms))
+        #print ('Query terms: {}'.format(processed_query.terms))
         results = self._run_query(processed_query, score_func)
         return self._format_results(results, processed_query)
 
@@ -124,7 +124,7 @@ class Index:  # TODO: RENAME SEARCHENGINE?
 
     def commit(self):  # FUNNY: INDEX SIZE WENT FROM 132KB TO 51KB WHEN I WENT FROM INDENT=2 TO NO INDENT
         with open(self.filepath, 'w') as outfile:
-            print ('Dumping {}'.format(self.to_json()))
+            # print ('Dumping {}'.format(self.to_json()))
             json.dump(self.to_json(), outfile)
     
 
