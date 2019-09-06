@@ -9,8 +9,11 @@ import flaskr.search_engine.tokenizer as t
 
 Result = namedtuple('result', 'doc_id score')
 
+# Serialization currently done in JSON... This will be small enough that it should be fine (despite not being highly performant)
+
 class Index:  # TODO: RENAME SEARCHENGINE?
-    def __init__(self, index=None, doc_data=None):
+    def __init__(self, filepath, index=None, doc_data=None):
+        self.filepath = filepath
         self.index = index if index else {}
         self.doc_data = doc_data if doc_data else {}
         self.num_docs = len(doc_data) if index else 0
@@ -112,35 +115,46 @@ class Index:  # TODO: RENAME SEARCHENGINE?
             'index': [inverted_index.to_json() for inverted_index in self.index.values()],
         }
 
-    def save_to_file(self, filepath):  # FUNNY: INDEX SIZE WENT FROM 132KB TO 51KB WHEN I WENT FROM INDENT=2 TO NO INDENT
-        if not filepath.endswith('.json'):
-            raise ValueError('Must save to a .json file')
+    # DANGER
+    def clear_all_data(self):
+        self.index = {}
+        self.doc_data = {}
+        self.num_docs = 0
+        self.num_terms = 0 
 
-        with open(filepath, 'w') as outfile:
+    def commit(self):  # FUNNY: INDEX SIZE WENT FROM 132KB TO 51KB WHEN I WENT FROM INDENT=2 TO NO INDENT
+        with open(self.filepath, 'w') as outfile:
+            print ('Dumping {}'.format(self.to_json()))
             json.dump(self.to_json(), outfile)
+    
 
-def index_from_json(json_data):
-    doc_data = {}
-    # Read in doc_data, and make sure to convert the doc_id keys to 'int'
-    for doc_id, doc_info in json_data['doc_data'].items():
-        doc_data[int(doc_id)] = doc_info
-
-    index = {}
-    # Iterate through the list of serialized InvertedLists.
-    # Deserialize each one and add it to the index dict under its term.
-    for serialized_inv_list in json_data['index']:
-        #print (serialized_inv_list)
-        inv_list = inverted_list_from_json(serialized_inv_list)
-        index[inv_list.term] = inv_list
-        #input()
-
-    return Index(index=index, doc_data=doc_data)
-
-def restore_index_from_file(filepath):
+def connect(filepath):
+    if not filepath.endswith('.json'):
+        raise ValueError('The provided file must be of type ".json"')
     json_data = {}
-    with open(filepath, encoding='utf8') as json_file:
-        json_data = json.load(json_file)
-    return index_from_json(json_data)
+    doc_data = {}
+    index = {}
+    
+    # Attempt to read the provided file and deserialize the index
+    try:
+        with open(filepath, encoding='utf8') as json_file:
+            json_data = json.load(json_file)
+
+        # Read in doc_data, and make sure to convert the doc_id keys to 'int'
+        for doc_id, doc_info in json_data['doc_data'].items():
+            doc_data[int(doc_id)] = doc_info
+
+        # Iterate through the list of serialized InvertedLists.
+        # Deserialize each one and add it to the index dict under its term.
+        for serialized_inv_list in json_data['index']:
+            #print (serialized_inv_list)
+            inv_list = inverted_list_from_json(serialized_inv_list)
+            index[inv_list.term] = inv_list  
+    # File not found: create a new file
+    except FileNotFoundError:
+        open(filepath, 'a').close()
+    
+    return Index(filepath, index=index, doc_data=doc_data)
 
 # scores a single document for a single query term
 # qf: frequency of the term in the query

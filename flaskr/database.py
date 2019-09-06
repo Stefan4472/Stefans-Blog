@@ -1,7 +1,5 @@
 import sqlite3
-import click
 from flask import current_app, g
-from flask.cli import with_appcontext
 
 class Database:
     def __init__(self, db_path):
@@ -114,22 +112,9 @@ def close_db(e=None):
     if db is not None:
         db.close()
 
-# registers the Database teardown method, close_db()
-def init_app(app):
-    app.teardown_appcontext(close_db)
-    app.cli.add_command(init_db_command)
-
-# initialize the database to the schema file, clearing all data
+# initialize the database to the schema file, clearing all data  TODO: MOVE THIS TO __INIT__.PY?
 def init_db():
     print ('Initializing database')
     db = get_db()
     with current_app.open_resource('posts_schema.sql') as f:
         db.run_script(f.read().decode('utf8'))
-
-# command-line function to re-init the database to the
-# original schema. Run using "flask init-db"
-@click.command('init-db')
-@with_appcontext
-def init_db_command():
-    init_db()
-    click.echo('Initialized the database.')

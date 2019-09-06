@@ -1,5 +1,10 @@
 import os
-from flask import Flask
+import click
+from flask import Flask, current_app, g
+from flask.cli import with_appcontext
+from . import database
+from . import blog
+from .search_engine import index 
 
 def create_app(test_config=None):
     # create and configure the app
@@ -25,17 +30,41 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    # Init database 
-    from . import database
-    database.init_app(app)
+    #
+    init_app(app)
 
-    # Init blueprint
-    from . import blog
+    # Register blueprint
     app.register_blueprint(blog.bp)
     app.add_url_rule('/', endpoint='index')
 
     # Init search engine instance and attach it to the 'app' object
-    from .search_engine.index import restore_index_from_file
-    app.search_engine = restore_index_from_file(app.config['SEARCH_INDEX_FILE'])
+    app.search_engine = index.connect(app.config['SEARCH_INDEX_FILE'])
 
     return app
+
+# registers the Database teardown method, close_db()
+def init_app(app):
+    app.teardown_appcontext(database.close_db)
+    app.cli.add_command(init_db_command)
+    app.cli.add_command(init_search_index_command)
+
+# command-line function to re-init the database to the
+# original schema. Run using "flask init-db"
+@click.command('init-db')
+@with_appcontext
+def init_db_command():
+    database.init_db()
+    click.echo('Initialized the database.')
+
+@click.command('init-search-index')
+@with_appcontext
+def init_search_index_command():
+    search_index = None
+    if current_app.search_engine:
+        search_index = current_app.search_engine
+    else:
+        search_index = index.connect(current_app.config['SEARCH_INDEX_FILE'])
+
+    search_index.clear_all_data()
+    search_index.commit()
+    click.echo('Initialized the search engine index.')

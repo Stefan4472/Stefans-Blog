@@ -6,7 +6,7 @@ from datetime import date, datetime
 import json
 import markdown2 as md
 from flaskr.database import Database
-from flaskr.search_engine.index import Index, restore_index_from_file  # TODO: BETTER IMPORTS
+import flaskr.search_engine.index as index  # TODO: BETTER IMPORTS
 
 # Path to the directory this script is being executed in 
 this_dir = os.path.dirname(os.path.abspath(__file__))
@@ -64,10 +64,11 @@ def render_md_file(file_path, img_save_dir):
                 img_url = get_static_url(img_save_dir + '/' + os.path.basename(img_path))  # TODO: CLEAN UP
                 print ('url is {}'.format(img_url))
                 # TODO: HANDLE alt, and make this string a constant (?)
+                # TODO: ANY WAY TO MAKE THE BACKGROUND COLOR OF THE CAPTION GRAY, AND LIMIT IT TO THE WIDTH OF THE TEXT?
                 line_html = \
 r'''<figure class="figure">
     <img src="{}" class="figure-img img-fluid rounded" alt="">
-    <figcaption class="figure-caption text-center">{}</figcaption>
+    <figcaption class="figure-caption text-center"><em>{}</em></figcaption>
 </figure>'''.format(img_url, img_caption)
                 images.append(img_path)
             # Handle standard Markdown->HTML
@@ -156,7 +157,7 @@ if __name__ == '__main__':
         slug = generate_slug(title)
 
     # Get publish date
-    # TODO: CONVERT TO DATE AND VALIDATE
+    # TODO: CONVERT TO DATE AND VALIDATE, ALLOW ARBITRARY DATE SET
     if KEY_DATE in post_data:
         post_date = post_data[KEY_DATE]
     else:  
@@ -242,7 +243,7 @@ if __name__ == '__main__':
 
     # Add the file to the search engine's index.   # TODO: BREAK EACH OF THESE TASKS INTO A SEPARATE FUNCTION
     # We can index the Markdown file.
-    search_index = restore_index_from_file(PATH_TO_INDEX)
+    search_index = index.connect(PATH_TO_INDEX)
     search_index.index_file(post_path, slug)
     
     print ('Retrieved from database, I got: {}'.format(database.get_post_by_slug(slug)[:]))
@@ -253,7 +254,7 @@ if __name__ == '__main__':
             # Commit database changes
             database.commit()
             # Commit search engine index changes
-            search_index.save_to_file(PATH_TO_INDEX)
+            search_index.commit()
             break
         elif confirm_input == 'n':
             # Delete the created folder and exit
@@ -263,5 +264,4 @@ if __name__ == '__main__':
         else:
             print ('Not a valid input')
 
-    # TODO: UPDATE SEARCH ENGINE INDEX
-    # TODO: PUSH NEW FILES TO THE SERVER
+    # TODO: PUSH NEW/UPDATED FILES TO THE SERVER

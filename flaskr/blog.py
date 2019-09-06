@@ -1,13 +1,15 @@
+import os
+import click
 from flask import (
     Blueprint, flash, g, redirect, render_template, render_template_string,
     request, url_for, current_app
 )
+from flask.cli import with_appcontext
 from werkzeug.exceptions import abort
 from flaskr.database import get_db
 from flaskr.site_logger import log_visit
-import os
+import flaskr.search_engine.index as index  # TODO: IMPROVE IMPORTS
 import flaskr.featured_posts as fp
-from flaskr.search_engine.index import restore_index_from_file
 from functools import wraps
 
 bp = Blueprint('blog', __name__)
@@ -20,6 +22,16 @@ def logged_visit(f):
         log_visit()
         return f(*args, **kwargs)
     return decorated_function
+
+# # Registers a command-line function to initialize the search engine index.
+# # Run using "python -m flask init-search-engine"
+# @click.command('init-search-index')
+# @with_appcontext
+# def init_search_index_command():
+#     # Wipe the index file  TODO: THIS WILL FAIL IF THE INDEX DOESN'T EXIST
+#     open(current_app.config['SEARCH_INDEX_FILE'], 'w').close()
+#     click.echo('Initialized the search engine index.')
+
 
 @bp.route('/')
 @logged_visit

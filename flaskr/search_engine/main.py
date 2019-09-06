@@ -1,4 +1,4 @@
-# Test script
+# Test script  TODO: NEEDS TO BE UPDATED
 import json
 from index import Index, restore_index_from_file
 
