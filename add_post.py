@@ -48,41 +48,51 @@ def generate_random_color():
 def render_md_file(file_path, img_save_dir):
     # Regex used to match custom "[figure]" lines
     figure_regex = re.compile(r'\[figure: ([^,]+), ([^\]]+)]')
-    line_html = ''
     html_snippets = []
     images = []
+    md_text = ''
+    last_match_index = 0
+
     # print ('Reading file...')
     with open(file_path, 'r', encoding='utf8') as md_file:
-        for line in md_file:
-            # Ignore blank lines
-            if not line:
-                # print ('Ignoring a blank line')
-                continue
-            # print ('>>{}'.format(line))
-            figure_match = figure_regex.match(line)
-            # Handle figures
-            if figure_match:
-                # print ('Got a match')
-                img_path = figure_match.group(1)
-                img_caption = figure_match.group(2)
-
-                # print (img_path, img_caption)
-                img_url = get_static_url(img_save_dir + '/' + os.path.basename(img_path))  # TODO: CLEAN UP
-                # print ('url is {}'.format(img_url))
-                # TODO: HANDLE alt, and make this string a constant (?)
-                # TODO: ANY WAY TO MAKE THE BACKGROUND COLOR OF THE CAPTION GRAY, AND LIMIT IT TO THE WIDTH OF THE TEXT?
-                line_html = \
+        md_text = md_file.read()
+    
+    # Iterate through '[figure: ]' instances, which must be handled specially.
+    # Everything else can be rendered using the 'markdown' library.
+    for figure_match in re.finditer(figure_regex, md_text):
+        start = figure_match.start()
+        end = figure_match.end()
+        
+        # Render the Markdown between the end of the last figure match and the start of
+        # this figure match
+        if start != last_match_index + 1:
+            rendered_html = md.markdown(md_text[last_match_index + 1 : start], extras=['fenced-code-blocks'])
+            html_snippets.append(rendered_html)
+            #print (rendered_html)
+        
+        # Render the figure
+        img_path = figure_match.group(1)
+        img_caption = figure_match.group(2)
+        # print (img_path, img_caption)
+        img_url = get_static_url(img_save_dir + '/' + os.path.basename(img_path))  # TODO: CLEAN UP
+        # print ('url is {}'.format(img_url))
+        # TODO: HANDLE alt, and make this string a constant (?)
+        # TODO: ANY WAY TO MAKE THE BACKGROUND COLOR OF THE CAPTION GRAY, AND LIMIT IT TO THE WIDTH OF THE TEXT?
+        rendered_html = \
 r'''<figure class="figure">
-    <img src="{}" class="figure-img img-fluid rounded" alt="">
-    <figcaption class="figure-caption text-center"><em>{}</em></figcaption>
+<img src="{}" class="figure-img img-fluid rounded" alt="">
+<figcaption class="figure-caption text-center"><em>{}</em></figcaption>
 </figure>'''.format(img_url, img_caption)
-                images.append(img_path)
-            # Handle standard Markdown->HTML
-            else:
-                line_html = md.markdown(line)
-  
-            html_snippets.append(line_html)
+        images.append(img_path)
+        html_snippets.append(rendered_html)
+        last_match_index = end
 
+    # Render the Markdown from the last figure match to the end of the file
+    if last_match_index != len(md_text):
+        rendered_html = md.markdown(md_text[last_match_index + 1 :], extras=['fenced-code-blocks'])
+        html_snippets.append(rendered_html)
+        #print (rendered_html)
+    
     return ''.join(html_snippets), images
 
 def copy_to_static(file_path, static_path):  # TODO: IMPROVE
@@ -135,25 +145,23 @@ if __name__ == '__main__':
     except IOError:
         print ('ERROR: Could not read the post file ("{}")'.format(post_path))
         sys.exit()
-  
+
     # Make sure title is defined
-    if KEY_TITLE in post_data:
-        title = post_data[KEY_TITLE]
-    else:
+    if KEY_TITLE not in post_data:
         print ('ERROR: post-meta.json must contain a "{}" field'.format(KEY_TITLE))
         sys.exit()
+    title = post_data[KEY_TITLE]
 
     # Get byline
-    if KEY_BYLINE in post_data:
-        byline = post_data[KEY_BYLINE]
-        # Make sure byline is not more than 200 characters
-        if len(byline) > 200:
-            print('ERROR: Byline cannot be more than 200 characters long')
-            sys.exit()     
-    else:
-        # Default byline is the first 200 chars of the post
-        # TODO: GET THE FIRST PARAGRAPH
-        byline = post_markdown[:200]
+    if KEY_BYLINE not in post_data:
+        print ('ERROR: post-meta.json must contain a "{}" field'.format(KEY_BYLINE))
+        sys.exit()
+    
+    byline = post_data[KEY_BYLINE]
+    # Make sure byline is not more than 200 characters
+    if len(byline) > 200:
+        print ('Trimming byline to 200 characters')
+        byline = byline[:200]
 
     # Get slug
     if KEY_SLUG in post_data:
@@ -161,6 +169,11 @@ if __name__ == '__main__':
     else:
         # Generate slug from title if needed
         slug = generate_slug(title)
+
+    # Render the Markdown file to HTML
+    article_html, article_imgs = render_md_file(post_path, slug)  # TODO: THIS IS STILL NOT HANDLING BLANK LINES CORRECTLY
+    # print (article_html)
+    # print (article_imgs)
 
     # Get publish date
     # TODO: CONVERT TO DATE AND VALIDATE, ALLOW ARBITRARY DATE SET
@@ -212,11 +225,6 @@ if __name__ == '__main__':
         pass
         #print ('ERROR: Post directory already exists')
         #sys.exit(0)
-
-    # Render the Markdown file to HTML
-    article_html, article_imgs = render_md_file(post_path, slug)
-    # print (article_html)
-    # print (article_imgs)
 
     # Get absolute path to the post image
     img_abs_path = os.path.realpath(os.path.join(post_dir, post_img))
