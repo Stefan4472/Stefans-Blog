@@ -3,6 +3,7 @@ import re
 import os
 import shutil
 from datetime import date, datetime
+from PIL import Image
 import json
 import markdown2 as md
 import randomcolor
@@ -28,8 +29,18 @@ KEY_SLUG = 'slug'
 KEY_DATE = 'date'
 KEY_TAGS = 'tags'
 KEY_IMAGE = 'image'
+KEY_BANNER = 'banner'
+KEY_THUMBNAIL = 'thumbnail'
 
+# RandomColor object used to generate Tag colors
 COLOR_GENERATOR = randomcolor.RandomColor()
+
+# Prescribed featured-image size
+FEATURED_IMG_SIZE = (2000, 1080)
+# Prescribed banner size
+BANNER_SIZE = (1928, 768)
+# Size of image thumbnails
+THUMBNAIL_SIZE = (128, 128)
 
 # generates a slug given a string
 # slugs are used to create urls
@@ -114,23 +125,22 @@ if __name__ == '__main__':
         sys.exit()
 
     post_dir = sys.argv[1]
-    print ('got post_dir {}'.format(post_dir))
+    print ('Got post directory "{}"'.format(post_dir))
 
     # Ensure the provided path is a directory that exists 
     if not os.path.isdir(post_dir):
         print ('ERROR: The provided path is not a directory or does not exist')
         sys.exit()
 
-    # Determine absolute path to the post file and the meta file
+    # Determine absolute path to the post file and the metadata file
     post_path = os.path.join(post_dir, 'post.md')
-    meta_path = os.path.join(post_dir, 'post-meta.json')  # TODO: CONSISTENT USAGE OF EITHER 'POST' OR 'ARTICLE'
-    print (post_path, meta_path)
+    meta_path = os.path.join(post_dir, 'post-meta.json')
 
-    md_post_text = ''
-    html_post_text = ''
+    post_markdown = ''
+    post_html = ''
     post_data = {}
 
-    # Read the meta-data file
+    # Read the metadata file
     try:
         with open(meta_path, 'r') as meta_file:
             post_data = json.load(meta_file)
@@ -147,21 +157,23 @@ if __name__ == '__main__':
         sys.exit()
 
     # Make sure title is defined
-    if KEY_TITLE not in post_data:
+    if KEY_TITLE in post_data:
+        title = post_data[KEY_TITLE]
+    else:
         print ('ERROR: post-meta.json must contain a "{}" field'.format(KEY_TITLE))
         sys.exit()
-    title = post_data[KEY_TITLE]
 
     # Get byline
-    if KEY_BYLINE not in post_data:
-        print ('ERROR: post-meta.json must contain a "{}" field'.format(KEY_BYLINE))
-        sys.exit()
+    if KEY_BYLINE in post_data:
+        byline = post_data[KEY_BYLINE]
+        # Make sure byline is not more than 200 characters
+        if len(byline) > 200:
+            print ('Trimming byline to 200 characters')
+            byline = byline[:200]
+    else:
+        # Just take the first 200 characters of Markdown
+        byline = post_markdown[:200]
     
-    byline = post_data[KEY_BYLINE]
-    # Make sure byline is not more than 200 characters
-    if len(byline) > 200:
-        print ('Trimming byline to 200 characters')
-        byline = byline[:200]
 
     # Get slug
     if KEY_SLUG in post_data:
@@ -170,75 +182,90 @@ if __name__ == '__main__':
         # Generate slug from title if needed
         slug = generate_slug(title)
 
-    # Render the Markdown file to HTML
-    article_html, article_imgs = render_md_file(post_path, slug)  # TODO: THIS IS STILL NOT HANDLING BLANK LINES CORRECTLY
-    # print (article_html)
-    # print (article_imgs)
-
     # Get publish date
-    # TODO: CONVERT TO DATE AND VALIDATE, ALLOW ARBITRARY DATE SET
     if KEY_DATE in post_data:
+        # Parse the date in the format "MM/DD/YY"
         post_date = datetime.strptime(post_data[KEY_DATE], "%m/%d/%y").date()
     else:  
         # Default to today's date
         post_date = date.today()
 
+    # Get post image
     if KEY_IMAGE in post_data:
-        post_img = post_data[KEY_IMAGE]
+        post_img_path = os.path.realpath(os.path.join(post_dir, post_data[KEY_IMAGE]))
+        post_img = Image.open(post_img_path)
     else:
         print ('ERROR: post-meta.json must contain a "{}" field'.format(KEY_IMAGE))
         sys.exit()
 
-    post_img_name = 'post-image' + os.path.splitext(post_img)[1]
-    print ([title, byline, slug, post_date, post_img])
-    
+    # Get banner image
+    if KEY_BANNER in post_data:
+        post_banner_path = os.path.realpath(os.path.join(post_dir, post_data[KEY_BANNER]))
+        post_banner = Image.open(post_banner_path)
+    else:
+        print ('ERROR: post-meta.json must contain a "{}" field'.format(KEY_BANNER))
+        sys.exit()
+
+    if KEY_THUMBNAIL in post_data:
+        post_thumbnail_path = os.path.realpath(os.path.join(post_dir, post_data[KEY_THUMBNAIL]))
+        post_thumbnail = Image.open(post_thumbnail_path)
+    else:
+        # No thumbnail specified: load the post's image. It will be made into 
+        # a thumbnail later
+        post_thumbnail = Image.open(post_img_path)
+
+    # Build URLs for the image, banner, and thumbnail.
+    # They will have prescribed filenames ('image', 'banner', 'thumbnail') and will be    # TODO: NEED ACCESS TO URL_FOR()
+    # converted to JPG
+    post_img_url = 'static/{}/featured_img.jpg'.format(slug)  #url_for('static', filename=slug + '/' + 'featured_img.jpg')
+    post_banner_url = 'static/{}/banner.jpg'.format(slug)  #url_for('static', filename=slug + '/' + 'banner.jpg')
+    post_thumbnail_url = 'static/{}/thumbnail.jpg'.format(slug)  #url_for('static', filename=slug + '/' + 'thumbnail.jpg')
+
      # Get connection to the post database
     database = Database(PATH_TO_DATABASE)
 
     # Add post to the database.
     # This will fail if there is a problem with the post data
-    database.add_post(title, byline, slug, post_date, post_img_name)
+    database.add_post(title, byline, slug, post_date, 'test') #, post_img_url, post_banner_url, post_thumbnail_url)
 
     if KEY_TAGS in post_data:
         tags = post_data[KEY_TAGS]
-
-    # Add tags to the database
-    for tag in tags:
-        # print ('Handling tag {}'.format(tag))
-        tag_slug = generate_slug(tag)
-        tag_color = generate_random_color()
-        # Add tag to the database if not already there
-        if not database.has_tag(tag_slug):
-            database.add_tag(tag, tag_slug, tag_color)
-        # Add post->tag mapping to database
-        database.add_tag_to_post(tag_slug, slug)
+        # Add tags to the database
+        for tag in tags:
+            # print ('Handling tag {}'.format(tag))
+            tag_slug = generate_slug(tag)
+            tag_color = generate_random_color()
+            # Add tag to the database if not already there
+            if not database.has_tag(tag_slug):
+                database.add_tag(tag, tag_slug, tag_color)
+            # Add post->tag mapping to database
+            database.add_tag_to_post(tag_slug, slug)
     
-    # TODO: VALIDATE?
-    
-    # Get path to where the article data will live ('/static/[slug]')
+    # Get path to where the post data will live on this filesystem ('...\static\[slug]')
     post_static_path = os.path.join(PATH_TO_STATIC, slug)
 
-    # Create the directory for the article data
+    # Create the directory for the post data
     try:
         os.mkdir(post_static_path)
-    except FileExistsError:  # TODO: THROW VALUEERROR
+    except FileExistsError:
         pass
         #print ('ERROR: Post directory already exists')
         #sys.exit(0)
 
-    # Get absolute path to the post image
-    img_abs_path = os.path.realpath(os.path.join(post_dir, post_img))
-    
-    # Make sure the image exists
-    if not (os.path.exists(img_abs_path) and os.path.isfile(img_abs_path)):
-        print ('ERROR: The image path "{}" is not a real file'.format(img_abs_path))  # TODO: RAISE EXCEPTION
-        sys.exit(0)
+    # Render the Markdown file to HTML
+    article_html, article_imgs = render_md_file(post_path, slug)  # TODO: IS THIS HANDLING BLANK LINES CORRECTLY?
 
-    # Build absolute path for the post image in the static directory
-    img_dest_path = os.path.join(post_static_path, post_img_name)
-    # print (img_dest_path)
-    # Copy the post image to the post directory 
-    shutil.copyfile(img_abs_path, img_dest_path)
+    # For the following images: convert to RGB, resize, and save as JPEG
+    # Size and save the post's featured image 
+    post_img = post_img.convert('RGB').resize(FEATURED_IMG_SIZE, Image.ANTIALIAS)
+    post_img.save(os.path.join(post_static_path, 'featured_img.jpg'), 'JPEG')
+    # Size and save the post's banner image 
+    post_banner = post_banner.convert('RGB').resize(BANNER_SIZE, Image.ANTIALIAS)
+    post_banner.save(os.path.join(post_static_path, 'banner.jpg'), 'JPEG')
+    # Size and save the post's thumbnail
+    post_thumbnail = post_thumbnail.convert('RGB')
+    post_thumbnail.thumbnail(THUMBNAIL_SIZE, Image.ANTIALIAS)
+    post_thumbnail.save(os.path.join(post_static_path, 'thumbnail.jpg'), 'JPEG')
 
     # Copy image files to the article's directory
     for img_path in article_imgs:
@@ -253,7 +280,6 @@ if __name__ == '__main__':
     
     # Write the html file to the article directory
     article_dest_path = os.path.join(post_static_path, slug) + '.html'
-    # print (article_dest_path)
     with open(article_dest_path, 'w') as html_file:
         html_file.write(article_html)
 
