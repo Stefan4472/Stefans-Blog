@@ -2,6 +2,7 @@
 
 <!-- Bootstrap reference: https://getbootstrap.com/docs/4.3/layout/grid/ -->
 {% block content %}
+
 <h1>{{ post['post_title'] }}</h1>
 {% if tags %}
 <h3 class="d-inline">
@@ -34,7 +35,8 @@
 </div>
 -->
 
-<!-- TODO: MAKE THIS LOOK BETTER. SEE THE ABOVE COMMENTED CODE FOR WHAT I WAS TRYING TO DO -->
+<!-- TODO: MAKE THIS LOOK BETTER. SEE THE ABOVE COMMENTED CODE FOR WHAT I WAS TRYING TO DO 
+ALSO: SHOULD IT INCLUDE THE THUMBNAILS FOR NEXT&PREVIOUS POSTS?-->
 <div class="row">
   <div class="col-6">
     {% if prev_post %}

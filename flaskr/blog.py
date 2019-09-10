@@ -89,7 +89,7 @@ def post_view(slug):
 
     # retrieve tags this post is tagged under
     tags = db.get_tags_by_post_slug(slug)
-
+    print (post['post_banner_url'])
     # TODO: SOME KIND OF FORMAT_TAG MACRO
     return render_template('blog/post.html', post=post, tags=tags, \
         post_html=post_html, banner_url=post['post_banner_url'], prev_post=prev_post, \

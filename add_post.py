@@ -40,7 +40,7 @@ FEATURED_IMG_SIZE = (2000, 1080)
 # Prescribed banner size
 BANNER_SIZE = (1928, 768)
 # Size of image thumbnails
-THUMBNAIL_SIZE = (128, 128)
+THUMBNAIL_SIZE = (640, 640)
 
 # generates a slug given a string
 # slugs are used to create urls
@@ -90,9 +90,9 @@ def render_md_file(file_path, img_save_dir):
         # TODO: HANDLE alt, and make this string a constant (?)
         # TODO: ANY WAY TO MAKE THE BACKGROUND COLOR OF THE CAPTION GRAY, AND LIMIT IT TO THE WIDTH OF THE TEXT?
         rendered_html = \
-r'''<figure class="figure">
+r'''<figure class="figure text-center">
 <img src="{}" class="figure-img img-fluid rounded" alt="">
-<figcaption class="figure-caption text-center"><em>{}</em></figcaption>
+<figcaption class="figure-caption" style="background-color: red;"><em>{}</em></figcaption>
 </figure>'''.format(img_url, img_caption)
         images.append(img_path)
         html_snippets.append(rendered_html)
@@ -217,9 +217,9 @@ if __name__ == '__main__':
     # Build URLs for the image, banner, and thumbnail.
     # They will have prescribed filenames ('image', 'banner', 'thumbnail') and will be    # TODO: NEED ACCESS TO URL_FOR()
     # converted to JPG
-    post_img_url = 'static/{}/featured_img.jpg'.format(slug)  #url_for('static', filename=slug + '/' + 'featured_img.jpg')
-    post_banner_url = 'static/{}/banner.jpg'.format(slug)  #url_for('static', filename=slug + '/' + 'banner.jpg')
-    post_thumbnail_url = 'static/{}/thumbnail.jpg'.format(slug)  #url_for('static', filename=slug + '/' + 'thumbnail.jpg')
+    post_img_url = '/static/{}/featured_img.jpg'.format(slug)  #url_for('static', filename=slug + '/' + 'featured_img.jpg')
+    post_banner_url = '/static/{}/banner.jpg'.format(slug)  #url_for('static', filename=slug + '/' + 'banner.jpg')
+    post_thumbnail_url = '/static/{}/thumbnail.jpg'.format(slug)  #url_for('static', filename=slug + '/' + 'thumbnail.jpg')
 
      # Get connection to the post database
     database = Database(PATH_TO_DATABASE)
