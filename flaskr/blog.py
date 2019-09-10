@@ -23,16 +23,6 @@ def logged_visit(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# # Registers a command-line function to initialize the search engine index.
-# # Run using "python -m flask init-search-engine"
-# @click.command('init-search-index')
-# @with_appcontext
-# def init_search_index_command():
-#     # Wipe the index file  TODO: THIS WILL FAIL IF THE INDEX DOESN'T EXIST
-#     open(current_app.config['SEARCH_INDEX_FILE'], 'w').close()
-#     click.echo('Initialized the search engine index.')
-
-
 @bp.route('/')
 @logged_visit
 def index():
@@ -96,13 +86,9 @@ def post_view(slug):
     # retrieve tags this post is tagged under
     tags = db.get_tags_by_post_slug(slug)
 
-    # Retrieve the path to the post's image
-    post_image = url_for('static', filename=slug + '/' + post['post_image'])
-    print (post_image)
-
     # TODO: SOME KIND OF FORMAT_TAG MACRO
     return render_template('blog/post.html', post=post, tags=tags, \
-        post_html=post_html, image_url=post_image, prev_post=prev_post, \
+        post_html=post_html, banner_url=post['post_banner_url'], prev_post=prev_post, \
         next_post=next_post)
 
 # show post widgets for all posts under the given tag

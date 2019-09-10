@@ -20,3 +20,8 @@
   background-color: black;
   text-align: center;
 }
+
+pre {
+  background-color: #d9d9d9;
+  padding: 1rem;
+}

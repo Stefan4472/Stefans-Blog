@@ -22,7 +22,7 @@
 			{% for i in range(0, featured_posts|length) %}
 			<div class="carousel-item {% if i == 0 %}active{% endif %} carousel-div">
 				<!-- TODO: THIS IS CLUMSY. 'POST_IMAGE' SHOULD BE CHANGED TO 'IMAGE_URL' AND HAVE THE FULL URL ALREADY CREATED -->
-				<a href="{{ url_for('blog.post_view', slug=featured_posts[i]['post_slug']) }}"><img src="{{ url_for('static', filename=featured_posts[i]['post_slug'] + '/' + featured_posts[i]['post_image']) }}" class="d-block carousel-image" alt="..."></a>
+				<a href="{{ url_for('blog.post_view', slug=featured_posts[i]['post_slug']) }}"><img src="{{ featured_posts[i]['post_image_url'] }}" class="d-block carousel-image" alt="..."></a>
 				<div class="carousel-caption text-left">
 					<h1>{{ featured_posts[i]['post_title'] }}</h1>
 					<p>{{ featured_posts[i]['post_byline'] }}</p>

@@ -10,7 +10,9 @@ create table Posts (
   post_byline text not null,
   post_slug text not null,
   post_date date not null,
-  post_image text not null
+  post_image_url text not null,
+  post_banner_url text not null,
+  post_thumbnail_url text not null
 );
 
 create table Tags (

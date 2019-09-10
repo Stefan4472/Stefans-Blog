@@ -226,7 +226,7 @@ if __name__ == '__main__':
 
     # Add post to the database.
     # This will fail if there is a problem with the post data
-    database.add_post(title, byline, slug, post_date, 'test') #, post_img_url, post_banner_url, post_thumbnail_url)
+    database.add_post(title, byline, slug, post_date, post_img_url, post_banner_url, post_thumbnail_url)
 
     if KEY_TAGS in post_data:
         tags = post_data[KEY_TAGS]

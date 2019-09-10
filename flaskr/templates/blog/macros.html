@@ -4,13 +4,32 @@ post: post data
 tags: list of tag data objects for the post
 -->
 {% macro post_widget(post, tags) -%}
-<h3><a href="{{ url_for('blog.post_view', slug=post['post_slug']) }}">{{ post['post_title'] }}</a></h3>
-<p><em> {{ post['post_date'] }}</em> {% if tags %}Tagged Under{% endif %}
-  {% for tag in tags %}
-    <span style="background-color: {{ tag['tag_color'] }}">
-    <a href="{{ url_for('blog.tag_view', slug=tag['tag_slug']) }}">{{ tag['tag_title'] }}</a>
-    </span>&nbsp
-  {% endfor %}
-</p>
-<p>{{ post['post_byline'] }}... <a href="{{ url_for('blog.post_view', slug=post['post_slug']) }}">Read More</a></p>
+
+<div class="card">
+  <div class="card-body">
+    <h2 class="card-title d-inline"><a style="text-decoration: none; color: black" href="{{ url_for('blog.post_view', slug=post['post_slug']) }}">{{ post['post_title'] }}</a></h2>
+    <!-- This is how you can set the color arbitrarily!-->
+    <h3 class="d-inline">
+      {% for tag in tags %}
+      <span class="badge badge-primary" style="background-color: {{ tag['tag_color'] }};">
+        <a class="link-override" href="{{ url_for('blog.tag_view', slug=tag['tag_slug']) }}">{{ tag['tag_title'] }}</a>
+      </span>
+      {% endfor %}
+    </h3>
+    <!-- Image thumbnail inline with text -->
+    <div class="row no-gutters">
+      <div class="col-md-1">
+        <a href="{{ url_for('blog.post_view', slug=post['post_slug']) }}">
+          <img src="{{ post['post_thumbnail_url'] }}" class="card-img">
+        </a>
+      </div>
+      <div class="col-md-11">
+        <!-- TODO: USE 'June 26, 2019' DATE FORMAT-->
+        <p class="card-text"><em>Posted by <a href="/about">Stefan Kussmaul</a> on {{ post['post_date'] }}</em></p>
+        <p class="card-text">{{ post['post_byline'] }}...</p>
+        <a href="{{ url_for('blog.post_view', slug=post['post_slug']) }}" class="btn btn-primary float-right">Read More</a>
+      </div>
+    </div>
+  </div>
+</div>
 {%- endmacro %}

@@ -5,8 +5,8 @@ def get_featured_posts(max_num=5):
     with open(current_app.config['FEATURED_POSTS_FILE'], 'r') as featured_file:
         for line in featured_file:
             line = line.lower().strip()
-            # Ignore commented lines
-            if line.startswith('#'):
+            # Ignore blank and commented lines
+            if not line or line.startswith('#'):
                 continue
             
             posts.append(line)
