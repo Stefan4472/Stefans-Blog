@@ -23,6 +23,10 @@ def logged_visit(f):
         return f(*args, **kwargs)
     return decorated_function
 
+# TODO: GET A LIST OF ALL BANNER URLS IN __INIT__
+# def get_random_banner_url():
+    # return 
+
 @bp.route('/')
 @logged_visit
 def index():

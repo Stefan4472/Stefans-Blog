@@ -1,25 +1,51 @@
 {% extends "blog/base_template.html" %}
 
+<!-- Bootstrap reference: https://getbootstrap.com/docs/4.3/layout/grid/ -->
 {% block content %}
 <h1>{{ post['post_title'] }}</h1>
-<p>Posted on {{ post['post_date'].strftime('%B %d, %Y') }}</p>
-<p>{% if tags %}Tagged Under{% else %}Untagged{% endif %}
-    {% for tag in tags %}
-      <span style="background-color: {{ tag['tag_color'] }}">
-      <a href="{{ url_for('blog.tag_view', slug=tag['tag_slug']) }}">{{ tag['tag_title'] }}</a>
-      </span>&nbsp
-    {% endfor %}
-</p>
+{% if tags %}
+<h3 class="d-inline">
+  {% for tag in tags %}
+  <span class="badge badge-primary" style="background-color: {{ tag['tag_color'] }};">
+    <a class="link-override" href="{{ url_for('blog.tag_view', slug=tag['tag_slug']) }}">{{ tag['tag_title'] }}</a>
+  </span>
+  {% endfor %}
+</h3>
+{% endif %}
+<p><em>Posted on {{ post['post_date'].strftime('%B %d, %Y') }}</em></p>
 <br>
-{{ post_html|safe }}
+<div id="post-content">  <!-- TODO: PUT ALL CONTENT IN A CARD, WITH 1px BORDER? -->
+  {{ post_html|safe }}
+</div>
 
-{% if prev_post %}
-<p>Previous Post: <a href="{{ url_for('blog.post_view', slug=prev_post['post_slug']) }}">{{ prev_post['post_title'] }}</a></p>
-{% endif %}
+<!--
+<div class="row">
+  <div class="col-6">
+    <span style="padding: 1rem; margin-top: 2rem;">
+      <i class="fa fa-chevron-left float-left"></i>
+      <a href="#" class="stretched-link">Previous Article: ARTICLE TITLE</a>
+    </span>
+    
+  </div>
+  <div class="col-6">
+    <i class="fa fa-chevron-right float-right"></i>
+    <p class="float-right">Next Article: ARTICLE TITLE</p>
+  </div>
+</div>
+-->
 
-{% if next_post %}
-<p>Next Post: <a href="{{ url_for('blog.post_view', slug=next_post['post_slug']) }}">{{ next_post['post_title'] }}</a></p>
-{% endif %}
-
+<!-- TODO: MAKE THIS LOOK BETTER. SEE THE ABOVE COMMENTED CODE FOR WHAT I WAS TRYING TO DO -->
+<div class="row">
+  <div class="col-6">
+    {% if prev_post %}
+    <p>Previous Post: <a href="{{ url_for('blog.post_view', slug=prev_post['post_slug']) }}">{{ prev_post['post_title'] }}</a></p>
+    {% endif %}
+  </div>
+  <div class="col-6">
+    {% if next_post %}
+    <p>Next Post: <a href="{{ url_for('blog.post_view', slug=next_post['post_slug']) }}">{{ next_post['post_title'] }}</a></p>
+    {% endif %}
+  </div>
+</div>
 
 {% endblock %}
