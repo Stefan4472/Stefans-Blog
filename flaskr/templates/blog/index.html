@@ -3,6 +3,12 @@
 
 {% block content %}
 
+<!-- TODO: SHORT BLURB ABOUT HOW I BUILT THIS WEBSITE FROM SCRATCH, ETC ETC-->
+<div class="jumbotron">
+	<h1 class="display-5">Hello world. Goodbye Wordpress!</h1>
+	<p class="lead">This blog runs on a platform I wrote in Python. You can read about the technical details <a href="#">here</a>, or check out the code <a href="#">here</a>. It was a lot of work, and it's not <em>quite</em> finished yet, so you might see some small bugs.</p>
+</div>
+
 {% if featured_posts %}
 <h3>Featured</h3>
 
@@ -21,11 +27,10 @@
 		<div class="carousel-inner">  <!-- TODO: GET THIS WORKING ONCE THERE ARE BANNER IMAGES -->
 			{% for i in range(0, featured_posts|length) %}
 			<div class="carousel-item {% if i == 0 %}active{% endif %} carousel-div">
-				<!-- TODO: THIS IS CLUMSY. 'POST_IMAGE' SHOULD BE CHANGED TO 'IMAGE_URL' AND HAVE THE FULL URL ALREADY CREATED -->
 				<a href="{{ url_for('blog.post_view', slug=featured_posts[i]['post_slug']) }}"><img src="{{ featured_posts[i]['post_image_url'] }}" class="d-block carousel-image" alt="..."></a>
 				<div class="carousel-caption text-left">
-					<h1>{{ featured_posts[i]['post_title'] }}</h1>
-					<p>{{ featured_posts[i]['post_byline'] }}</p>
+					<h1 style="background-color: black;">{{ featured_posts[i]['post_title'] }}</h1>
+					<p style="background-color: black;">{{ featured_posts[i]['post_byline'] }}</p>
 					<p><a class="btn btn-lg btn-primary" href="{{ url_for('blog.post_view', slug=featured_posts[i]['post_slug']) }}" role="button">Read More</a></p>
 				</div>
 			</div>

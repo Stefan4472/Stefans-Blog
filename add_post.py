@@ -2,6 +2,7 @@ import sys  # TODO: PUT THIS IN ITS OWN FOLDER? USE CLICK TO MAKE IT INTO A FLAS
 import re
 import os
 import shutil
+import pysftp
 from datetime import date, datetime
 from PIL import Image
 import json
@@ -21,6 +22,8 @@ PATH_TO_STATIC = os.path.realpath(os.path.join(this_dir, 'flaskr', 'static'))
 PATH_TO_DATABASE = os.path.realpath(os.path.join(this_dir, 'instance', 'posts.db'))
 # Path to the search engine's index file.
 PATH_TO_INDEX = os.path.realpath(os.path.join(this_dir, 'instance', 'index.json'))
+# Path to the secret file YES I KNOW IT SHOULDN'T BE A PLAIN TEXT FILE!!!
+PATH_TO_SECRET = os.path.realpath(os.path.join(this_dir, 'instance', 'secret.txt'))
 
 # Keys used in post-meta.json
 KEY_TITLE = 'title'
@@ -38,7 +41,7 @@ COLOR_GENERATOR = randomcolor.RandomColor()
 # Prescribed featured-image size
 FEATURED_IMG_SIZE = (2000, 1080)
 # Prescribed banner size
-BANNER_SIZE = (1928, 768)
+BANNER_SIZE = (1440, 600) # (1928, 768)
 # Size of image thumbnails
 THUMBNAIL_SIZE = (640, 640)
 
@@ -297,6 +300,56 @@ if __name__ == '__main__':
             database.commit()
             # Commit search engine index changes
             search_index.commit()
+
+            upload_input = input('Upload additions to server? (y/n)').strip().lower()
+            if upload_input == 'y':
+                # Read the secret file to get host information
+                try:
+                    with open(PATH_TO_SECRET) as secret_file:
+                        secret_data = json.load(secret_file)
+                        host = secret_data['host']
+                        username = secret_data['username']
+                        password = secret_data['password']
+                except IOError:
+                    print ('No secret file found')
+                    host = input('Enter host: ').strip()
+                    username = input('Enter username: ').strip()
+                    password = input('Enter password: ').strip()
+
+                print (host, username, password)
+                input()
+                # Push files to host, via SFTP
+                with pysftp.Connection(host, username=username, password=password) as sftp:
+                    print (sftp.listdir())
+                    input()
+                    with sftp.cd(r'/home/skussmaul/Stefans-Blog/flaskr/static'):
+                        print (sftp.listdir())
+                        input()
+                        # Create post directory on host
+                        sftp.mkdir(slug)
+                        print (sftp.listdir())
+                        input()
+                        with sftp.cd(slug):
+                            # Copy post data directory to host
+                            sftp.put_d(post_static_path)
+                            print (sftp.listdir())
+                    input()
+                    with sftp.cd(r'/home/skussmaul/Stefans-Blog/flaskr/instance'):
+                        # Copy instance files
+                        sftp.put(PATH_TO_DATABASE)
+                        sftp.put(PATH_TO_INDEX)
+                    input()
+                #  print (sftp.listdir())
+                #     input()
+                #     # Path to the post directory, on host
+                #     post_host_path = r'/home/skussmaul/Stefans-Blog/flaskr/static/{}'.format(slug)
+                #     # Create post directory on host
+                #     sftp.mkdir(post_host_path)
+                #     # Copy post data directory to host
+                #     sftp.put_d(post_static_path, post_host_path)
+                #     # Copy instance files
+                #     sftp.put(PATH_TO_DATABASE, remotepath=r'/home/skussmaul/Stefans-Blog/instance/posts.db')
+                #     sftp.put(PATH_TO_INDEX, remotepath=r'/home/skussmaul/Stefans-Blog/instance/index.json')
             break
         elif confirm_input == 'n':
             # Delete the created folder and exit

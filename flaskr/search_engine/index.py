@@ -150,9 +150,10 @@ def connect(filepath):
             #print (serialized_inv_list)
             inv_list = inverted_list_from_json(serialized_inv_list)
             index[inv_list.term] = inv_list  
-    # File not found: create a new file
+    # File not found: create a new file and populate with empty index and doc_data
     except FileNotFoundError:
         open(filepath, 'a').close()
+        Index(filepath).commit()
     
     return Index(filepath, index=index, doc_data=doc_data)
 

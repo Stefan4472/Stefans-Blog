@@ -9,6 +9,7 @@ venv\Scripts\activate
 pip install Flask
 pip install Pillow
 pip install randomcolor
+pip install pysftp
 ```
 
 To run the site:
