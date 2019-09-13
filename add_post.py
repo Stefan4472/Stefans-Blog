@@ -316,29 +316,36 @@ if __name__ == '__main__':
                     username = input('Enter username: ').strip()
                     password = input('Enter password: ').strip()
 
-                print (host, username, password)
-                input()
-                # Push files to host, via SFTP
+                # Push files to PythonAnywhere, via SFTP
+                # SFTP instructions for PythonAnywhere: https://help.pythonanywhere.com/pages/SSHAccess
+                # From cmd, the following correctly copies the 'inventory-systems' folder to PythonAnywhere:
+                # 'put -r flaskr/static/inventory-systems Stefans-Blog/flaskr/static/inventory-systems'
                 with pysftp.Connection(host, username=username, password=password) as sftp:
-                    print (sftp.listdir())
-                    input()
+                    # Create post directory on host and copy post files
                     with sftp.cd(r'/home/skussmaul/Stefans-Blog/flaskr/static'):
-                        print (sftp.listdir())
-                        input()
+                        print(sftp.listdir())
                         # Create post directory on host
-                        sftp.mkdir(slug)
-                        print (sftp.listdir())
-                        input()
+                        try:
+                            sftp.mkdir(slug)
+                        except IOError:
+                            print ('Warning: The directory already exists') 
+                        print(sftp.listdir())
+                        # Enter post directory
                         with sftp.cd(slug):
-                            # Copy post data directory to host
-                            sftp.put_d(post_static_path)
-                            print (sftp.listdir())
-                    input()
-                    with sftp.cd(r'/home/skussmaul/Stefans-Blog/flaskr/instance'):
-                        # Copy instance files
+                            # Copy all files in 'post_static_path' to host.
+                            # This is a workaround because the 'put_d' (put directory) command is not working.
+                            for file_to_copy in os.listdir(post_static_path):
+                                print ('Copying {}'.format(file_to_copy))
+                                sftp.put(os.path.join(post_static_path, file_to_copy))
+                            print(sftp.listdir())
+                    print (sftp.listdir())
+                    # Copy instance files
+                    with sftp.cd(r'/home/skussmaul/Stefans-Blog/instance'):
+                        print (sftp.listdir())
+                        print (PATH_TO_DATABASE)
+                        print (PATH_TO_INDEX)
                         sftp.put(PATH_TO_DATABASE)
                         sftp.put(PATH_TO_INDEX)
-                    input()
                 #  print (sftp.listdir())
                 #     input()
                 #     # Path to the post directory, on host

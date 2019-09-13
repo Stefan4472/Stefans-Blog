@@ -4,7 +4,7 @@ post: post data
 tags: list of tag data objects for the post
 -->
 {% macro post_widget(post, tags) -%}
-<div class="card">
+<div class="card" style="border-color: #DDDDDD;">
   <div class="card-body">
     <h2 class="card-title d-inline"><a style="text-decoration: none; color: black" href="{{ url_for('blog.post_view', slug=post['post_slug']) }}">{{ post['post_title'] }}</a></h2>
     <!-- This is how you can set the color arbitrarily!-->
