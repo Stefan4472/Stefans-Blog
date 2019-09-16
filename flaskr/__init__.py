@@ -53,13 +53,13 @@ def init_app(app):
 
 # command-line function to re-init the database to the
 # original schema. Run using "flask init-db"
-@click.command('init-db')
+@click.command('init_db')
 @with_appcontext
 def init_db_command():
     database.init_db()
     click.echo('Initialized the database.')
 
-@click.command('init-search-index')
+@click.command('init_search_index')
 @with_appcontext
 def init_search_index_command():
     search_index = None

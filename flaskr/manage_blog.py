@@ -34,6 +34,8 @@ BANNER_SIZE = (1440, 600) # (1928, 768)
 # Size of image thumbnails
 THUMBNAIL_SIZE = (640, 640)
 
+DEFAULT_IMG_SIZE = (640, 480)
+
 # generates a slug given a string
 # slugs are used to create urls
 def generate_slug(string):
@@ -111,12 +113,13 @@ def copy_to_static(file_path, static_path):  # TODO: IMPROVE
     # Copy the image to the folder
     shutil.copyfile(file_path, dest_path)
 
-@click.command('add-post')
+@click.command('add_post')
 @click.argument('post_dir')
-@click.option('--upload', default=False, help='Whether to upload the post to PythonAnywhere')
-@click.option('--quiet', default=False, help='Whether to suppress print statements and confirmation promts')
+@click.option('--upload', is_flag=True, default=False, help='Whether to upload the post to PythonAnywhere')
+@click.option('--quiet', is_flag=True, default=False, help='Whether to suppress print statements and confirmation promts')
+@click.option('--compress_imgs', is_flag=True, default=True, help='Whether to resize images to {} and convert to JPG'.format(DEFAULT_IMG_SIZE))
 @with_appcontext
-def add_post(post_dir, upload, quiet):
+def add_post(post_dir, upload, quiet, compress_imgs):
     # If provided path is not a directory, treat it as a relative path from
     # the path the script was executed from
     if not os.path.isdir(post_dir):
@@ -257,7 +260,7 @@ def add_post(post_dir, upload, quiet):
         else:
             confirm_use_dir = 'n'
             while confirm_use_dir != 'y':
-                confirm_use_dir = input('The post directory "{}" already exists. Continue? (y/n)').strip().lower()
+                confirm_use_dir = input('The post directory "{}" already exists. Continue? (y/n)'.format(post_static_path)).strip().lower()
                 if confirm_use_dir == 'n':
                     print('No changes made')
                     sys.exit(0)
@@ -285,8 +288,18 @@ def add_post(post_dir, upload, quiet):
         
         # Get absolute path to image
         abs_path = os.path.realpath(os.path.join(post_dir, img_path))
-        # Copy to the post's static directory
-        copy_to_static(abs_path, post_static_path)
+
+        if compress_imgs and not img_path.endswith('.gif'):
+            if not quiet:
+                print ('Converting {}'.format(abs_path))
+            save_path = os.path.join(post_static_path, os.path.basename(abs_path)) #os.path.splitext(abs_path)[0] + '.jpg')  # TODO: CONVERT ALL IMAGES TO JPEG
+            img = Image.open(abs_path)
+            #img = img.convert('RGB')
+            img.thumbnail(DEFAULT_IMG_SIZE, Image.ANTIALIAS)
+            img.save(save_path)
+        else:
+            # Copy to the post's static directory
+            copy_to_static(abs_path, post_static_path)
     
     # Write the html file to the article directory
     article_dest_path = os.path.join(post_static_path, slug) + '.html'
@@ -328,6 +341,9 @@ def add_post(post_dir, upload, quiet):
             username = input('Enter username: ').strip()
             password = input('Enter password: ').strip()
 
+        if not quiet:
+            print ('Initiating SFTP connection with {}...'.format(host))
+
         # Push files to PythonAnywhere, via SFTP
         # SFTP instructions for PythonAnywhere: https://help.pythonanywhere.com/pages/SSHAccess
         # From cmd, the following correctly copies the 'inventory-systems' folder to PythonAnywhere:
@@ -345,7 +361,8 @@ def add_post(post_dir, upload, quiet):
                     # Copy all files in 'post_static_path' to host.
                     # This is a workaround because the 'put_d' (put directory) command is not working.
                     for file_to_copy in os.listdir(post_static_path):
-                        print ('Copying {}'.format(file_to_copy))
+                        if not quiet:
+                            print ('Uploading {}...'.format(file_to_copy))
                         sftp.put(os.path.join(post_static_path, file_to_copy))
             # Copy instance files
             with sftp.cd(r'/home/skussmaul/Stefans-Blog/instance'):
