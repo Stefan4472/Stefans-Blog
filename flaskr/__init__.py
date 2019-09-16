@@ -1,20 +1,22 @@
 import os
+import sys
 import click
 from flask import Flask, current_app, g
 from flask.cli import with_appcontext
 from . import database
 from . import blog
 from .search_engine import index 
+from .manage_blog import add_post
 
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
-        SECRET_KEY='dev',
-        DATABASE=os.path.join(app.instance_path, 'posts.db'),
-        VISIT_LOG=os.path.join(app.instance_path, 'sitelog.txt'),
-        FEATURED_POSTS_FILE=os.path.join(app.instance_path, 'featured_posts.txt'),
-        SEARCH_INDEX_FILE=os.path.join(app.instance_path, 'index.json'),
+        DATABASE_PATH=os.path.join(app.instance_path, 'posts.db'),
+        SITE_LOG_PATH=os.path.join(app.instance_path, 'sitelog.txt'),
+        FEATURED_POSTS_PATH=os.path.join(app.instance_path, 'featured_posts.txt'),
+        SEARCH_INDEX_PATH=os.path.join(app.instance_path, 'index.json'),
+        SECRET_PATH=os.path.join(app.instance_path, 'secret.txt')  # YES I KNOW THIS SHOULDN'T BE PLAIN TEXT
     )
 
     # Load the instance config, if it exists, when not testing
@@ -38,7 +40,7 @@ def create_app(test_config=None):
     app.add_url_rule('/', endpoint='index')
 
     # Init search engine instance and attach it to the 'app' object
-    app.search_engine = index.connect(app.config['SEARCH_INDEX_FILE'])
+    app.search_engine = index.connect(app.config['SEARCH_INDEX_PATH'])
 
     return app
 
@@ -47,6 +49,7 @@ def init_app(app):
     app.teardown_appcontext(database.close_db)
     app.cli.add_command(init_db_command)
     app.cli.add_command(init_search_index_command)
+    app.cli.add_command(add_post)
 
 # command-line function to re-init the database to the
 # original schema. Run using "flask init-db"

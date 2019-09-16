@@ -2,7 +2,7 @@ from flask import request, current_app
 
 def get_featured_posts(max_num=5):
     posts = []
-    with open(current_app.config['FEATURED_POSTS_FILE'], 'r') as featured_file:
+    with open(current_app.config['FEATURED_POSTS_PATH'], 'r') as featured_file:
         for line in featured_file:
             line = line.lower().strip()
             # Ignore blank and commented lines

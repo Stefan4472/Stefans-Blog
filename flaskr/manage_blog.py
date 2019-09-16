@@ -2,28 +2,17 @@ import sys  # TODO: PUT THIS IN ITS OWN FOLDER? USE CLICK TO MAKE IT INTO A FLAS
 import re
 import os
 import shutil
+import click
 import pysftp
 from datetime import date, datetime
+from flask import current_app, url_for
+from flask.cli import with_appcontext
 from PIL import Image
 import json
 import markdown2 as md
 import randomcolor
 from flaskr.database import Database
 import flaskr.search_engine.index as index  # TODO: BETTER IMPORTS
-
-# Path to the directory this script is being executed in 
-this_dir = os.path.dirname(os.path.abspath(__file__))
-
-# Path to the static folder.
-# A new directory will be created in the static folder under this post's slug.
-# Note that this can handle relative paths, including those that start with '../'
-PATH_TO_STATIC = os.path.realpath(os.path.join(this_dir, 'flaskr', 'static'))
-# Path to the database.
-PATH_TO_DATABASE = os.path.realpath(os.path.join(this_dir, 'instance', 'posts.db'))
-# Path to the search engine's index file.
-PATH_TO_INDEX = os.path.realpath(os.path.join(this_dir, 'instance', 'index.json'))
-# Path to the secret file YES I KNOW IT SHOULDN'T BE A PLAIN TEXT FILE!!!
-PATH_TO_SECRET = os.path.realpath(os.path.join(this_dir, 'instance', 'secret.txt'))
 
 # Keys used in post-meta.json
 KEY_TITLE = 'title'
@@ -68,7 +57,7 @@ def render_md_file(file_path, img_save_dir):
     last_match_index = 0
 
     # print ('Reading file...')
-    with open(file_path, 'r', encoding='utf8') as md_file:
+    with open(file_path, 'r', encoding='utf-8', errors='strict') as md_file:
         md_text = md_file.read()
     
     # Iterate through '[figure: ]' instances, which must be handled specially.
@@ -78,8 +67,8 @@ def render_md_file(file_path, img_save_dir):
         end = figure_match.end()
         
         # Render the Markdown between the end of the last figure match and the start of
-        # this figure match
-        if start != last_match_index + 1:
+        # this figure match (if it is non-whitespace)
+        if (start != last_match_index + 1) and md_text[last_match_index + 1 : start].strip():
             rendered_html = md.markdown(md_text[last_match_index + 1 : start], extras=['fenced-code-blocks'])
             html_snippets.append(rendered_html)
             #print (rendered_html)
@@ -122,19 +111,25 @@ def copy_to_static(file_path, static_path):  # TODO: IMPROVE
     # Copy the image to the folder
     shutil.copyfile(file_path, dest_path)
 
-if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print ('ERROR: Expected an argument, /abs/path/to/post/folder')
-        sys.exit()
-
-    post_dir = sys.argv[1]
-    print ('Got post directory "{}"'.format(post_dir))
+@click.command('add-post')
+@click.argument('post_dir')
+@click.option('--upload', default=False, help='Whether to upload the post to PythonAnywhere')
+@click.option('--quiet', default=False, help='Whether to suppress print statements and confirmation promts')
+@with_appcontext
+def add_post(post_dir, upload, quiet):
+    # If provided path is not a directory, treat it as a relative path from
+    # the path the script was executed from
+    if not os.path.isdir(post_dir):
+        post_path = os.path.realpath(os.path.join(sys.argv[0], post_dir))
 
     # Ensure the provided path is a directory that exists 
     if not os.path.isdir(post_dir):
         print ('ERROR: The provided path is not a directory or does not exist')
         sys.exit()
 
+    if not quiet:
+        print ('Got post directory "{}"'.format(post_dir))
+    
     # Determine absolute path to the post file and the metadata file
     post_path = os.path.join(post_dir, 'post.md')
     meta_path = os.path.join(post_dir, 'post-meta.json')
@@ -153,7 +148,7 @@ if __name__ == '__main__':
 
     # Read the Markdown file 
     try:
-        with open(post_path, 'r', encoding='utf8') as post_file:
+        with open(post_path, 'r', encoding='utf8', errors='strict') as post_file:
             post_markdown = post_file.read()
     except IOError:
         print ('ERROR: Could not read the post file ("{}")'.format(post_path))
@@ -171,7 +166,8 @@ if __name__ == '__main__':
         byline = post_data[KEY_BYLINE]
         # Make sure byline is not more than 200 characters
         if len(byline) > 200:
-            print ('Trimming byline to 200 characters')
+            if not quiet:
+                print ('Trimming byline to 200 characters')
             byline = byline[:200]
     else:
         # Just take the first 200 characters of Markdown
@@ -196,6 +192,7 @@ if __name__ == '__main__':
     # Get post image
     if KEY_IMAGE in post_data:
         post_img_path = os.path.realpath(os.path.join(post_dir, post_data[KEY_IMAGE]))
+        post_img_type = os.path.splitext(post_img_path)[1]
         post_img = Image.open(post_img_path)
     else:
         print ('ERROR: post-meta.json must contain a "{}" field'.format(KEY_IMAGE))
@@ -204,28 +201,30 @@ if __name__ == '__main__':
     # Get banner image
     if KEY_BANNER in post_data:
         post_banner_path = os.path.realpath(os.path.join(post_dir, post_data[KEY_BANNER]))
+        post_banner_type = os.path.splitext(post_banner_path)[1]
         post_banner = Image.open(post_banner_path)
     else:
-        print ('ERROR: post-meta.json must contain a "{}" field'.format(KEY_BANNER))
-        sys.exit()
+        # No banner specified: use the post's image, which will be resized later
+        post_banner_type = post_img_type
+        post_banner = post_img.copy()
 
     if KEY_THUMBNAIL in post_data:
         post_thumbnail_path = os.path.realpath(os.path.join(post_dir, post_data[KEY_THUMBNAIL]))
+        post_thumbnail_type = os.path.splitext(post_thumbnail_path)[1]
         post_thumbnail = Image.open(post_thumbnail_path)
     else:
-        # No thumbnail specified: load the post's image. It will be made into 
-        # a thumbnail later
-        post_thumbnail = Image.open(post_img_path)
+        # No thumbnail specified: load the post's image, which will be resized later
+        post_thumbnail_type = post_img_type
+        post_thumbnail = post_img.copy()
 
     # Build URLs for the image, banner, and thumbnail.
-    # They will have prescribed filenames ('image', 'banner', 'thumbnail') and will be    # TODO: NEED ACCESS TO URL_FOR()
-    # converted to JPG
-    post_img_url = '/static/{}/featured_img.jpg'.format(slug)  #url_for('static', filename=slug + '/' + 'featured_img.jpg')
-    post_banner_url = '/static/{}/banner.jpg'.format(slug)  #url_for('static', filename=slug + '/' + 'banner.jpg')
-    post_thumbnail_url = '/static/{}/thumbnail.jpg'.format(slug)  #url_for('static', filename=slug + '/' + 'thumbnail.jpg')
-
-     # Get connection to the post database
-    database = Database(PATH_TO_DATABASE)
+    # They will have prescribed filenames ('image', 'banner', 'thumbnail') 
+    post_img_url = current_app.static_url_path + '/' + slug + '/featured_img' + post_img_type
+    post_banner_url = current_app.static_url_path + '/' + slug + '/banner' + post_banner_type
+    post_thumbnail_url = current_app.static_url_path + '/' + slug + '/thumbnail' + post_thumbnail_type
+    
+    # Get connection to the post database
+    database = Database(current_app.config['DATABASE_PATH'])
 
     # Add post to the database.
     # This will fail if there is a problem with the post data
@@ -245,30 +244,38 @@ if __name__ == '__main__':
             database.add_tag_to_post(tag_slug, slug)
     
     # Get path to where the post data will live on this filesystem ('...\static\[slug]')
-    post_static_path = os.path.join(PATH_TO_STATIC, slug)
+    post_static_path = os.path.join(current_app.static_folder, slug)
 
     # Create the directory for the post data
     try:
         os.mkdir(post_static_path)
     except FileExistsError:
-        pass
-        #print ('ERROR: Post directory already exists')
-        #sys.exit(0)
+        # Ignore if quiet option set
+        if quiet:
+            pass
+        # Ask user for confirmation before continuing
+        else:
+            confirm_use_dir = 'n'
+            while confirm_use_dir != 'y':
+                confirm_use_dir = input('The post directory "{}" already exists. Continue? (y/n)').strip().lower()
+                if confirm_use_dir == 'n':
+                    print('No changes made')
+                    sys.exit(0)
 
-    # Render the Markdown file to HTML
+    # Render the Markdown file to HTML  NOTE: THE FILE HAS ALREADY BEEN READ!
     article_html, article_imgs = render_md_file(post_path, slug)  # TODO: IS THIS HANDLING BLANK LINES CORRECTLY?
 
     # For the following images: convert to RGB, resize, and save as JPEG
     # Size and save the post's featured image 
-    post_img = post_img.convert('RGB').resize(FEATURED_IMG_SIZE, Image.ANTIALIAS)
-    post_img.save(os.path.join(post_static_path, 'featured_img.jpg'), 'JPEG')
+    post_img = post_img.resize(FEATURED_IMG_SIZE, Image.ANTIALIAS)
+    post_img.save(os.path.join(post_static_path, 'featured_img' + post_img_type))
     # Size and save the post's banner image 
-    post_banner = post_banner.convert('RGB').resize(BANNER_SIZE, Image.ANTIALIAS)
-    post_banner.save(os.path.join(post_static_path, 'banner.jpg'), 'JPEG')
+    post_banner = post_banner.resize(BANNER_SIZE, Image.ANTIALIAS)
+    post_banner.save(os.path.join(post_static_path, 'banner' + post_banner_type))
     # Size and save the post's thumbnail
-    post_thumbnail = post_thumbnail.convert('RGB')
+    # post_thumbnail = post_thumbnail.convert('RGB')
     post_thumbnail.thumbnail(THUMBNAIL_SIZE, Image.ANTIALIAS)
-    post_thumbnail.save(os.path.join(post_static_path, 'thumbnail.jpg'), 'JPEG')
+    post_thumbnail.save(os.path.join(post_static_path, 'thumbnail' + post_thumbnail_type))
 
     # Copy image files to the article's directory
     for img_path in article_imgs:
@@ -288,82 +295,59 @@ if __name__ == '__main__':
 
     # Add the file to the search engine's index.   # TODO: BREAK EACH OF THESE TASKS INTO A SEPARATE FUNCTION
     # We can index the Markdown file.
-    search_index = index.connect(PATH_TO_INDEX)
+    search_index = index.connect(current_app.config['SEARCH_INDEX_PATH'])
     search_index.index_file(post_path, slug)
     
-    print ('Retrieved from database, I got: {}'.format(database.get_post_by_slug(slug)[:]))
+    if not quiet:
+        print ('Retrieved from database, I got: {}'.format(database.get_post_by_slug(slug)[:]))
+        confirm_input = 'n'
+        while confirm_input != 'y':
+            confirm_input = input('Commit changes? (y/n)').strip().lower()
+            if confirm_input == 'n':
+                # Delete the created folder and exit
+                shutil.rmtree(post_static_path)
+                print ('Aborted committing post. Files in the static folder have been deleted.')
+                sys.exit(0)
 
-    while True:
-        confirm_input = input('Commit changes? (y/n)').strip().lower()
-        if confirm_input == 'y':
-            # Commit database changes
-            database.commit()
-            # Commit search engine index changes
-            search_index.commit()
+    # Commit database changes
+    database.commit()
+    # Commit search engine index changes
+    search_index.commit()
 
-            upload_input = input('Upload additions to server? (y/n)').strip().lower()
-            if upload_input == 'y':
-                # Read the secret file to get host information
+    if upload:
+        # Read the secret file to get host information
+        try:
+            with open(current_app.config['SECRET_PATH']) as secret_file:
+                secret_data = json.load(secret_file)
+                host = secret_data['host']
+                username = secret_data['username']
+                password = secret_data['password']
+        except IOError:
+            print ('No secret file found')
+            host = input('Enter host: ').strip()
+            username = input('Enter username: ').strip()
+            password = input('Enter password: ').strip()
+
+        # Push files to PythonAnywhere, via SFTP
+        # SFTP instructions for PythonAnywhere: https://help.pythonanywhere.com/pages/SSHAccess
+        # From cmd, the following correctly copies the 'inventory-systems' folder to PythonAnywhere:
+        # 'put -r flaskr/static/inventory-systems Stefans-Blog/flaskr/static/inventory-systems'
+        with pysftp.Connection(host, username=username, password=password) as sftp:
+            # Create post directory on host and copy post files
+            with sftp.cd(r'/home/skussmaul/Stefans-Blog/flaskr/static'):
+                # Create post directory on host
                 try:
-                    with open(PATH_TO_SECRET) as secret_file:
-                        secret_data = json.load(secret_file)
-                        host = secret_data['host']
-                        username = secret_data['username']
-                        password = secret_data['password']
+                    sftp.mkdir(slug)
                 except IOError:
-                    print ('No secret file found')
-                    host = input('Enter host: ').strip()
-                    username = input('Enter username: ').strip()
-                    password = input('Enter password: ').strip()
-
-                # Push files to PythonAnywhere, via SFTP
-                # SFTP instructions for PythonAnywhere: https://help.pythonanywhere.com/pages/SSHAccess
-                # From cmd, the following correctly copies the 'inventory-systems' folder to PythonAnywhere:
-                # 'put -r flaskr/static/inventory-systems Stefans-Blog/flaskr/static/inventory-systems'
-                with pysftp.Connection(host, username=username, password=password) as sftp:
-                    # Create post directory on host and copy post files
-                    with sftp.cd(r'/home/skussmaul/Stefans-Blog/flaskr/static'):
-                        print(sftp.listdir())
-                        # Create post directory on host
-                        try:
-                            sftp.mkdir(slug)
-                        except IOError:
-                            print ('Warning: The directory already exists') 
-                        print(sftp.listdir())
-                        # Enter post directory
-                        with sftp.cd(slug):
-                            # Copy all files in 'post_static_path' to host.
-                            # This is a workaround because the 'put_d' (put directory) command is not working.
-                            for file_to_copy in os.listdir(post_static_path):
-                                print ('Copying {}'.format(file_to_copy))
-                                sftp.put(os.path.join(post_static_path, file_to_copy))
-                            print(sftp.listdir())
-                    print (sftp.listdir())
-                    # Copy instance files
-                    with sftp.cd(r'/home/skussmaul/Stefans-Blog/instance'):
-                        print (sftp.listdir())
-                        print (PATH_TO_DATABASE)
-                        print (PATH_TO_INDEX)
-                        sftp.put(PATH_TO_DATABASE)
-                        sftp.put(PATH_TO_INDEX)
-                #  print (sftp.listdir())
-                #     input()
-                #     # Path to the post directory, on host
-                #     post_host_path = r'/home/skussmaul/Stefans-Blog/flaskr/static/{}'.format(slug)
-                #     # Create post directory on host
-                #     sftp.mkdir(post_host_path)
-                #     # Copy post data directory to host
-                #     sftp.put_d(post_static_path, post_host_path)
-                #     # Copy instance files
-                #     sftp.put(PATH_TO_DATABASE, remotepath=r'/home/skussmaul/Stefans-Blog/instance/posts.db')
-                #     sftp.put(PATH_TO_INDEX, remotepath=r'/home/skussmaul/Stefans-Blog/instance/index.json')
-            break
-        elif confirm_input == 'n':
-            # Delete the created folder and exit
-            shutil.rmtree(post_static_path)
-            print ('Aborted committing post. Files in the static folder have been deleted.')
-            sys.exit(0)
-        else:
-            print ('Not a valid input')
-
-    # TODO: PUSH NEW/UPDATED FILES TO THE SERVER
+                    print ('Warning: The directory already exists')
+                # Enter post directory
+                with sftp.cd(slug):
+                    # Copy all files in 'post_static_path' to host.
+                    # This is a workaround because the 'put_d' (put directory) command is not working.
+                    for file_to_copy in os.listdir(post_static_path):
+                        print ('Copying {}'.format(file_to_copy))
+                        sftp.put(os.path.join(post_static_path, file_to_copy))
+            # Copy instance files
+            with sftp.cd(r'/home/skussmaul/Stefans-Blog/instance'):
+                sftp.put(current_app.config['DATABASE_PATH'])
+                sftp.put(current_app.config['SEARCH_INDEX_PATH'])

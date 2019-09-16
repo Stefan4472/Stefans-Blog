@@ -99,8 +99,8 @@ class Database:
 # will be stored under 'db' in the current request object "g"
 def get_db():
     if 'db' not in g:
-        print ('Retrieving database at {}'.format(current_app.config['DATABASE']))
-        g.db = Database(current_app.config['DATABASE'])
+        print ('Retrieving database at {}'.format(current_app.config['DATABASE_PATH']))
+        g.db = Database(current_app.config['DATABASE_PATH'])
 
     return g.db
 
