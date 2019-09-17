@@ -34,7 +34,9 @@ def index():
     # Retrieve recent and featured posts
     recent_posts = db.get_recent_posts(5)
     featured_posts = [db.get_post_by_slug(slug) for slug in fp.get_featured_posts()]
-   
+    # Filter out any None values (occurs when a featured post slug is not found in the database)
+    featured_posts = [post for post in featured_posts if post]
+
     # Create dict mapping post_slug -> list of tags
     tags = { post['post_slug']: db.get_tags_by_post_slug(post['post_slug']) \
              for post in recent_posts + featured_posts }
@@ -77,10 +79,15 @@ def post_view(slug):
 
     # load post html TODO: FIGURE OUT HOW TO NOT HARDCODE THIS
     # THIS IS ACTUALLY NOT A STRAIGHTFORWARD THING TO FIX (AND ALSO NOT REALLY IMPORTANT FOR NOW)
-    static_dir = 'static' #url_for('static', filename='')
-    html_path = os.path.join(static_dir, slug, slug + '.html')
-    post_html = ''
-    with bp.open_resource(html_path, mode='r') as post_file:
+    # static_dir = 'static' #url_for('static', filename='')
+    # html_path = os.path.join(static_dir, slug, slug + '.html')
+    # post_html = ''
+    # with bp.open_resource(html_path, mode='r') as post_file:
+    #   post_html = render_template_string(post_file.read())
+
+    # Alternate possibility to address UTF-8 encoding issues
+    html_path = os.path.join(current_app.static_folder, slug, slug + '.html')  # TODO: CALL ALL HTML 'POST.HTML'
+    with open(html_path, encoding='utf-8', errors='strict') as post_file:
         post_html = render_template_string(post_file.read())
 
     # retrieve data for the posts before and after
@@ -89,8 +96,7 @@ def post_view(slug):
 
     # retrieve tags this post is tagged under
     tags = db.get_tags_by_post_slug(slug)
-    print (post['post_banner_url'])
-    # TODO: SOME KIND OF FORMAT_TAG MACRO
+    
     return render_template('blog/post.html', post=post, tags=tags, \
         post_html=post_html, banner_url=post['post_banner_url'], prev_post=prev_post, \
         next_post=next_post)

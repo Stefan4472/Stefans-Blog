@@ -33,5 +33,9 @@ Some links I need to read:
 - https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xvi-full-text-search
 - https://flask.palletsprojects.com/en/1.1.x/patterns/viewdecorators/
 - https://click.palletsprojects.com/en/5.x/quickstart/
+- https://getbootstrap.com/docs/4.0/content/images/
+- https://click.palletsprojects.com/en/7.x/options/
+- https://pillow.readthedocs.io/en/3.1.x/reference/Image.html
+- https://flask.palletsprojects.com/en/1.1.x/appcontext/
 
 Markdown guide: https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#headers

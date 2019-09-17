@@ -39,7 +39,7 @@ DEFAULT_IMG_SIZE = (640, 480)
 # generates a slug given a string
 # slugs are used to create urls
 def generate_slug(string):
-    return string.replace(' ', '-').replace(':', '').lower()
+    return string.replace(' ', '-').replace(':', '').replace(',', '').lower()
 
 def get_static_url(filepath):
     return '{{{{ url_for(\'static\', filename=\'{}\') }}}}'.format(filepath)
@@ -56,7 +56,7 @@ def render_md_file(file_path, img_save_dir):
     html_snippets = []
     images = []
     md_text = ''
-    last_match_index = 0
+    last_match_index = -1
 
     # print ('Reading file...')
     with open(file_path, 'r', encoding='utf-8', errors='strict') as md_file:
@@ -73,8 +73,6 @@ def render_md_file(file_path, img_save_dir):
         if (start != last_match_index + 1) and md_text[last_match_index + 1 : start].strip():
             rendered_html = md.markdown(md_text[last_match_index + 1 : start], extras=['fenced-code-blocks'])
             html_snippets.append(rendered_html)
-            #print (rendered_html)
-        
         # Render the figure
         img_path = figure_match.group(1)
         img_caption = figure_match.group(2)
@@ -84,10 +82,13 @@ def render_md_file(file_path, img_save_dir):
         # TODO: HANDLE alt, and make this string a constant (?)
         # TODO: ANY WAY TO MAKE THE BACKGROUND COLOR OF THE CAPTION GRAY, AND LIMIT IT TO THE WIDTH OF THE TEXT?
         rendered_html = \
-r'''<figure class="figure text-center">
-<img src="{}" class="figure-img img-fluid rounded" alt="">
-<figcaption class="figure-caption" style="background-color: red;"><em>{}</em></figcaption>
-</figure>'''.format(img_url, img_caption)
+'''
+<figure class="figure text-center">
+    <img src="{}" class="figure-img img-fluid" style="max-width: 100%; height: auto;" alt="">
+    <figcaption class="figure-caption" style="background-color: red;"><em>{}</em></figcaption>
+</figure>
+
+'''.format(img_url, img_caption)
         images.append(img_path)
         html_snippets.append(rendered_html)
         last_match_index = end
@@ -267,7 +268,7 @@ def add_post(post_dir, upload, quiet, compress_imgs):
 
     # Render the Markdown file to HTML  NOTE: THE FILE HAS ALREADY BEEN READ!
     article_html, article_imgs = render_md_file(post_path, slug)  # TODO: IS THIS HANDLING BLANK LINES CORRECTLY?
-
+    
     # For the following images: convert to RGB, resize, and save as JPEG
     # Size and save the post's featured image 
     post_img = post_img.resize(FEATURED_IMG_SIZE, Image.ANTIALIAS)
@@ -303,7 +304,7 @@ def add_post(post_dir, upload, quiet, compress_imgs):
     
     # Write the html file to the article directory
     article_dest_path = os.path.join(post_static_path, slug) + '.html'
-    with open(article_dest_path, 'w') as html_file:
+    with open(article_dest_path, 'w', encoding='utf-8', errors='strict') as html_file:
         html_file.write(article_html)
 
     # Add the file to the search engine's index.   # TODO: BREAK EACH OF THESE TASKS INTO A SEPARATE FUNCTION
