@@ -5,8 +5,11 @@
 
 <!-- The posts being shown are for a specific query -->
 {% if search_query %}
-	<p><em>This uses a search engine that I wrote myself!</em></p>
-	<h2>Showing {{ posts|length }} results for "{{ search_query }}":</h2>
+	<div class="jumbotron">
+		<h1 class="display-5">You are using StefanSearch</h1>
+		<p class="lead">These search results were generated using a search engine I wrote in Python. It uses an index to find all posts that have at least one of the search queries' terms, and then calculates their relevance using the QL language model.</p>
+	</div>
+	<h3>Showing {{ posts|length }} results for "{{ search_query }}":</h3>
 	{% for post in posts %}
 		{{ macros.post_widget(post, tags[post['post_slug']]) }}  <!-- TODO: Provide rank and score of each result-->
 	{% endfor %}

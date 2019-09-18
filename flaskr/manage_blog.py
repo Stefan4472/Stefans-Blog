@@ -36,10 +36,13 @@ THUMBNAIL_SIZE = (640, 640)
 
 DEFAULT_IMG_SIZE = (640, 480)
 
-# generates a slug given a string
-# slugs are used to create urls
+# Generates a slug given a string.
+# Slugs are used to create readable urls
 def generate_slug(string):
-    return string.replace(' ', '-').replace(':', '').replace(',', '').lower()
+    string = string.replace(' ', '-').lower()
+    # Remove any non letters, numbers, and non-dashes
+    return re.sub(r'[^a-zA-Z0-9\-\+]+', '', string)
+    #return string.replace(' ', '-').replace(':', '').replace(',', '').lower()
 
 def get_static_url(filepath):
     return '{{{{ url_for(\'static\', filename=\'{}\') }}}}'.format(filepath)
@@ -50,9 +53,12 @@ def generate_random_color():
 # Takes the path to a Markdown file, read it, and renders it to HTML.
 # Returns (rendered HTML as a string, list of image sources found in <img> tags).
 # This function will render images as Bootstrap figures. TODO: EXPLAIN HOW TO ADD A CAPTION
+# TODO: THIS WHOLE FUNCTION SHOULD BE CLEANED UP, AND SHOULDN'T DEAL WITH 'IMG_SAVE_DIR'
 def render_md_file(file_path, img_save_dir):
-    # Regex used to match custom "[figure]" lines
-    figure_regex = re.compile(r'\[figure: ([^,]+), ([^\]]+)]')
+    # Regex used to match custom "[figure]" lines.
+    # Match 1: image path
+    # Match 2: optional image caption
+    figure_regex = re.compile(r'\[figure: ([^,\]]+)(?:, ([^\]]+))?]')
     html_snippets = []
     images = []
     md_text = ''
@@ -73,22 +79,35 @@ def render_md_file(file_path, img_save_dir):
         if (start != last_match_index + 1) and md_text[last_match_index + 1 : start].strip():
             rendered_html = md.markdown(md_text[last_match_index + 1 : start], extras=['fenced-code-blocks'])
             html_snippets.append(rendered_html)
+
         # Render the figure
         img_path = figure_match.group(1)
         img_caption = figure_match.group(2)
         # print (img_path, img_caption)
         img_url = get_static_url(img_save_dir + '/' + os.path.basename(img_path))  # TODO: CLEAN UP
-        # print ('url is {}'.format(img_url))
+
+        # Render with caption
         # TODO: HANDLE alt, and make this string a constant (?)
         # TODO: ANY WAY TO MAKE THE BACKGROUND COLOR OF THE CAPTION GRAY, AND LIMIT IT TO THE WIDTH OF THE TEXT?
-        rendered_html = \
+        if img_caption:
+            rendered_html = \
 '''
 <figure class="figure text-center">
     <img src="{}" class="figure-img img-fluid" style="max-width: 100%; height: auto;" alt="">
-    <figcaption class="figure-caption" style="background-color: red;"><em>{}</em></figcaption>
+    <figcaption class="figure-caption" style="background-color: #EEEEEE;"><em>{}</em></figcaption>
 </figure>
 
 '''.format(img_url, img_caption)
+        # Render without caption
+        else:
+            rendered_html = \
+'''
+<figure class="figure text-center">
+    <img src="{}" class="figure-img img-fluid" style="max-width: 100%; height: auto;" alt="">
+</figure>
+
+'''.format(img_url)
+        
         images.append(img_path)
         html_snippets.append(rendered_html)
         last_match_index = end
@@ -121,6 +140,7 @@ def copy_to_static(file_path, static_path):  # TODO: IMPROVE
 @click.option('--compress_imgs', is_flag=True, default=True, help='Whether to resize images to {} and convert to JPG'.format(DEFAULT_IMG_SIZE))
 @with_appcontext
 def add_post(post_dir, upload, quiet, compress_imgs):
+    print('\n{}'.format(post_dir))
     # If provided path is not a directory, treat it as a relative path from
     # the path the script was executed from
     if not os.path.isdir(post_dir):
@@ -144,7 +164,7 @@ def add_post(post_dir, upload, quiet, compress_imgs):
 
     # Read the metadata file
     try:
-        with open(meta_path, 'r') as meta_file:
+        with open(meta_path, 'r', encoding='utf-8', errors='strict') as meta_file:
             post_data = json.load(meta_file)
     except IOError:
         print ('ERROR: Could not read the meta-data file ("{}")'.format(meta_path))
@@ -152,7 +172,7 @@ def add_post(post_dir, upload, quiet, compress_imgs):
 
     # Read the Markdown file 
     try:
-        with open(post_path, 'r', encoding='utf8', errors='strict') as post_file:
+        with open(post_path, 'r', encoding='utf-8', errors='strict') as post_file:
             post_markdown = post_file.read()
     except IOError:
         print ('ERROR: Could not read the post file ("{}")'.format(post_path))
