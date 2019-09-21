@@ -11,10 +11,6 @@ python -m flask add_post C:\Users\Stefan\Github\Blog-Content\StudyAbroad\pre-dep
 python -m flask add_post C:\Users\Stefan\Github\Blog-Content\StudyAbroad\welcome-week --quiet
 python -m flask add_post C:\Users\Stefan\Github\Blog-Content\StudyAbroad\sweden-gets-normal --quiet
 python -m flask add_post C:\Users\Stefan\Github\Blog-Content\StudyAbroad\act-1-scene-1 --quiet
-python -m flask add_post C:\Users\Stefan\Github\Blog-Content\StudyAbroad\a-swedish-september --quiet
-python -m flask add_post C:\Users\Stefan\Github\Blog-Content\StudyAbroad\another-month-in-uppsala --quiet
-python -m flask add_post C:\Users\Stefan\Github\Blog-Content\StudyAbroad\december-already --quiet
-python -m flask add_post C:\Users\Stefan\Github\Blog-Content\StudyAbroad\life-is-good --quiet
 set FLASK_APP=flaskr
 set FLASK_ENV=development
 python -m flask run

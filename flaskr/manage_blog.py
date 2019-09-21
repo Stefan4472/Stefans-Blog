@@ -32,7 +32,7 @@ FEATURED_IMG_SIZE = (2000, 1080)
 # Prescribed banner size
 BANNER_SIZE = (1440, 600) # (1928, 768)
 # Size of image thumbnails
-THUMBNAIL_SIZE = (640, 640)
+THUMBNAIL_SIZE = (800, 600)
 
 DEFAULT_IMG_SIZE = (640, 480)
 
@@ -42,13 +42,12 @@ def generate_slug(string):
     string = string.replace(' ', '-').lower()
     # Remove any non letters, numbers, and non-dashes
     return re.sub(r'[^a-zA-Z0-9\-\+]+', '', string)
-    #return string.replace(' ', '-').replace(':', '').replace(',', '').lower()
 
 def get_static_url(filepath):
     return '{{{{ url_for(\'static\', filename=\'{}\') }}}}'.format(filepath)
 
 def generate_random_color():
-    return COLOR_GENERATOR.generate(luminosity='light', count=1)[0]  # TODO: USE 'light' or 'bright' LUMINOSITY?
+    return COLOR_GENERATOR.generate(luminosity='light', count=1)[0]
 
 # Takes the path to a Markdown file, read it, and renders it to HTML.
 # Returns (rendered HTML as a string, list of image sources found in <img> tags).
@@ -291,7 +290,7 @@ def add_post(post_dir, upload, quiet, compress_imgs):
     
     # For the following images: convert to RGB, resize, and save as JPEG
     # Size and save the post's featured image 
-    post_img = post_img.resize(FEATURED_IMG_SIZE, Image.ANTIALIAS)
+    post_img = post_img.resize(FEATURED_IMG_SIZE, Image.ANTIALIAS)  # TODO: THUMBNAIL
     post_img.save(os.path.join(post_static_path, 'featured_img' + post_img_type))
     # Size and save the post's banner image 
     post_banner = post_banner.resize(BANNER_SIZE, Image.ANTIALIAS)

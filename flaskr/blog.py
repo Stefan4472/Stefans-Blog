@@ -77,14 +77,6 @@ def post_view(slug):
     if not post:
         abort(404)
 
-    # load post html TODO: FIGURE OUT HOW TO NOT HARDCODE THIS
-    # THIS IS ACTUALLY NOT A STRAIGHTFORWARD THING TO FIX (AND ALSO NOT REALLY IMPORTANT FOR NOW)
-    # static_dir = 'static' #url_for('static', filename='')
-    # html_path = os.path.join(static_dir, slug, slug + '.html')
-    # post_html = ''
-    # with bp.open_resource(html_path, mode='r') as post_file:
-    #   post_html = render_template_string(post_file.read())
-
     # Alternate possibility to address UTF-8 encoding issues
     html_path = os.path.join(current_app.static_folder, slug, slug + '.html')  # TODO: CALL ALL HTML 'POST.HTML'
     with open(html_path, encoding='utf-8', errors='strict') as post_file:
@@ -106,10 +98,17 @@ def post_view(slug):
 @logged_visit
 def tag_view(slug):
     db = get_db()
+    # Make sure the queried tag exists
     if not db.has_tag(slug):
         abort(404)
+
     tag_title = db.get_tag_by_tagslug(slug)['tag_title']
+    # Get list of posts under the given tag    
     posts = db.get_posts_by_tag_slug(slug)
+    # # Retrieve tag data for each post
+    # tags = { post['post_slug']: db.get_tags_by_post_slug(post['post_slug']) \
+    #          for post in posts }
+    
     return render_template('blog/tag_view.html', posts=posts, \
         tag_title=tag_title)
 

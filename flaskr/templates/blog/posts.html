@@ -10,13 +10,16 @@
 		<p class="lead">These search results were generated using a search engine I wrote in Python. It uses an index to find all posts that have at least one of the search queries' terms, and then calculates their relevance using the QL language model.</p>
 	</div>
 	<h3>Showing {{ posts|length }} results for "{{ search_query }}":</h3>
+	<hr>
 	{% for post in posts %}
 		{{ macros.post_widget(post, tags[post['post_slug']]) }}  <!-- TODO: Provide rank and score of each result-->
+		<br>
 	{% endfor %}
 {% else %}  
 	<!-- No search query: just display the posts -->
 	{% for post in posts %}
 		{{ macros.post_widget(post, tags[post['post_slug']]) }}
+		<br>
 	{% endfor %}
 {% endif %}
 

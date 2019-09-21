@@ -89,7 +89,8 @@ class Database:
 
     def get_posts_by_tag_slug(self, tag_slug):
         query = 'select p.post_id, p.post_title, p.post_byline, '\
-                'p.post_slug, p.post_date from Posts p left join '\
+                'p.post_slug, p.post_date, p.post_image_url, '\
+                'p.post_banner_url, p.post_thumbnail_url from Posts p left join '\
                 'PostsToTags pt on p.post_slug = pt.post_slug ' \
                 'where pt.tag_slug = ?'
         values = (tag_slug,)
@@ -99,7 +100,7 @@ class Database:
 # will be stored under 'db' in the current request object "g"
 def get_db():
     if 'db' not in g:
-        print ('Retrieving database at {}'.format(current_app.config['DATABASE_PATH']))
+        # print ('Retrieving database at {}'.format(current_app.config['DATABASE_PATH']))
         g.db = Database(current_app.config['DATABASE_PATH'])
 
     return g.db

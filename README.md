@@ -1,9 +1,28 @@
 # Stefans-Blog
-This project uses Python 3.
+A blog platform written in Python using the [Flask](https://palletsprojects.com/p/flask/) framework. See it live at [www.stefanonsoftware.com](www.stefanonsoftware.com).
 
+This project isn't finished! I have plans for improvements, listed in the **Ideas for Improvement** section. 
+
+Also keep in mind that this project has not been thoroughly documented. One of my TODOs is a big code cleanup.
+
+## Project Organization 
+This repository stores code only--it does not contain blog content.
+- flaskr
+  - search_engine: Pure-Python search engine implementation using QL scoring.
+  - static: CSS and favicon. As articles are added to the blog, this folder will store post images and HTML.
+  - templates/blog: Jinja2 HTML templates for the blog pages.
+  - __init__.py: Flask initialization script.
+  - blog.py: Code to serve URLs on the website.
+  - database.py: Python Database class providing methods to execute SQL queries on the database.
+  - featured_posts.py: Simple code which retrieves a list of "featured" posts. 
+  - manage_blog.py: Command-line functions for adding posts to the site. Includes SFTP code for uploading the code to the site host.
+  - posts_schema.sql: SQLite schema used for the post database.
+  - site_logger.py: Simple code which logs site accesses.
+- setup.bat: A Batch script for setting up a local Flask instance with several articles. I use this for a "single-step" build process.
+
+## Virtual Environment
 To setup the virtual environment:
 ```
-cd Stefans-Blog
 python -m venv venv
 venv\Scripts\activate
 pip install Flask
@@ -14,7 +33,6 @@ pip install pysftp
 
 To run the site:
 ```
-cd Stefans-Blog
 venv\Scripts\activate
 set FLASK_APP=flaskr
 set FLASK_ENV=development
@@ -23,9 +41,26 @@ python -m flask run
 
 To initialize/reset the database:
 ```
-cd Stefans-Blog
-python -m flask init-db
+python -m flask init_db
 ```
+
+To initialize/reset the search index:
+```
+python -m flask init_search_index
+```
+
+To add a post:
+```
+python -m flask add_post POST_DIR
+```
+POST_DIR is an absolute or relative path to the post's directory.
+Run ```python -m flask add_post help``` for instructions on using the options.
+
+## Ideas for Improvement
+- Use AJAX to display the "posts" page (load more posts dynamically), and provide Tag filters.
+- Build a web interface for adding posts
+- Provide tools for creating better thumbnails and banner images
+- "LifeOfStefan": a special section of "daily life" posts that contain a single image and paragraph of text. These posts should be handled separately from the main blog posts, which are meant to be full articles.
 
 Some links I need to read:
 - http://exploreflask.com/en/latest/views.html

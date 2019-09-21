@@ -3,15 +3,14 @@
 
 {% block content %}
 
-<!-- TODO: SHORT BLURB ABOUT HOW I BUILT THIS WEBSITE FROM SCRATCH, ETC ETC-->
 <div class="jumbotron">
 	<h1 class="display-5">Hello world. Goodbye Wordpress!</h1>
-	<p class="lead">This blog runs on a platform I wrote in Python. You can read about the technical details <a href="#">here</a>, or check out the code <a href="#">here</a>. It was a lot of work, and it's not <em>quite</em> finished yet, so you might see some small bugs.</p>
+	<p class="lead">This blog runs on a platform I wrote in Python. You can <a href="#">read about the technical details</a> or <a href="#">check out the code</a>. It was a lot of work, and it's not <em>quite</em> finished yet, so you might see some small bugs.</p>
 </div>
 
 {% if featured_posts %}
 <h3>Featured</h3>
-
+<hr>
 <!-- Carousel with a few featured articles -->
 <!-- Carousel docs: https://getbootstrap.com/docs/4.3/components/carousel/ -->
 <!-- TODO: Any need to tweak settings for better display? -->
@@ -24,7 +23,7 @@
 				<li data-target="#carouselExampleCaptions" data-slide-to="{{ i }}" {% if i == 0 %}class="active"{% endif %}></li>
 			{% endfor %}
 		</ol>
-		<div class="carousel-inner">  <!-- TODO: GET THIS WORKING ONCE THERE ARE BANNER IMAGES -->
+		<div class="carousel-inner">
 			{% for i in range(0, featured_posts|length) %}
 			<div class="carousel-item {% if i == 0 %}active{% endif %} carousel-div">
 				<a href="{{ url_for('blog.post_view', slug=featured_posts[i]['post_slug']) }}"><img src="{{ featured_posts[i]['post_image_url'] }}" class="d-block carousel-image" alt="..."></a>
@@ -49,10 +48,10 @@
 {% endif %}
 
 <h3>The Latest</h3>
-
-<p>TODO: THE LATEST FIVE ARTICLES. BTW, I LIKE THE BOLD STYLING OF LINKS ON JOELONSOFTWARE</p>
+<hr>
 {% for post in recent_posts %}
 	{{ macros.post_widget(post, tags[post['post_slug']]) }}
+	<br>
 {% endfor %}
 
 {% endblock %}
