@@ -4,79 +4,109 @@
 <h1>Portfolio</h1>
 <hr>
 
-<p>Contact: <a href="https://www.linkedin.com/in/stefan-kussmaul/">LinkedIn</a></p>
+<p class="resume">Contact: <a href="https://www.linkedin.com/in/stefan-kussmaul/">LinkedIn</a></p>
+<p class="resume">Github: <a href="https://github.com/Stefan4472">Stefan4472</a></p>
 <br>
 
 <h3>Education</h3>
-<strong>University of Massachusetts, Amherst</strong>
-<p style="margin-bottom: 0rem; margin-top: 0rem;">B.S. in Computer Science, Honors College</p>
-<p style="margin-top: 0rem;">Coursework Includes: Robotics, Embedded Systems, Data Science, AI, Computer Vision, Search Engines, Operating Systems, Computer Architecture, Web Programming, Cyber Security</p>
-<br>
-
-<h3>Selected School Projects</h3>
-<ul>
-  <li>
-    <p><strong>Developing Sophisticated Robot Behavior Using Hierarchical Behavior and Reinforcement Learning (Honors Thesis)</strong></p>
-    <p>I am working with Professor Roderic Grupen to complete my undergraduate thesis in Robotics. I am developing a "Fetch" action, in which a robot searches its surroundings for a ball, moves to it and picks it up, and brings it to a specific position. The idea is to implement this behavior using an action hierarchy, which is learned using Reinforcement Learning. It is an ongoing project, and I have learned much about robotics and RL. The code is in C, and will eventually use ROS (Robot Operating System).</p>
-  </li>
-  <li>
-    <p><strong>Kernel Hacking (CS377 Honors Operating Systems)</strong></p>
-    <p>I extended the kernel of the <a href="https://github.com/mit-pdos/xv6-public">XV6 Operating System</a>, a Unix-like operating system developed at M.I.T. for teaching. My work included understanding the source code, adding system calls and structures to support multi-threading, and implementing synchronization mechanisms. This work was done in C. I also wrote a Python autograder script which could run automated tests in the XV6 environment--this is now being used by the professor to grade student projects in upcoming classes. I gained a detailed understanding of operating systems.</p>
-  </li>
-  <li>
-    <p><strong>Shakespeare Search Engine (CS446 Search Engines)</strong></p>
-    <p>I built a search engine in Python which provided search capabilities over the entire corpus of Shakespeare's work. This gave me an understanding of how search engines work, and much of the theory they operate on. It was also a good architectural experience for me. Later I extended the search engine code to work for blog posts on this website--try out the search bar above!</p>
-  </li>
-  <li>
-    <p><strong>UMass Outdoor Club Website (CS326 Web Programming)</strong></p>
-    <p>With a small group of other students, I developed a website for the UMass Outdoor Club using the Django Python web framework. My work included designing the database model, writing the user profiles, comment sections, and trip signups, and much of the back-end work. I learned how to use Django and develop a sophisticated web app, complete with user accounts and data.</p>
-  </li>
-</ul>
+<p class="resume"><strong>University of Massachusetts, Amherst</strong></p>
+<p class="resume">B.S. in Computer Science, Honors College</p>
+<p class="resume">Expected Graduation: December 2019</p>
+<p class="resume">Coursework Includes: Robotics, Embedded Systems, Data Science, AI, Computer Vision, Search Engines, Operating Systems, Computer Architecture, Web Programming, Cyber Security</p>
 <br>
 
 <h3>Work Experience</h3>
+<p class="resume"><strong>M.I.T. Lincoln Laboratory (Summer 2019)</strong></p>
+<p class="resume">Research Intern, Advanced Space Technologies</p>
 <ul>
-  <li>
-    <p><strong>Summer 2019: M.I.T. Lincoln Laboratory</strong></p>
-    <p>I made significant contributions to two M.I.T. Lincoln Laboratory projects. The first was a satellite communications module, for which I was given ownership over a big chunk of the software design and implementation. I wrote close to 2000 lines of C code for the project, and it was a fantastic learning experience for me. I learned a great deal about embedded systems programming, realtime operating systems, and communication protocols. I had to make decisions about memory/resource constraints, meeting real-time constraints, and leveraging hardware to squeeze the most performance out of the system.</p>
-  </li>
-  <li>
-    <p><strong>Summer 2018: M.I.T. Lincoln Laboratory</strong></p>
-    <p>My second project was building a procedural mesh component for an orbit simulation tool developed at Lincoln Laboratory. The simulation tool was written using the Unity game engine, and I wrote an algorithm that could build a 3D model on-the-fly. I learned a lot about 3D graphics, and also became comfortable using the Unity engine.</p>
-  </li>
-  <li>
-    <p><strong>Summer 2017: Acacia Communications</strong></p>
-    <p>
+  <li>Designed and built a satellite communications system using C code and leveraging a real-time operating system.</li>
+  <li>Made important architectural decisions to meet the time and memory requirements of the customer.</li>
+  <li>Conducted a code review and performed rigorous tests to ensure robustness for the 2020 launch into orbit.</li>
+  <li>Built a field-of-view component in Unity to generate procedural 3D meshes for use in a satellite simulation program.</li>
+</ul>
+<p class="resume"><strong>M.I.T. Lincoln Laboratory (Summer 2018)</strong></p>
+<p class="resume">Research Intern, Airborne Radar</p>
+<ul>
+  <li>Developed a library of multithreaded C++ code for real-time hardware control and positioning in radar experiments.</li>
+  <li>Learned and leveraged the Eigen C++ library to rewrite global position and orientation algorithms.</li>
+  <li>Integrated the library into existing software to meet real-time constraints and improve the accuracy of collected data.</li>
+</ul>
+<p class="resume"><strong>Acacia Communications (Summer 2017)</strong></p>
+<p class="resume">DevOps Intern, Optics/Reliability</p>
+<ul>
+  <li>Designed and coded a Python application to help engineers collect and analyze long-term fiber optic test data.</li>
+  <li>Collaborated closely with engineers to determine the features which would be most helpful and time-saving.</li>
+  <li>Features included real-time data analysis, automated graphing, and automated Powerpoint report generation.</li>
+  <li>The application was used by engineers and saved time by automating and standardizing many time-consuming tasks.</li>
+</ul>
+<br>
 
-    </p>
-  </li>
+<h3>Selected School Projects</h3>
+<p class="resume"><strong>Developing Sophisticated Robot Behavior (Honors Thesis)</strong></p>
+<ul>
+  <li>I am completing my undergraduate thesis in Robotics at the <a href="http://www-robotics.cs.umass.edu/">Laboratory for Perceptual Robotics</a></li>
+  <li>My work is focused on using Reinforcement Learning to develop and optimize complex hierarchical robot behaviors.</li>
+  <li>I am developing a "Fetch" behavior, in which a robot searches its surroundings for a ball, moves to the ball and picks it up, and then brings the ball to a specific place--much like a dog would fetch a ball.</li>
+  <li>This project is allowing me to delve deeper into robotics and robot behavior, and will involve developing the action on a real robot using ROS (Robot Operating System).</li>
+</ul>
+<p class="resume"><strong>Kernel Hacking (CS377 Honors Operating Systems)</strong></p>
+<ul>
+  <li>I wrote code for the kernel of the <a href="https://github.com/mit-pdos/xv6-public">XV6 Operating System</a>, adding system calls and synchronization mechanisms to allow multi-threading.</li>
+  <li>My work involved studying the source code to understand how the operating system worked.</li>
+  <li>I also wrote a Python autograder script which could run automated tests in the XV6 environment--this is now being used by the professor to grade student projects in upcoming classes.</li>
+  <li>The deep understanding I gained allowed me to make educated decisions for resource allocation and process structure for my embedded systems project at M.I.T. Lincoln Laboratory.</li>
+</ul>
+<p class="resume"><strong>Shakespeare Search Engine (CS446 Search Engines)</strong></p>
+<ul>
+  <li>I built a search engine in Python which allowed the user to search over the entire corpus of Shakespeare's work.</li>
+  <li>This involved making many architectural decisions to optimize performance and provide results quickly.</li>
+  <li>I later wrote new interfaces to the code and modified it to support searching over web sites--it is currently in use on this site (see the search bar above).</li>
+</ul>
+<p class="resume"><strong>UMass Outdoor Club Website (CS326 Web Programming)</strong></p>
+<ul>
+  <li>In a small group, I developed a website for the UMass Outdoor Club using the Django framework (Python)</li>
+  <li>The site allowed users to create profiles and sign up for club-organized trips.</li> 
+  <li>My work included designing the database model and writing backend code for the user profiles, comment sections, and trip signups</li>
+  <li>As a result of this project, I became familiar with the Django framework and building complex web apps.</li>
 </ul>
 <br>
 
 <h3>Selected Personal Projects</h3>
+<p class="resume"><strong>StefanOnSoftware (2019)</strong></p>
 <ul>
-  <li>
-    <p><strong>StefanOnSoftware (2019)</strong></p>
-    <p>I developed the code which supports this blog, using the Python Flask framework. I gained a lot of experience from this--developing web applications, designing database schemas and writing SQL queries, making things look good on the front end with Bootstrap, and developing the backend to support adding articles. I was also able to get my search engine working to index and support the website. <a href="#">See the code here.</a></p>
-  </li>
-  <li>
-    <!-- TODO: CENTER THE IMAGES -->
-    <p><strong>C++ Adventure (2018)</strong></p>
-    <p>My current big project is writing a game in C++ from scratch. It's a top-down, two-dimensional adventure game in pixel-art style (kind of similar to Pokemon). Read more here.</p>
-    <img alt="Short gameplay gif from my C++ adventure game" src="{{ url_for('static', filename='c++-adventure-gif.gif') }}" />
-  </li>
-  <li>
-    <p><strong>Spaceships Online (2018)</strong></p>
-    <p>I'm also currently writing an online multiplayer game in Javascript (also from scratch). It's in early stages, but you can check it out online here!</p>
-    <img alt="Short gameplay gif from my Spaceships online game" src="{{ url_for('static', filename='spaceships-online-gif.gif') }}" />
-  </li>
-  <li>
-    <p><strong>Spaceships (2017)</strong></p>
-    <p>I worked on writing an Android space arcade game for a while--I called it Spaceships (not super creative, I know. I'm still thinking about a better name). The game is fairly close to completion, but I'm taking a break to work on other things. Read more here.</p>
-    <img alt="Short gameplay gif from my Spaceships android game" src=" {{ url_for('static', filename='spaceships-gif.gif') }}" />
-  </li>
-  <li>
-    <p><strong>ActivityLog (2018)</strong></p>
-  </li>
+  <li>Using the Python Flask framework, I developed a blogging platform and used it to host a personal website called StefanOnSoftware</li>
+  <li>This involved designing the database model and writing SQLite queries, and developing a system to automate the process of adding and uploading posts.</li>
+  <li>I became comfortable using Bootstrap to create a responsive website, and writing backend code to handle serving urls.</li>
+  <li>I also wrote the search engine which serves the site.</li>
+  <li><a href="/post/project-overview-stefanonsoftware">Read more</a> or <a href="https://github.com/Stefan4472/Stefans-Blog">see the code</a>.</li>
+</ul>
+<!-- TODO: CENTER THE IMAGES -->
+<p class="resume"><strong>C++ Adventure (2018)</strong></p>
+<p class="resume">My current big project is writing a game in C++ from scratch. It's a top-down, two-dimensional adventure game in pixel-art style (kind of similar to Pokemon). <a href="/post/project-overview-c++-adventure">Read more</a> or <a href="https://github.com/Stefan4472/TestC-Game">see the code</a>.</p>
+<img class="figure-img img-fluid" src="{{ url_for('static', filename='c++-adventure-gif.gif') }}" alt="Short gameplay gif from my C++ adventure game"/>
+<br>
+<p class="resume"><strong>Spaceships Online (2018)</strong></p>
+<p class="resume">I'm also currently writing an online multiplayer game in Javascript (also from scratch). It's in early stages, but you can check it out online here!<a href="/post/project-overview-spaceships-online">Read more</a> or <a href="https://github.com/Stefan4472/SpaceshipsOnline">see the code</a>.</p>
+<img alt="Short gameplay gif from my Spaceships online game" src="{{ url_for('static', filename='spaceships-online-gif.gif') }}" />
+<br>
+<p class="resume"><strong>Spaceships (2017)</strong></p>
+<p class="resume">I worked on writing an Android space arcade game for a while--I called it Spaceships (not super creative, I know. I'm still thinking about a better name). The game is fairly close to completion, but I'm taking a break to work on other things. <a href="/post/project-overview-spaceships">Read more</a> or <a href="https://github.com/Stefan4472/Spaceships">see the code</a>.</p>
+<img alt="Short gameplay gif from my Spaceships android game" src=" {{ url_for('static', filename='spaceships-gif.gif') }}" />
+<br>
+<p class="resume"><strong>ActivityLog (2018)</strong></p>
+<p class="resume">
+  <a href="https://github.com/Stefan4472/ActivityLog">See the code</a>.
+</p>
+<br>
+
+<h3>Language Breakdown</h3>
+<ul>
+  <li>Java: Data Analysis, MathToolkit, Datastructures, Searcher, Grapher</li>
+  <li>Python: StefanOnSoftware, UMOC Website, Shakespeare Search Engine, AI</li>
+  <li>Javascript: UMOC Website, SpaceshipsOnline</li>
+  <li>C: Kernel Hacking, Operating Systems, Satellite Communications Module, Robot Behavior</li>
+  <li>C++: Real-Time Hardware Control for Radar Experiments, C++ Adventure</li>
+  <li>Android: Spaceships, ActivityLog, IceBreaker, Hitch, Gomoku, GalaxyDraw, ImageTransition</li>
+  <li>Unity: Procedural FOV Mesh</li>
 </ul>
 {% endblock %}

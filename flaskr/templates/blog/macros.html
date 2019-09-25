@@ -23,7 +23,7 @@ tags: list of tag data objects for the post
         </a>
       </div>
       <div class="col-md-10">
-        <p class="card-text"><em>Posted by <a href="/about">Stefan Kussmaul</a> on {{ post['post_date'].strftime('%B %d, %Y') }}</em></p>
+        <p class="card-text"><em>Posted by Stefan on {{ post['post_date'].strftime('%B %d, %Y') }}</em></p>
         <p class="card-text">{{ post['post_byline'] }}...</p>
         <a href="{{ url_for('blog.post_view', slug=post['post_slug']) }}" class="btn btn-primary float-right">Read More</a>
       </div>

@@ -42,12 +42,12 @@ ALSO: SHOULD IT INCLUDE THE THUMBNAILS FOR NEXT&PREVIOUS POSTS?-->
 <div class="row">
   <div class="col-6">
     {% if prev_post %}
-    <p>Previous Post: <a href="{{ url_for('blog.post_view', slug=prev_post['post_slug']) }}">{{ prev_post['post_title'] }}</a></p>
+    <p class="float-left">Previous Post: <a href="{{ url_for('blog.post_view', slug=prev_post['post_slug']) }}">{{ prev_post['post_title'] }}</a></p>
     {% endif %}
   </div>
   <div class="col-6">
     {% if next_post %}
-    <p>Next Post: <a href="{{ url_for('blog.post_view', slug=next_post['post_slug']) }}">{{ next_post['post_title'] }}</a></p>
+    <p class="float-right">Next Post: <a href="{{ url_for('blog.post_view', slug=next_post['post_slug']) }}">{{ next_post['post_title'] }}</a></p>
     {% endif %}
   </div>
 </div>
