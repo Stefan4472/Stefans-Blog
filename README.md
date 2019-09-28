@@ -72,5 +72,6 @@ Some links I need to read:
 - https://click.palletsprojects.com/en/7.x/options/
 - https://pillow.readthedocs.io/en/3.1.x/reference/Image.html
 - https://flask.palletsprojects.com/en/1.1.x/appcontext/
+- Image centering: https://www.w3schools.com/howto/howto_css_image_center.asp
 
 Markdown guide: https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#headers
