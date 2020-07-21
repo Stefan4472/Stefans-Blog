@@ -92,21 +92,22 @@ class ImageCropper(tk.Frame):
         # print('Detected click at {}, {}'.format(event.x, event.y))
         self._last_mouse_x = event.x 
         self._last_mouse_y = event.y
-        # Check if user has clicked on the image
-        if self._are_coords_on_image(event.x, event.y):
-            print('Within image')
-            # Check if user has clicked an anchor
-            anchor = self._resolve_anchor(event.x, event.y)
-            print('Got anchor {}'.format(anchor))
-            # No anchor: set dragging to True
-            if anchor == AnchorPosition.NONE:
+        # Check if user has clicked an anchor
+        anchor = self._resolve_anchor(event.x, event.y)
+        print('Got anchor {}'.format(anchor))
+        # No anchor: check if user is clicking within the image (to drag)
+        if anchor == AnchorPosition.NONE:
+            if self._are_coords_on_image(event.x, event.y):
                 self._is_dragging = True
                 self._is_resizing = False
-            # Anchor: set resizing to True and mark the selected anchor
             else:
-                self._is_resizing = True
-                self._resize_anchor = anchor
-                self._is_dragging = False
+                self._is_dragging = False  # TODO: THESE ARE MUTUALLY EXCLUSIVE. REPLACE WITH A 'MODE' VARIABLE
+                self._is_resizing = False
+        # Anchor: set resizing to True and mark the selected anchor
+        else:
+            self._is_resizing = True
+            self._resize_anchor = anchor
+            self._is_dragging = False
 
     def _on_dragged(self, event):
         # print('Detected drag to {}, {}'.format(event.x, event.y))
@@ -116,10 +117,15 @@ class ImageCropper(tk.Frame):
         if self._is_dragging:
             self.canvas.move(self.image_id, dx, dy)
         elif self._is_resizing:
+            print('resizing')
             self._perform_resize(dx, dy, self._resize_anchor)
         self._last_mouse_x = event.x 
         self._last_mouse_y = event.y
         self._update_anchors()
+        # Bring the `box` to the top layer
+        self.canvas.tag_raise(self.box_id)
+        # Move the image to the bottom layer
+        self.canvas.tag_lower(self.image_id)
 
     def _on_key_pressed(self, event):
         print('Detected key press of {}'.format(event.char))
@@ -138,70 +144,78 @@ class ImageCropper(tk.Frame):
             y >= img_top_left_y and y <= img_top_left_y + img_height
 
     def _resolve_anchor(self, x: int, y: int) -> AnchorPosition:
-        # img_center_x, img_center_y = self.canvas.coords(self.image_id)
-        # img_width = self.photo.width()
-        # img_height = self.photo.height()
-        # img_top_left_x = img_center_x - img_width / 2
-        # img_top_left_y = img_center_y - img_height / 2
-
-        # check_left_anchor = \
-        #     x >= img_top_left_x and x <= img_top_left_x + img_width * 0.1
-        # check_right_anchor = \
-        #     x >= img_top_left_x + img_width * 0.9 and x <= img_top_left_x + img_width
-        # check_top_anchor = \
-        #     y >= img_top_left_y and y <= img_top_left_y + img_height * 0.1
-        # check_bottom_anchor = \
-        #     y >= img_top_left_y + img_height * 0.9 and y <= img_top_left_y + img_height
-
-        # if check_left_anchor:
-        #     return AnchorPosition.FROM_LEFT
-        # elif check_right_anchor:
-        #     return AnchorPosition.FROM_RIGHT
-        # elif check_top_anchor:
-        #     return AnchorPosition.FROM_TOP
-        # elif check_bottom_anchor:
-        #     return AnchorPosition.FROM_BOTTOM
-        # else:
-        #     return AnchorPosition.NONE
+        # Iterate through anchor locations and check whether the specified
+        # coordinates are in the bounds of one of them. O(n).
+        # Note: the "hitboxes" of the anchors are larger than the anchors
+        # themselves, to make it easier for the user to click them.
+        anchor_positions = self._calc_anchor_positions()
+        for anchor, coords in anchor_positions.items():
+            if abs(x - coords[0]) < ANCHOR_SIZE_PIX * 2 and \
+                    abs(y - coords[1]) < ANCHOR_SIZE_PIX * 2:
+                return anchor
         return AnchorPosition.NONE
 
-    def _perform_resize(self, dx: int, dy: int, anchor: AnchorPosition):
-        # img_center_x, img_center_y = self.canvas.coords(self.image_id)
-        # img_width = self.photo.width()
-        # img_height = self.photo.height()
-        # img_top_left_x = img_center_x - img_width / 2
-        # img_top_left_y = img_center_y - img_height / 2
+    def _perform_resize(
+            self, 
+            dx: int, 
+            dy: int, 
+            anchor: AnchorPosition,
+    ):
+        img_center_x, img_center_y = self.canvas.coords(self.image_id)
+        img_width, img_height = self.photo.width(), self.photo.height()
 
-        # resized_width = img_width + dx
-        # resized_height = img_height + dy
-        # print('should resize to {}, {}'.format(resized_width, resized_height))
+        if anchor == AnchorPosition.LEFT:
+            resized_width = img_width - dx
+            resized_height = img_height
+            new_center_x = img_center_x + dx / 2
+            new_center_y = img_center_y
+        elif anchor == AnchorPosition.BOTTOM_LEFT:
+            resized_width = img_width - dx
+            resized_height = img_height + dy
+            new_center_x = img_center_x + dx / 2
+            new_center_y = img_center_y + dy / 2
+        elif anchor == AnchorPosition.BOTTOM_MIDDLE:
+            resized_width = img_width
+            resized_height = img_height + dy
+            new_center_x = img_center_x
+            new_center_y = img_center_y + dy / 2
+        elif anchor == AnchorPosition.BOTTOM_RIGHT:
+            resized_width = img_width + dx
+            resized_height = img_height + dy
+            new_center_x = img_center_x + dx / 2
+            new_center_y = img_center_y + dy / 2
+        elif anchor == AnchorPosition.RIGHT:
+            resized_width = img_width + dx
+            resized_height = img_height
+            new_center_x = img_center_x + dx / 2
+            new_center_y = img_center_y
+        elif anchor == AnchorPosition.TOP_RIGHT:
+            resized_width = img_width + dx
+            resized_height = img_height - dy
+            new_center_x = img_center_x + dx / 2
+            new_center_y = img_center_y + dy / 2
+        elif anchor == AnchorPosition.TOP_MIDDLE:
+            resized_width = img_width
+            resized_height = img_height - dy
+            new_center_x = img_center_x
+            new_center_y = img_center_y + dy / 2
+        elif anchor == AnchorPosition.TOP_LEFT:
+            resized_width = img_width - dx
+            resized_height = img_height - dy
+            new_center_x = img_center_x + dx / 2
+            new_center_y = img_center_y + dy / 2
 
-        # if anchor == AnchorPosition.FROM_LEFT:
-        #     new_center_x = img_center_x + dx / 2
-        #     new_center_y = img_center_y
-        # elif anchor == AnchorPosition.FROM_RIGHT:
-        #     new_center_x = img_center_x - dx / 2
-        #     new_center_y = img_center_y
-        # elif anchor == AnchorPosition.FROM_TOP:
-        #     new_center_x = img_center_x
-        #     new_center_y = img_center_y + dy / 2
-        # elif anchor == AnchorPosition.FROM_BOTTOM:
-        #     new_center_x = img_center_x
-        #     new_center_y = img_center_y - dy / 2
-        # else:
-        #     raise ValueError('Invalid anchor {}'.format(anchor))
+        # Re-size the original image
+        self.resized_image = self.raw_image.resize((resized_width, resized_height))
+        # Delete the old image
+        self.canvas.delete(self.image_id)
+        # Create a new image
+        self.photo = ImageTk.PhotoImage(self.resized_image)
+        self.image_id = self.canvas.create_image(
+            (new_center_x, new_center_y), 
+            image=self.photo,
+        )
 
-        # # Re-size the original image
-        # self.resized_image = self.raw_image.resize((resized_width, resized_height))
-        # # Delete the old image
-        # self.canvas.delete(self.image_id)
-        # # Create a new image
-        # self.photo = ImageTk.PhotoImage(self.resized_image)
-        # self.image_id = self.canvas.create_image(
-        #     (new_center_x, new_center_y), 
-        #     image=self.photo,
-        # )
-        return
 
     def _update_anchors(self):
         """Calculates anchor positions and moves anchors to them."""
@@ -209,7 +223,6 @@ class ImageCropper(tk.Frame):
         for anchor, coords in anchor_positions.items():
             # Get current location of that anchor
             curr_pos = self.canvas.coords(self.anchor_ids[anchor])
-            print(curr_pos)
             # Calculate displacement required
             dx = coords[0] - curr_pos[0]
             dy = coords[1] - curr_pos[1]
