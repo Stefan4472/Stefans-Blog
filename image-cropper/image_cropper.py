@@ -32,6 +32,7 @@ class ImageCropper(tk.Frame):
             desired_height: int,
     ):
         tk.Frame.__init__(self)
+        self.master.title('ImageCropper')
 
         self.image_path = image_path
         self.desired_width = desired_width
@@ -40,10 +41,23 @@ class ImageCropper(tk.Frame):
         self.canvas_width = MAX_SCREEN_WIDTH
         self.canvas_height = MAX_SCREEN_HEIGHT
         self.canvas = tk.Canvas(width=self.canvas_width, height=self.canvas_height, bg='white')
+        self.canvas.pack()
+
+        frame = tk.Frame(self, relief=tk.RAISED, borderwidth=1)
+        frame.pack(fill=tk.BOTH, expand=True)
+        self.pack(fill=tk.BOTH, expand=True)
+
+        self.cancel_button = tk.Button(self, text='Cancel')
+        self.cancel_button.pack(side=tk.RIGHT, padx=5, pady=5)
+        self.ok_button = tk.Button(self, text='Okay')
+        self.ok_button.pack(side=tk.RIGHT)
+
+        # Bindings
         self.canvas.bind('<Button-1>', self._on_click)
         self.canvas.bind('<B1-Motion>', self._on_dragged)
-        self.bind('<KeyPress>', self._on_key_pressed)  # TODO: WHY DOESN'T THIS WORK?
-        self.canvas.pack()
+        self.canvas.bind('<KeyPress>', self._on_key_pressed)  # TODO: WHY DOESN'T THIS WORK?
+        self.cancel_button.bind('<Button-1>', self._on_cancel_clicked)
+        self.ok_button.bind('<Button-1>', self._on_okay_clicked)
 
         self.raw_image = Image.open(self.image_path)
         self.resized_image = self.raw_image.copy()
@@ -87,6 +101,8 @@ class ImageCropper(tk.Frame):
         self._is_resizing: bool = True
         self._resize_anchor: AnchorPosition = AnchorPosition.NONE
         self._update_anchors()
+        self.finished_successfully = False
+        self.cropped_image = None  # TODO: TYPING
 
     def _on_click(self, event):
         # print('Detected click at {}, {}'.format(event.x, event.y))
@@ -129,6 +145,64 @@ class ImageCropper(tk.Frame):
 
     def _on_key_pressed(self, event):
         print('Detected key press of {}'.format(event.char))
+
+    def _on_cancel_clicked(self, event):
+        self.finished_successfully = False
+        self.master.destroy()
+
+    def _on_okay_clicked(self, event):
+        # Create blank image with the desired dimensions
+        self.cropped_image = \
+            Image.new('RGB', (self.desired_width, self.desired_height), (255, 255, 255))
+
+        # Calculate top-left of resized image
+        img_center_x, img_center_y = self.canvas.coords(self.image_id)
+        img_width, img_height = self.photo.width(), self.photo.height()
+        img_top_left_x = img_center_x - img_width / 2
+        img_top_left_y = img_center_y - img_height / 2
+
+        # Calculate top-left of bounding box
+        box_top_left_x = self.canvas_width / 2 - self.desired_width / 2
+        box_top_left_y = self.canvas_height / 2 - self.desired_height / 2
+            
+        # Calculate overlap of resized image and bounding box
+        # https://math.stackexchange.com/a/2477358
+        overlap_left_x = max(img_top_left_x, box_top_left_x)
+        overlap_right_x = min(img_top_left_x + img_width, box_top_left_x + self.desired_width)
+        overlap_top_y = max(img_top_left_y, box_top_left_y)
+        overlap_bottom_y = min(img_top_left_y + img_height, box_top_left_y + self.desired_height)
+
+        # Found intersect: copy whatever is within the bounding box into `resized_image`
+        if overlap_left_x < overlap_right_x and overlap_top_y < overlap_bottom_y:        
+            intersect = (overlap_left_x, overlap_top_y, overlap_right_x, overlap_bottom_y)
+            print('intersect (absolute coordinates: {}'.format(intersect))
+            # Get itersect bounds relative to `resized_image`'s coordinate space
+            crop_rel_x1 = overlap_left_x - img_top_left_x
+            crop_rel_y1 = overlap_top_y - img_top_left_y
+            crop_rel_x2 = crop_rel_x1 + (overlap_right_x - overlap_left_x)
+            crop_rel_y2 = crop_rel_y1 + (overlap_bottom_y - overlap_top_y)
+            
+            # Copy the part of `resized_image` that is within the bounding box
+            rel_intersect = (crop_rel_x1, crop_rel_y1, crop_rel_x2, crop_rel_y2)
+            cropped_region = self.resized_image.crop(rel_intersect)
+            
+            # Calculate cropped region relative to top-left of bounding box
+            intersect_offset_x1 = int(overlap_left_x - box_top_left_x)
+            intersect_offset_y1 = int(overlap_top_y - box_top_left_y)
+            # intersect_offset_w = int(crop_rel_x2 - crop_rel_x1)
+            # intersect_offset_h = int(crop_rel_y2 - crop_rel_y1)
+            # intersect_offset_rect = \
+            #     (intersect_offset_x1, intersect_offset_y1, intersect_offset_w, intersect_offset_h)
+            # print(intersect_offset_rect)
+            self.cropped_image.paste(
+                cropped_region, 
+                (intersect_offset_x1, intersect_offset_y1)
+            )
+        # No intersect: leave `resized_image` blank
+        else:
+            print('no intersect')
+        self.finished_successfully = True
+        self.master.destroy()
 
     def _are_coords_on_image(self, x: int, y: int) -> bool:
         """Return whether (x, y) are within the image."""
@@ -276,5 +350,6 @@ img_path: str = 'cpp_game_screenshot_2.jpg'
 root = tk.Tk()
 app = ImageCropper(img_path, 400, 400)
 app.mainloop()
-
+if app.finished_successfully:
+    app.cropped_image.save('out.jpg')
 # finally ... overwrite json file?
