@@ -15,6 +15,9 @@ import markdown2 as md
 import randomcolor
 from flaskr.database import Database
 import flaskr.search_engine.index as index  # TODO: BETTER IMPORTS
+from flaskr.image_cropper.image_cropper import ImageCropper
+import tkinter as tk
+from tkinter.filedialog import askopenfilename
 
 # Keys used in post-meta.json
 KEY_TITLE = 'title'
@@ -32,7 +35,7 @@ COLOR_GENERATOR = randomcolor.RandomColor()
 # Prescribed featured-image size
 FEATURED_IMG_SIZE = (1000, 540)
 # Prescribed banner size
-BANNER_SIZE = (1000, 416) # (1928, 768)
+BANNER_SIZE = (1000, 300) # (1928, 768)
 # Size of image thumbnails
 THUMBNAIL_SIZE = (400, 400)
 # The size that images in posts are resized to, by default
@@ -234,34 +237,94 @@ def add_post(
             print('ERROR: featured image must be {}w x {}h px'.format(
                 FEATURED_IMG_SIZE[0], FEATURED_IMG_SIZE[1]))
             sys.exit(1)
-    else:
-        print('ERROR: post-meta.json must contain a "{}" field'.format(KEY_IMAGE))
-        sys.exit(1)
-
-    # Get banner image
-    if KEY_BANNER in post_data:
-        post_banner_path = os.path.realpath(os.path.join(post_dir, post_data[KEY_BANNER]))
-        post_banner = Image.open(post_banner_path)
-        if post_banner.width != BANNER_SIZE[0] or \
-                post_banner.height != BANNER_SIZE[1]:
-            print('ERROR: banner image must be {}w x {}h px'.format(
-                BANNER_SIZE[0], BANNER_SIZE[1]))
+    
+        # Get banner image
+        if KEY_BANNER in post_data:
+            banner_path = os.path.realpath(os.path.join(post_dir, post_data[KEY_BANNER]))
+            banner_img = Image.open(banner_path)
+            if banner_img.width != BANNER_SIZE[0] or \
+                    banner_img.height != BANNER_SIZE[1]:
+                print('ERROR: banner image must be {}w x {}h px'.format(
+                    BANNER_SIZE[0], BANNER_SIZE[1]))
+                sys.exit(1)
+        else:
+            print('ERROR: post-meta.json must contain a "{}" field'.format(KEY_BANNER))
             sys.exit(1)
-    else:
-        print('ERROR: post-meta.json must contain a "{}" field'.format(KEY_BANNER))
-        sys.exit(1)
 
-    if KEY_THUMBNAIL in post_data:
-        post_thumbnail_path = os.path.realpath(os.path.join(post_dir, post_data[KEY_THUMBNAIL]))
-        post_thumbnail = Image.open(post_thumbnail_path)
-        if post_thumbnail.width != THUMBNAIL_SIZE[0] or \
-                post_thumbnail.height != THUMBNAIL_SIZE[1]:
-            print('ERROR: banner image must be {}w x {}h px'.format(
-                THUMBNAIL_SIZE[0], THUMBNAIL_SIZE[1]))
+        # Get thumbnail image
+        if KEY_THUMBNAIL in post_data:
+            thumbnail_path = os.path.realpath(os.path.join(post_dir, post_data[KEY_THUMBNAIL]))
+            thumbnail_img = Image.open(thumbnail_path)
+            if thumbnail_img.width != THUMBNAIL_SIZE[0] or \
+                    thumbnail_img.height != THUMBNAIL_SIZE[1]:
+                print('ERROR: banner image must be {}w x {}h px'.format(
+                    THUMBNAIL_SIZE[0], THUMBNAIL_SIZE[1]))
+                sys.exit(1)
+        else:
+            print('ERROR: post-meta.json must contain a "{}" field'.format(KEY_THUMBNAIL))
             sys.exit(1)
+    # Run image-cropper for user to choose images themselves
     else:
-        print('ERROR: post-meta.json must contain a "{}" field'.format(KEY_THUMBNAIL))
-        sys.exit(1)
+        root = tk.Tk()
+        # Ask user to select an image for use
+        img_path = askopenfilename(
+            initialdir=post_dir,
+            title = 'Select image',
+            filetypes = (('jpeg files','*.jpg'), ('png files', '*.png'), ('gif files', '*.gif')),
+        )
+        # Exit if user did not select an image
+        if not img_path:
+            print('No image selected')
+            sys.exit(1)
+
+        img_path = pathlib.Path(img_path)
+
+        # Create featured image
+        app = ImageCropper(img_path, FEATURED_IMG_SIZE[0], FEATURED_IMG_SIZE[1])
+        app.mainloop()
+        if app.finished_successfully:
+            post_img = app.cropped_image
+        else:
+            print('Operation cancelled')
+            sys.exit(1)
+        
+        # Create thumbnail
+        app = ImageCropper(str(img_path), THUMBNAIL_SIZE[0], THUMBNAIL_SIZE[1])
+        app.mainloop()
+        if app.finished_successfully:
+            thumbnail_img = app.cropped_image
+        else:
+            print('Operation cancelled')
+            sys.exit(1)
+
+        # Create banner
+        app = ImageCropper(img_path, BANNER_SIZE[0], BANNER_SIZE[1])
+        app.mainloop()
+        if app.finished_successfully:
+            banner_img = app.cropped_image
+        else:
+            print('Operation cancelled')
+            sys.exit(1)
+
+        # Create the paths for the newly-cropped images
+        thumbnail_path = img_path.parent / (img_path.stem + '-thumb.jpg')
+        featured_path = img_path.parent / (img_path.stem + '-featured.jpg')
+        banner_path = img_path.parent / (img_path.stem + '-banner.jpg')
+
+        # Write image paths to the 'post-meta.json' file, overwriting
+        # any paths that are currently there
+        post_data['image'] = featured_path.name
+        post_data['thumbnail'] = thumbnail_path.name
+        post_data['banner'] = banner_path.name
+        
+        # Write out the updated post metadata
+        try:
+            with open(meta_path, 'w') as meta_file:
+                json.dump(post_data, meta_file, indent=4)
+                print('Saved images and updated "post-meta.json" successfully')
+        except IOError:
+            print ('ERROR: Could not read the meta-data file ("{}")'.format(meta_path))
+            sys.exit(1)
 
     # Build URLs for the image, banner, and thumbnail.
     # They will have prescribed filenames ('image', 'banner', 'thumbnail') 
@@ -313,8 +376,8 @@ def add_post(
     
     # Save post images 
     post_img.save(os.path.join(post_static_path, 'featured_img.jpg'))
-    post_banner.save(os.path.join(post_static_path, 'banner.jpg'))
-    post_thumbnail.save(os.path.join(post_static_path, 'thumbnail.jpg'))
+    banner_img.save(os.path.join(post_static_path, 'banner.jpg'))
+    thumbnail_img.save(os.path.join(post_static_path, 'thumbnail.jpg'))
 
     # Copy image files to the article's directory
     for img_path in article_imgs:

@@ -1,6 +1,47 @@
 <!-- Banner -->
 <!-- Set background image: https://stackoverflow.com/questions/22000754/responsive-bootstrap-jumbotron-background-image/26998624-->
-<div class="jumbotron" style="margin-bottom: 0rem; text-align: center; color: white; background-image: {% if banner_url %}url('{{ banner_url }}'){% else %}url('/static/site-banner.jpg'){% endif %}; background-size: cover;">
+<div id="page-banner" class="jumbotron" style="margin-bottom: 0rem; text-align: center; color: white; background-image: url('/static/site-banner.jpg'); background-size: cover;">
   <h1 class="display-4"><a href="/" class="link-override">Stefan on Software</a></h1>
   <p class="lead"><a href="/" class="link-override">(and other things)</a></p>
 </div>
+
+<!-- Responsive banner script -->
+{% if post %}
+<script>
+var banner_element = document.getElementById('page-banner');
+var curr_inner_width = window.innerWidth;
+setBannerImgForWidth(curr_inner_width);
+
+function onWindowSizeChanged() {
+  console.log(window.innerWidth);
+  updateBannerImgResponsively(window.innerWidth);
+}
+
+function updateBannerImgResponsively(windowWidth) {
+  // Change from narrow to wide
+  if (windowWidth < 800 && curr_inner_width >= 800) {
+    console.log("Switching to post featured image");
+    setBannerImgForWidth(windowWidth);
+  }
+  // Change from wide to narrow
+  else if (windowWidth >= 800 && curr_inner_width < 800) {
+    console.log("Switching to banner image");
+    setBannerImgForWidth(windowWidth);
+  }
+  curr_inner_width = windowWidth; 
+}
+
+function setBannerImgForWidth(windowWidth) {
+  // Show the post's "featured" image if window width is less than 800 pix.
+  if (windowWidth < 800) {
+    banner_element.style.backgroundImage = 'url({{ post["post_image_url"] }})';
+  }
+  // Show the post's "banner" image otherwise
+  else {
+    banner_element.style.backgroundImage = 'url({{ post["post_banner_url"] }})';
+  }
+}
+
+window.onresize = onWindowSizeChanged;
+{% endif %}
+</script>
