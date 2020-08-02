@@ -7,10 +7,9 @@ import pathlib
 import enum
 import typing 
 
-# REQD_FEATURED_SIZE = (1500, 810)
-# REQD_WIDE_BANNER_SIZE = (1900, 300)
-# REQD_BANNER_NARROW_SIZE = 
-
+FEATURED_IMG_SIZE = (1000, 540)
+BANNER_SIZE = (1000, 416)
+THUMBNAIL_SIZE = (400, 400)
 
 class AnchorPosition(enum.Enum):
     NONE = 0
@@ -383,8 +382,17 @@ if __name__ == '__main__':
 
     img_path = pathlib.Path(img_path)
 
+    # Create featured image
+    app = ImageCropper(img_path, FEATURED_IMG_SIZE[0], FEATURED_IMG_SIZE[1])
+    app.mainloop()
+    if app.finished_successfully:
+        featured_img = app.cropped_image
+    else:
+        print('Operation cancelled')
+        sys.exit(1)
+    
     # Create thumbnail
-    app = ImageCropper(str(img_path), 400, 400)
+    app = ImageCropper(str(img_path), THUMBNAIL_SIZE[0], THUMBNAIL_SIZE[1])
     app.mainloop()
     if app.finished_successfully:
         thumbnail_img = app.cropped_image
@@ -392,17 +400,8 @@ if __name__ == '__main__':
         print('Operation cancelled')
         sys.exit(1)
 
-    # Create featured image
-    app = ImageCropper(img_path, 800, 600)
-    app.mainloop()
-    if app.finished_successfully:
-        featured_img = app.cropped_image
-    else:
-        print('Operation cancelled')
-        sys.exit(1)
-
     # Create banner
-    app = ImageCropper(img_path, 800, 300)
+    app = ImageCropper(img_path, BANNER_SIZE[0], BANNER_SIZE[1])
     app.mainloop()
     if app.finished_successfully:
         banner_img = app.cropped_image
@@ -411,9 +410,9 @@ if __name__ == '__main__':
         sys.exit(1)
 
     # Create the paths for the newly-cropped images
-    thumbnail_path = str(img_path.parent / (img_path.stem + '-thumb.jpg'))
-    featured_path = str(img_path.parent / (img_path.stem + '-featured.jpg'))
-    banner_path = str(img_path.parent / (img_path.stem + '-banner.jpg'))
+    thumbnail_path = img_path.parent / (img_path.stem + '-thumb.jpg')
+    featured_path = img_path.parent / (img_path.stem + '-featured.jpg')
+    banner_path = img_path.parent / (img_path.stem + '-banner.jpg')
 
     # Save images
     thumbnail_img.save(thumbnail_path)
@@ -422,9 +421,9 @@ if __name__ == '__main__':
 
     # Write image paths to the 'post-meta.json' file, overwriting
     # any paths that are currently there
-    post_data['image'] = featured_path
-    post_data['thumbnail'] = thumbnail_path
-    post_data['banner'] = banner_path
+    post_data['image'] = featured_path.name
+    post_data['thumbnail'] = thumbnail_path.name
+    post_data['banner'] = banner_path.name
     
     # Write out the updated post metadata
     try:

@@ -1,6 +1,8 @@
-import sys  # TODO: PUT THIS IN ITS OWN FOLDER? USE CLICK TO MAKE IT INTO A FLASK COMMAND?
+# TODO: PUT THIS IN ITS OWN FOLDER? USE CLICK TO MAKE IT INTO A FLASK COMMAND?
+import sys  
 import re
 import os
+import pathlib
 import shutil
 import click
 import pysftp
@@ -28,12 +30,12 @@ KEY_THUMBNAIL = 'thumbnail'
 COLOR_GENERATOR = randomcolor.RandomColor()
 
 # Prescribed featured-image size
-FEATURED_IMG_SIZE = (2000, 1080)
+FEATURED_IMG_SIZE = (1000, 540)
 # Prescribed banner size
-BANNER_SIZE = (1440, 600) # (1928, 768)
+BANNER_SIZE = (1000, 416) # (1928, 768)
 # Size of image thumbnails
-THUMBNAIL_SIZE = (800, 600)
-
+THUMBNAIL_SIZE = (400, 400)
+# The size that images in posts are resized to, by default
 DEFAULT_IMG_SIZE = (640, 480)
 
 # Generates a slug given a string.
@@ -49,9 +51,16 @@ def get_static_url(filepath):
 def generate_random_color():
     return COLOR_GENERATOR.generate(luminosity='light', count=1)[0]
 
+# def resolve_path(
+#         path: str,
+#         curr_dir: pathlib.Path,
+# ) -> pathlib.Path:
+#     """Can handle absolute or relative path."""
+
 # Takes the path to a Markdown file, read it, and renders it to HTML.
 # Returns (rendered HTML as a string, list of image sources found in <img> tags).
-# This function will render images as Bootstrap figures. TODO: EXPLAIN HOW TO ADD A CAPTION
+# This function will render images as Bootstrap figures. 
+# TODO: EXPLAIN HOW TO ADD A CAPTION
 # TODO: THIS WHOLE FUNCTION SHOULD BE CLEANED UP, AND SHOULDN'T DEAL WITH 'IMG_SAVE_DIR'
 def render_md_file(file_path, img_save_dir):
     # Regex used to match custom "[figure]" lines.
@@ -92,8 +101,8 @@ def render_md_file(file_path, img_save_dir):
             rendered_html = \
 '''
 <figure class="figure text-center">
-    <img src="{}" class="figure-img img-fluid" style="max-width: 100%; height: auto;" alt="">
-    <figcaption class="figure-caption" style="background-color: #EEEEEE;"><em>{}</em></figcaption>
+    <img src="{}" class="figure-img img-fluid" alt="">
+    <figcaption class="figure-caption">{}</figcaption>
 </figure>
 
 '''.format(img_url, img_caption)
@@ -102,7 +111,7 @@ def render_md_file(file_path, img_save_dir):
             rendered_html = \
 '''
 <figure class="figure text-center">
-    <img src="{}" class="figure-img img-fluid" style="max-width: 100%; height: auto;" alt="">
+    <img src="{}" class="figure-img img-fluid" alt="">
 </figure>
 
 '''.format(img_url)
@@ -122,7 +131,7 @@ def render_md_file(file_path, img_save_dir):
 def copy_to_static(file_path, static_path):  # TODO: IMPROVE
     # Make sure the file exists
     if not (os.path.exists(file_path) and os.path.isfile(file_path)):
-        print ('ERROR: The image path "{}" is not a real file')  # TODO: RAISE EXCEPTION
+        print ('ERROR: The image path "{}" is not a real file'.format(file_path))  # TODO: RAISE EXCEPTION
         return
 
     # Build destination path for the image
@@ -138,8 +147,12 @@ def copy_to_static(file_path, static_path):  # TODO: IMPROVE
 @click.option('--quiet', is_flag=True, default=False, help='Whether to suppress print statements and confirmation promts')
 @click.option('--compress_imgs', is_flag=True, default=True, help='Whether to resize images to {} and convert to JPG'.format(DEFAULT_IMG_SIZE))
 @with_appcontext
-def add_post(post_dir, upload, quiet, compress_imgs):
-    print('\n{}'.format(post_dir))
+def add_post(
+        post_dir: str, 
+        upload: bool, 
+        quiet: bool, 
+        compress_imgs: bool,
+):
     # If provided path is not a directory, treat it as a relative path from
     # the path the script was executed from
     if not os.path.isdir(post_dir):
@@ -148,10 +161,10 @@ def add_post(post_dir, upload, quiet, compress_imgs):
     # Ensure the provided path is a directory that exists 
     if not os.path.isdir(post_dir):
         print ('ERROR: The provided path is not a directory or does not exist')
-        sys.exit()
+        sys.exit(1)
 
     if not quiet:
-        print ('Got post directory "{}"'.format(post_dir))
+        print('Adding post from directory "{}"'.format(post_dir))
     
     # Determine absolute path to the post file and the metadata file
     post_path = os.path.join(post_dir, 'post.md')
@@ -167,7 +180,7 @@ def add_post(post_dir, upload, quiet, compress_imgs):
             post_data = json.load(meta_file)
     except IOError:
         print ('ERROR: Could not read the meta-data file ("{}")'.format(meta_path))
-        sys.exit()
+        sys.exit(1)
 
     # Read the Markdown file 
     try:
@@ -175,14 +188,14 @@ def add_post(post_dir, upload, quiet, compress_imgs):
             post_markdown = post_file.read()
     except IOError:
         print ('ERROR: Could not read the post file ("{}")'.format(post_path))
-        sys.exit()
+        sys.exit(1)
 
     # Make sure title is defined
     if KEY_TITLE in post_data:
         title = post_data[KEY_TITLE]
     else:
         print ('ERROR: post-meta.json must contain a "{}" field'.format(KEY_TITLE))
-        sys.exit()
+        sys.exit(1)
 
     # Get byline
     if KEY_BYLINE in post_data:
@@ -194,8 +207,8 @@ def add_post(post_dir, upload, quiet, compress_imgs):
             byline = byline[:200]
     else:
         # Just take the first 200 characters of Markdown
+        # TODO: INSTEAD, GRAB THE CONTENTS OF THE FIRST '<p>' TAG?
         byline = post_markdown[:200]
-    
 
     # Get slug
     if KEY_SLUG in post_data:
@@ -215,36 +228,46 @@ def add_post(post_dir, upload, quiet, compress_imgs):
     # Get post image
     if KEY_IMAGE in post_data:
         post_img_path = os.path.realpath(os.path.join(post_dir, post_data[KEY_IMAGE]))
-        post_img_type = os.path.splitext(post_img_path)[1]
         post_img = Image.open(post_img_path)
+        if post_img.width != FEATURED_IMG_SIZE[0] or \
+                post_img.height != FEATURED_IMG_SIZE[1]:
+            print('ERROR: featured image must be {}w x {}h px'.format(
+                FEATURED_IMG_SIZE[0], FEATURED_IMG_SIZE[1]))
+            sys.exit(1)
     else:
-        print ('ERROR: post-meta.json must contain a "{}" field'.format(KEY_IMAGE))
-        sys.exit()
+        print('ERROR: post-meta.json must contain a "{}" field'.format(KEY_IMAGE))
+        sys.exit(1)
 
     # Get banner image
     if KEY_BANNER in post_data:
         post_banner_path = os.path.realpath(os.path.join(post_dir, post_data[KEY_BANNER]))
-        post_banner_type = os.path.splitext(post_banner_path)[1]
         post_banner = Image.open(post_banner_path)
+        if post_banner.width != BANNER_SIZE[0] or \
+                post_banner.height != BANNER_SIZE[1]:
+            print('ERROR: banner image must be {}w x {}h px'.format(
+                BANNER_SIZE[0], BANNER_SIZE[1]))
+            sys.exit(1)
     else:
-        # No banner specified: use the post's image, which will be resized later
-        post_banner_type = post_img_type
-        post_banner = post_img.copy()
+        print('ERROR: post-meta.json must contain a "{}" field'.format(KEY_BANNER))
+        sys.exit(1)
 
     if KEY_THUMBNAIL in post_data:
         post_thumbnail_path = os.path.realpath(os.path.join(post_dir, post_data[KEY_THUMBNAIL]))
-        post_thumbnail_type = os.path.splitext(post_thumbnail_path)[1]
         post_thumbnail = Image.open(post_thumbnail_path)
+        if post_thumbnail.width != THUMBNAIL_SIZE[0] or \
+                post_thumbnail.height != THUMBNAIL_SIZE[1]:
+            print('ERROR: banner image must be {}w x {}h px'.format(
+                THUMBNAIL_SIZE[0], THUMBNAIL_SIZE[1]))
+            sys.exit(1)
     else:
-        # No thumbnail specified: load the post's image, which will be resized later
-        post_thumbnail_type = post_img_type
-        post_thumbnail = post_img.copy()
+        print('ERROR: post-meta.json must contain a "{}" field'.format(KEY_THUMBNAIL))
+        sys.exit(1)
 
     # Build URLs for the image, banner, and thumbnail.
     # They will have prescribed filenames ('image', 'banner', 'thumbnail') 
-    post_img_url = current_app.static_url_path + '/' + slug + '/featured_img' + post_img_type
-    post_banner_url = current_app.static_url_path + '/' + slug + '/banner' + post_banner_type
-    post_thumbnail_url = current_app.static_url_path + '/' + slug + '/thumbnail' + post_thumbnail_type
+    post_img_url = current_app.static_url_path + '/' + slug + '/featured_img.jpg'
+    post_banner_url = current_app.static_url_path + '/' + slug + '/banner.jpg'
+    post_thumbnail_url = current_app.static_url_path + '/' + slug + '/thumbnail.jpg'
     
     # Get connection to the post database
     database = Database(current_app.config['DATABASE_PATH'])
@@ -259,9 +282,9 @@ def add_post(post_dir, upload, quiet, compress_imgs):
         for tag in tags:
             # print ('Handling tag {}'.format(tag))
             tag_slug = generate_slug(tag)
-            tag_color = generate_random_color()
             # Add tag to the database if not already there
             if not database.has_tag(tag_slug):
+                tag_color = generate_random_color()
                 database.add_tag(tag, tag_slug, tag_color)
             # Add post->tag mapping to database
             database.add_tag_to_post(tag_slug, slug)
@@ -288,17 +311,10 @@ def add_post(post_dir, upload, quiet, compress_imgs):
     # Render the Markdown file to HTML  NOTE: THE FILE HAS ALREADY BEEN READ!
     article_html, article_imgs = render_md_file(post_path, slug)  # TODO: IS THIS HANDLING BLANK LINES CORRECTLY?
     
-    # For the following images: convert to RGB, resize, and save as JPEG
-    # Size and save the post's featured image 
-    post_img = post_img.resize(FEATURED_IMG_SIZE, Image.ANTIALIAS)  # TODO: THUMBNAIL
-    post_img.save(os.path.join(post_static_path, 'featured_img' + post_img_type))
-    # Size and save the post's banner image 
-    post_banner = post_banner.resize(BANNER_SIZE, Image.ANTIALIAS)
-    post_banner.save(os.path.join(post_static_path, 'banner' + post_banner_type))
-    # Size and save the post's thumbnail
-    # post_thumbnail = post_thumbnail.convert('RGB')
-    post_thumbnail.thumbnail(THUMBNAIL_SIZE, Image.ANTIALIAS)
-    post_thumbnail.save(os.path.join(post_static_path, 'thumbnail' + post_thumbnail_type))
+    # Save post images 
+    post_img.save(os.path.join(post_static_path, 'featured_img.jpg'))
+    post_banner.save(os.path.join(post_static_path, 'banner.jpg'))
+    post_thumbnail.save(os.path.join(post_static_path, 'thumbnail.jpg'))
 
     # Copy image files to the article's directory
     for img_path in article_imgs:
@@ -388,3 +404,61 @@ def add_post(post_dir, upload, quiet, compress_imgs):
             with sftp.cd(r'/home/skussmaul/Stefans-Blog/instance'):
                 sftp.put(current_app.config['DATABASE_PATH'])
                 sftp.put(current_app.config['SEARCH_INDEX_PATH'])
+
+
+# upload_file: text file, each line has the slug of the post to upload.
+# In one SFTP connection, copies the post folders to the remote.
+# Then copies the database and search index.
+# If a file with the same name exists, will run filecmp and abort if the files are identical.
+@click.command('upload_posts')
+@click.argument('upload_file')
+@with_appcontext
+def upload_posts(upload_file):
+    with open(upload_file, 'r') as f:
+        slugs = f.read().split()
+
+    # Read the secret file to get host information
+    try:
+        with open(current_app.config['SECRET_PATH']) as secret_file:
+            secret_data = json.load(secret_file)
+            host = secret_data['host']
+            username = secret_data['username']
+            password = secret_data['password']
+    except IOError:
+        print ('No secret file found')
+        host = input('Enter host: ').strip()
+        username = input('Enter username: ').strip()
+        password = input('Enter password: ').strip()
+
+    print ('Initiating SFTP connection with {}...'.format(host))
+
+    # Push files to PythonAnywhere, via SFTP
+    # SFTP instructions for PythonAnywhere: https://help.pythonanywhere.com/pages/SSHAccess
+    # From cmd, the following correctly copies the 'inventory-systems' folder to PythonAnywhere:
+    # 'put -r flaskr/static/inventory-systems Stefans-Blog/flaskr/static/inventory-systems'
+    with pysftp.Connection(host, username=username, password=password) as sftp:
+        # Create post directory on host and copy post files
+        with sftp.cd(r'/home/skussmaul/Stefans-Blog/flaskr/static'):
+            for slug in slugs:
+                # Path to local post folder
+                local_dir = os.path.join(current_app.static_folder, slug)
+                # Create post directory on remote
+                try:
+                    sftp.mkdir(slug)
+                except IOError:
+                    print ('Warning: The directory already exists')
+
+                # Enter post directory
+                with sftp.cd(slug):
+                    # Copy all files from 'local_dir' to remote.
+                    # This is a workaround because the 'put_d' (put directory) command is not working.
+                    for file_to_copy in os.listdir(local_dir):
+                        print ('Uploading {}...'.format(file_to_copy))
+                        if sftp.isfile(file_to_copy):
+                            print('File already exists')
+                        else:
+                            sftp.put(os.path.join(local_dir, file_to_copy))
+        # Copy instance files
+        with sftp.cd(r'/home/skussmaul/Stefans-Blog/instance'):
+            sftp.put(current_app.config['DATABASE_PATH'])
+            sftp.put(current_app.config['SEARCH_INDEX_PATH'])
