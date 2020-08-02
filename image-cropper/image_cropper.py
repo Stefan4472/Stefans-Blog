@@ -1,12 +1,12 @@
+import sys
+import os
 import tkinter as tk
 from PIL import Image, ImageTk
+import json
+import pathlib
 import enum
 import typing 
 
-MAX_SCREEN_WIDTH: int = 1000
-MAX_SCREEN_HEIGHT: int = 600
-ANCHOR_SIZE_PIX: int = 10
-ANCHOR_COLOR: str = 'blue'
 # REQD_FEATURED_SIZE = (1500, 810)
 # REQD_WIDE_BANNER_SIZE = (1900, 300)
 # REQD_BANNER_NARROW_SIZE = 
@@ -25,6 +25,11 @@ class AnchorPosition(enum.Enum):
 
 
 class ImageCropper(tk.Frame):
+    MAX_SCREEN_WIDTH: int = 1000
+    MAX_SCREEN_HEIGHT: int = 600
+    ANCHOR_SIZE_PX: int = 10
+    ANCHOR_COLOR: str = 'blue'
+
     def __init__(
             self,
             image_path: str,
@@ -38,8 +43,8 @@ class ImageCropper(tk.Frame):
         self.desired_width = desired_width
         self.desired_height = desired_height
 
-        self.canvas_width = MAX_SCREEN_WIDTH
-        self.canvas_height = MAX_SCREEN_HEIGHT
+        self.canvas_width = self.MAX_SCREEN_WIDTH
+        self.canvas_height = self.MAX_SCREEN_HEIGHT
         self.canvas = tk.Canvas(width=self.canvas_width, height=self.canvas_height, bg='white')
         self.canvas.pack()
 
@@ -61,11 +66,11 @@ class ImageCropper(tk.Frame):
 
         self.raw_image = Image.open(self.image_path)
         self.resized_image = self.raw_image.copy()
-        if self.raw_image.width > MAX_SCREEN_WIDTH or self.raw_image.height > MAX_SCREEN_HEIGHT:
-            self.resized_image.thumbnail((MAX_SCREEN_WIDTH, MAX_SCREEN_HEIGHT))
+        if self.raw_image.width > self.MAX_SCREEN_WIDTH or self.raw_image.height > self.MAX_SCREEN_HEIGHT:
+            self.resized_image.thumbnail((self.MAX_SCREEN_WIDTH, self.MAX_SCREEN_HEIGHT))
         self.photo = ImageTk.PhotoImage(self.resized_image)
         self.image_id = self.canvas.create_image(
-            (MAX_SCREEN_WIDTH / 2, MAX_SCREEN_HEIGHT / 2), 
+            (self.MAX_SCREEN_WIDTH / 2, self.MAX_SCREEN_HEIGHT / 2), 
             image=self.photo,
         )
 
@@ -88,8 +93,8 @@ class ImageCropper(tk.Frame):
                 self.anchor_ids[anchor_type] = self.canvas.create_oval(
                     0, 
                     0, 
-                    ANCHOR_SIZE_PIX, 
-                    ANCHOR_SIZE_PIX,
+                    self.ANCHOR_SIZE_PX, 
+                    self.ANCHOR_SIZE_PX,
                     outline='blue',
                     width=2.0,
                     fill='blue'
@@ -224,8 +229,8 @@ class ImageCropper(tk.Frame):
         # themselves, to make it easier for the user to click them.
         anchor_positions = self._calc_anchor_positions()
         for anchor, coords in anchor_positions.items():
-            if abs(x - coords[0]) < ANCHOR_SIZE_PIX * 2 and \
-                    abs(y - coords[1]) < ANCHOR_SIZE_PIX * 2:
+            if abs(x - coords[0]) < self.ANCHOR_SIZE_PX * 2 and \
+                    abs(y - coords[1]) < self.ANCHOR_SIZE_PX * 2:
                 return anchor
         return AnchorPosition.NONE
 
@@ -278,6 +283,8 @@ class ImageCropper(tk.Frame):
             resized_height = img_height - dy
             new_center_x = img_center_x + dx / 2
             new_center_y = img_center_y + dy / 2
+        else:
+            raise ValueError('No anchor specified')
 
         # Re-size the original image
         self.resized_image = self.raw_image.resize((resized_width, resized_height))
@@ -311,45 +318,119 @@ class ImageCropper(tk.Frame):
 
         anchor_positions = {}
         anchor_positions[AnchorPosition.LEFT] = (
-            img_center_x - img_width / 2 - ANCHOR_SIZE_PIX / 2,
-            img_center_y - ANCHOR_SIZE_PIX / 2
+            img_center_x - img_width / 2 - self.ANCHOR_SIZE_PX / 2,
+            img_center_y - self.ANCHOR_SIZE_PX / 2
         )
         anchor_positions[AnchorPosition.BOTTOM_LEFT] = (
-            img_center_x - img_width / 2 - ANCHOR_SIZE_PIX / 2,
-            img_center_y + img_height / 2 - ANCHOR_SIZE_PIX / 2
+            img_center_x - img_width / 2 - self.ANCHOR_SIZE_PX / 2,
+            img_center_y + img_height / 2 - self.ANCHOR_SIZE_PX / 2
         )
         anchor_positions[AnchorPosition.BOTTOM_MIDDLE] = (
-            img_center_x - ANCHOR_SIZE_PIX / 2,
-            img_center_y + img_height / 2 - ANCHOR_SIZE_PIX / 2
+            img_center_x - self.ANCHOR_SIZE_PX / 2,
+            img_center_y + img_height / 2 - self.ANCHOR_SIZE_PX / 2
         )
         anchor_positions[AnchorPosition.BOTTOM_RIGHT] = (
-            img_center_x + img_width / 2 - ANCHOR_SIZE_PIX / 2,
-            img_center_y + img_height / 2 - ANCHOR_SIZE_PIX / 2
+            img_center_x + img_width / 2 - self.ANCHOR_SIZE_PX / 2,
+            img_center_y + img_height / 2 - self.ANCHOR_SIZE_PX / 2
         )
         anchor_positions[AnchorPosition.RIGHT] = (
-            img_center_x + img_width / 2 - ANCHOR_SIZE_PIX / 2,
-            img_center_y - ANCHOR_SIZE_PIX / 2
+            img_center_x + img_width / 2 - self.ANCHOR_SIZE_PX / 2,
+            img_center_y - self.ANCHOR_SIZE_PX / 2
         )
         anchor_positions[AnchorPosition.TOP_RIGHT] = (
-            img_center_x + img_width / 2 - ANCHOR_SIZE_PIX / 2,
-            img_center_y - img_height / 2 - ANCHOR_SIZE_PIX / 2
+            img_center_x + img_width / 2 - self.ANCHOR_SIZE_PX / 2,
+            img_center_y - img_height / 2 - self.ANCHOR_SIZE_PX / 2
         )
         anchor_positions[AnchorPosition.TOP_MIDDLE] = (
-            img_center_x - ANCHOR_SIZE_PIX / 2,
-            img_center_y - img_height / 2 - ANCHOR_SIZE_PIX / 2
+            img_center_x - self.ANCHOR_SIZE_PX / 2,
+            img_center_y - img_height / 2 - self.ANCHOR_SIZE_PX / 2
         )
         anchor_positions[AnchorPosition.TOP_LEFT] = (
-            img_center_x - img_width / 2 - ANCHOR_SIZE_PIX / 2,
-            img_center_y - img_height / 2 - ANCHOR_SIZE_PIX / 2
+            img_center_x - img_width / 2 - self.ANCHOR_SIZE_PX / 2,
+            img_center_y - img_height / 2 - self.ANCHOR_SIZE_PX / 2
         )
         return anchor_positions
 
-# ... user chooses file from directory
-img_path: str = 'cpp_game_screenshot_2.jpg'
+if __name__ == '__main__':
+    execution_path = pathlib.Path(os.getcwd())
 
-root = tk.Tk()
-app = ImageCropper(img_path, 400, 400)
-app.mainloop()
-if app.finished_successfully:
-    app.cropped_image.save('out.jpg')
-# finally ... overwrite json file?
+    # Look for 'post-meta.json' in the executing directory
+    meta_path = execution_path / 'post-meta.json'
+    if not meta_path.is_file():
+        print('Couldn\'t find "post-meta.json" file in the execution directory')
+        sys.exit(1)
+    # Read the metadata file
+    try:
+        with open(meta_path, 'r') as meta_file:
+            post_data = json.load(meta_file)
+    except IOError:
+        print ('ERROR: Could not read the meta-data file ("{}")'.format(meta_path))
+        sys.exit(1)
+
+    root = tk.Tk()
+    
+    from tkinter.filedialog import askopenfilename
+    # Ask user to select an image for use
+    img_path = askopenfilename(
+        initialdir=execution_path,
+        title = 'Select image',
+        filetypes = (('jpeg files','*.jpg'), ('png files', '*.png'), ('gif files', '*.gif')),
+    )
+    # Exit if user did not select an image
+    if not img_path:
+        print('No image selected')
+        sys.exit(1)
+
+    img_path = pathlib.Path(img_path)
+
+    # Create thumbnail
+    app = ImageCropper(str(img_path), 400, 400)
+    app.mainloop()
+    if app.finished_successfully:
+        thumbnail_img = app.cropped_image
+    else:
+        print('Operation cancelled')
+        sys.exit(1)
+
+    # Create featured image
+    app = ImageCropper(img_path, 800, 600)
+    app.mainloop()
+    if app.finished_successfully:
+        featured_img = app.cropped_image
+    else:
+        print('Operation cancelled')
+        sys.exit(1)
+
+    # Create banner
+    app = ImageCropper(img_path, 800, 300)
+    app.mainloop()
+    if app.finished_successfully:
+        banner_img = app.cropped_image
+    else:
+        print('Operation cancelled')
+        sys.exit(1)
+
+    # Create the paths for the newly-cropped images
+    thumbnail_path = str(img_path.parent / (img_path.stem + '-thumb.jpg'))
+    featured_path = str(img_path.parent / (img_path.stem + '-featured.jpg'))
+    banner_path = str(img_path.parent / (img_path.stem + '-banner.jpg'))
+
+    # Save images
+    thumbnail_img.save(thumbnail_path)
+    featured_img.save(featured_path)
+    banner_img.save(banner_path)
+
+    # Write image paths to the 'post-meta.json' file, overwriting
+    # any paths that are currently there
+    post_data['image'] = featured_path
+    post_data['thumbnail'] = thumbnail_path
+    post_data['banner'] = banner_path
+    
+    # Write out the updated post metadata
+    try:
+        with open(meta_path, 'w') as meta_file:
+            json.dump(post_data, meta_file, indent=4)
+            print('Saved images and updated "post-meta.json" successfully')
+    except IOError:
+        print ('ERROR: Could not read the meta-data file ("{}")'.format(meta_path))
+        sys.exit(1)
