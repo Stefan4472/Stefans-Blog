@@ -5,22 +5,19 @@
 
 <div class="jumbotron">
 	<h1 class="display-5">Hello world. Goodbye Wordpress!</h1>
-	<p class="lead">This blog runs on a platform I wrote from scratch in Python. You can <a href="/post/project-overview-stefanonsoftware">read about the technical details</a> or <a href="https://github.com/Stefan4472/Stefans-Blog">check out the code</a>. It was a lot of work, and it's not <em>quite</em> finished yet, so you might see some small bugs. <strong>Latest changes:</strong> improved image and caption CSS. <strong>Coming soon:</strong> responsive images and syntax highlighting in code snippets.</p>
+	<p class="lead">This blog runs on a platform I wrote from scratch in Python. You can <a href="/post/project-overview-stefanonsoftware">read about the technical details</a> or <a href="https://github.com/Stefan4472/Stefans-Blog">check out the code</a>. It was a lot of work, and it's not <em>quite</em> finished yet, so you might see some small bugs. <strong>Latest changes:</strong> improved images and captions, responsive banners and "featured" carousel. <strong>Coming soon:</strong> syntax highlighting in code snippets.</p>
 </div>
 
 {% if featured_posts %}
-<h3>Featured</h3>
+<h2>Featured</h2>
 <hr>
-<!-- Carousel with a few featured articles -->
+<!-- Carousel showing featured posts -->
 <!-- Carousel docs: https://getbootstrap.com/docs/4.3/components/carousel/ -->
-<!-- TODO: Any need to tweak settings for better display? -->
-<!-- A good ratio seems to be width = 1.5 * height-->
-<!-- NOTE: banners should be 1440 x 600 (?)-->
-<div class="bd-example" style="margin-bottom: 2rem;">
-	<div id="carouselExampleCaptions" class="carousel slide" data-ride="carousel" data-interval="7500">
+<div class="card">
+	<div id="featured-posts-carousel" class="carousel slide" data-ride="carousel" data-interval="7500">
 		<ol class="carousel-indicators">
 			{% for i in range(0, featured_posts|length) %}
-				<li data-target="#carouselExampleCaptions" data-slide-to="{{ i }}" {% if i == 0 %}class="active"{% endif %}></li>
+			<li data-target="#featured-posts-carousel" data-slide-to="{{ i }}" {% if i == 0 %}class="active"{% endif %}></li>
 			{% endfor %}
 		</ol>
 		<div id="featured_carousel" class="carousel-inner">
@@ -37,29 +34,32 @@
 			</div>
 			{% endfor %}
 		</div>
-		<a class="carousel-control-prev" href="#carouselExampleCaptions" role="button" data-slide="prev">
+		<a class="carousel-control-prev" href="#featured-posts-carousel" role="button" data-slide="prev">
 			<span class="carousel-control-prev-icon" aria-hidden="true"></span>
 			<span class="sr-only">Previous</span>
 		</a>
-		<a class="carousel-control-next" href="#carouselExampleCaptions" role="button" data-slide="next">
+		<a class="carousel-control-next" href="#featured-posts-carousel" role="button" data-slide="next">
 			<span class="carousel-control-next-icon" aria-hidden="true"></span>
 			<span class="sr-only">Next</span>
 		</a>
 	</div>
+	<!-- Under-carousel stuff -->
+	<div id="under-carousel-div" class="card-body">
+		<h5 id="under-carousel-title">Title</h5>
+		<p id="under-carousel-byline">Byline</p>
+		<a id="under-carousel-button" class="btn btn-primary float-right" role="button">Read More</a>
+	</div>
 </div>
-<!-- Under-carousel stuff -->
-<p id="under-carousel-title">Title</p>
-<p id="under-carousel-byline">Byline</p>
-<a id="under-carousel-button" class="btn btn-lg btn-primary" role="button">Read More</a>
+<br>
 {% endif %}
 
 <script>
 // Listen for the carousel "slide" event. Copy the carousel displayed
 // text into the "under-carousel" elements
-$('#carouselExampleCaptions').on('slid.bs.carousel', function (e) {
+$('#featured-posts-carousel').on('slid.bs.carousel', function (e) {
 	updateUnderCarousel();
 });
-
+	
 function updateUnderCarousel() {
 	// Find the div that is a child of 'featured_carousel' and has both the
 	// 'carousel-item' and 'carousel-active' classes
@@ -76,8 +76,7 @@ function updateUnderCarousel() {
 updateUnderCarousel();
 </script>
 
-<!-- Makes carousel or under-carousel visible or invisible, depending on
-	screen width -->
+<!-- Script to show either carousel-overlay or under-carousel, depending on screen width -->
 <script>
 var curr_inner_width = window.innerWidth;
 setCarouselForWidth(curr_inner_width);
@@ -103,24 +102,20 @@ function updateCarouselResponsively(windowWidth) {
 
 function setCarouselForWidth(windowWidth) {
   if (windowWidth < 800) {
-		$('#under-carousel-title').show();
-		$('#under-carousel-byline').show();
-		$('#under-carousel-button').show();
+		$('#under-carousel-div').show();
 		$('.carousel-overlay').hide();
   }
   else {
-		$('#under-carousel-title').hide();
-		$('#under-carousel-byline').hide();
-		$('#under-carousel-button').hide();
+		$('#under-carousel-div').hide();
 		$('.carousel-overlay').show();
   }
 }
 
 window.onresize = onWindowSizeChanged;
-
 </script>
 
-<h3>The Latest</h3>
+<!-- Show the most recent posts -->
+<h2>The Latest</h2>
 <hr>
 {% for post in recent_posts %}
 	{{ macros.post_widget(post, tags[post['post_slug']]) }}
