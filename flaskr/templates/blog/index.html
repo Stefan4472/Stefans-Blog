@@ -5,7 +5,7 @@
 
 <div class="jumbotron">
 	<h1 class="display-5">Hello world. Goodbye Wordpress!</h1>
-	<p class="lead">This blog runs on a platform I wrote in Python. You can <a href="/post/project-overview-stefanonsoftware">read about the technical details</a> or <a href="https://github.com/Stefan4472/Stefans-Blog">check out the code</a>. It was a lot of work, and it's not <em>quite</em> finished yet, so you might see some small bugs.</p>
+	<p class="lead">This blog runs on a platform I wrote from scratch in Python. You can <a href="/post/project-overview-stefanonsoftware">read about the technical details</a> or <a href="https://github.com/Stefan4472/Stefans-Blog">check out the code</a>. It was a lot of work, and it's not <em>quite</em> finished yet, so you might see some small bugs. <strong>Latest changes:</strong> improved image and caption CSS. <strong>Coming soon:</strong> responsive images and syntax highlighting in code snippets.</p>
 </div>
 
 {% if featured_posts %}
@@ -23,14 +23,16 @@
 				<li data-target="#carouselExampleCaptions" data-slide-to="{{ i }}" {% if i == 0 %}class="active"{% endif %}></li>
 			{% endfor %}
 		</ol>
-		<div class="carousel-inner">
+		<div id="featured_carousel" class="carousel-inner">
 			{% for i in range(0, featured_posts|length) %}
 			<div class="carousel-item {% if i == 0 %}active{% endif %} carousel-div">
 				<a href="{{ url_for('blog.post_view', slug=featured_posts[i]['post_slug']) }}"><img src="{{ featured_posts[i]['post_image_url'] }}" class="d-block carousel-image" alt="..."></a>
 				<div class="carousel-caption text-left">
-					<h1 style="background-color: black;">{{ featured_posts[i]['post_title'] }}</h1>
-					<p style="background-color: black;">{{ featured_posts[i]['post_byline'] }}</p>
-					<p><a class="btn btn-lg btn-primary" href="{{ url_for('blog.post_view', slug=featured_posts[i]['post_slug']) }}" role="button">Read More</a></p>
+					<div class="carousel-text">
+						<h1 id="carousel-title" class="carousel-overlay">{{ featured_posts[i]['post_title'] }}</h1>
+						<p id="carousel-byline" class="carousel-overlay">{{ featured_posts[i]['post_byline'] }}</p>
+						<a id="carousel-button" class="btn btn-lg btn-primary carousel-overlay" href="{{ url_for('blog.post_view', slug=featured_posts[i]['post_slug']) }}" role="button">Read More</a>
+					</div>
 				</div>
 			</div>
 			{% endfor %}
@@ -45,7 +47,78 @@
 		</a>
 	</div>
 </div>
+<!-- Under-carousel stuff -->
+<p id="under-carousel-title">Title</p>
+<p id="under-carousel-byline">Byline</p>
+<a id="under-carousel-button" class="btn btn-lg btn-primary" role="button">Read More</a>
 {% endif %}
+
+<script>
+// Listen for the carousel "slide" event. Copy the carousel displayed
+// text into the "under-carousel" elements
+$('#carouselExampleCaptions').on('slid.bs.carousel', function (e) {
+	updateUnderCarousel();
+});
+
+function updateUnderCarousel() {
+	// Find the div that is a child of 'featured_carousel' and has both the
+	// 'carousel-item' and 'carousel-active' classes
+	active_carousel_div = $('#featured_carousel').children('.carousel-item.active');
+	// Find the 'carousel-text' div 
+	carousel_text_div = active_carousel_div.children('.carousel-caption').children('.carousel-text');
+	// Copy the values of the active title, byline, and button to the 'under-carousel'
+	// elements
+	$('#under-carousel-title').text(carousel_text_div.children('#carousel-title').text());
+	$('#under-carousel-byline').text(carousel_text_div.children('#carousel-byline').text());
+	$('#under-carousel-button').attr('href', carousel_text_div.children('#carousel-button').attr('href'));
+}
+
+updateUnderCarousel();
+</script>
+
+<!-- Makes carousel or under-carousel visible or invisible, depending on
+	screen width -->
+<script>
+var curr_inner_width = window.innerWidth;
+setCarouselForWidth(curr_inner_width);
+
+function onWindowSizeChanged() {
+  console.log(window.innerWidth);
+  updateCarouselResponsively(window.innerWidth);
+}
+
+function updateCarouselResponsively(windowWidth) {
+  // Change from narrow to wide--show carousel text
+  if (windowWidth < 800 && curr_inner_width >= 800) {
+    console.log("Switching to under-carousel");
+    setCarouselForWidth(windowWidth);
+  }
+  // Change from wide to narrow--show under-carousel text
+  else if (windowWidth >= 800 && curr_inner_width < 800) {
+    console.log("Switching to carousel");
+    setCarouselForWidth(windowWidth);
+  }
+  curr_inner_width = windowWidth; 
+}
+
+function setCarouselForWidth(windowWidth) {
+  if (windowWidth < 800) {
+		$('#under-carousel-title').show();
+		$('#under-carousel-byline').show();
+		$('#under-carousel-button').show();
+		$('.carousel-overlay').hide();
+  }
+  else {
+		$('#under-carousel-title').hide();
+		$('#under-carousel-byline').hide();
+		$('#under-carousel-button').hide();
+		$('.carousel-overlay').show();
+  }
+}
+
+window.onresize = onWindowSizeChanged;
+
+</script>
 
 <h3>The Latest</h3>
 <hr>
