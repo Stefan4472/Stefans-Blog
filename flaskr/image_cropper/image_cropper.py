@@ -8,7 +8,7 @@ import enum
 import typing 
 
 FEATURED_IMG_SIZE = (1000, 540)
-BANNER_SIZE = (1000, 300)
+BANNER_SIZE = (1000, 175)
 THUMBNAIL_SIZE = (400, 400)
 
 class AnchorPosition(enum.Enum):
@@ -373,7 +373,7 @@ if __name__ == '__main__':
     img_path = askopenfilename(
         initialdir=execution_path,
         title = 'Select image',
-        filetypes = (('jpeg files','*.jpg'), ('png files', '*.png'), ('gif files', '*.gif')),
+        filetypes = (('jpg files','*.jpg'), ('jpeg files', '*.jpeg'), ('png files', '*.png'), ('gif files', '*.gif')),
     )
     # Exit if user did not select an image
     if not img_path:

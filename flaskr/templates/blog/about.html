@@ -1,29 +1,30 @@
 {% extends "blog/base_template.html" %}
 
 {% block content %}
+
+
+<div id="post-content">
 <h1>About</h1>
 <hr>
 
 <!-- TODO: Image inline with text, or centered -->
-<figure class="figure text-center">
-  <img src="{{ url_for('static', filename='IMG_20190825_170506.jpg') }}" class="figure-img img-fluid rounded">
-  <figcaption class="figure-caption"><em>I'm the human on the left.</em></figcaption>
-</figure>
+  <figure class="figure text-center">
+    <img src="{{ url_for('static', filename='IMG_20190813_200915.jpg') }}" class="figure-img img-fluid rounded" style="max-width: 500px">
+  </figure>
 
-<p>My name's Stefan. I'm an undergrad studying computer science at the University of Massachusetts, Amherst. I've always enjoyed writing and coding, so starting a blog (and coding the website) was the natural thing to do! The name "Stefan on Software" comes from one of my favorite blogs called <a href="http://joelonsoftware.com">Joel On Software</a>. It's a fantastic blog for software engineers, and I hope to someday produce content that's just as good.</p>
+  <p>Hey! My name's Stefan. I'm a recent graduate of the University of Massachusetts Amherst, where I studied Computer Science. I've always enjoyed writing and coding, so starting a blog was the natural thing to do! The name "Stefan on Software" comes from one of my favorite blogs called <a href="http://joelonsoftware.com">Joel On Software</a>. It's a fantastic blog for software engineers, and I strive to one day produce content that's just as good.</p>
 
-<p>This blog isn't just about software, though. I love travelling, and I've posted multiple articles <a href="/tag/travel">about my travels</a>. My parents both come from Europe (my mom from Poland, my dad from Germany) so I have a good excuse to spend time there! I speak German, Polish, and French, which also makes travel easier. In 2018 I studied abroad at the University of Uppsala in Sweden, and wrote <a href="/tag/study-abroad">a bunch of articles about my time there</a>.</p>
+  <p>This blog isn't just about software, though. I love travelling, and I've posted multiple articles <a href="/tag/travel">about my travels</a>. My parents both come from Europe (my mom from Poland, my dad from Germany) so I have a good excuse to spend time there! I speak German, Polish, and French, which also makes travel easier. In 2018 I studied abroad at the University of Uppsala in Sweden, and wrote <a href="/tag/study-abroad">a bunch of articles about my time there</a>.</p>
+
+  <p>I've been coding since 10th grade, when my dad <s>forced</s> <em>persuaded</em> me to take an intro C++ programming course. I was really bad at it--I didn't grasp the concepts naturally, and coding literally made my brain hurt. I felt like my brain just wasn't "wired" for coding. It was so frustrating! Because of that, I have a special level of empathy for those who are new to programming.</p>
+
+  <p>Lucky for me, I played a lot of video games. One of my favorites was Minecraft, which had been initially written by a single guy who called himself "Notch." I had all these ideas for cool things to add to Minecraft, and that made me really, <em>really</em> want to get better at coding. That desire sustained me through the difficult ordeal of learning to code.</p>
   
-<p>I've been coding since 10th grade, when my dad <s>forced</s> <em>persuaded</em> me to take an intro C++ programming course. I was really bad at it--I didn't grasp the concepts naturally, and coding caused my brain to hurt. I felt like my brain just wasn't "wired" for coding. It was so frustrating!</p>
+  <p>Since then, software has been my main hobby, and now my profession. There's nothing more satisfying than designing and building a complicated project, and I have notebooks full of sketches and specifications I created while brainstorming one project or another. I think coding is an intensely creative activity, and it gives individuals the ability to do super cool things with just their computer and their brain.</p>
 
-<p>Lucky for my dad, I played a lot of video games. One of my favorites was Minecraft, which had been initially written by a single dude who called himself "Notch." I had all these ideas for cool things to add to Minecraft, And that made me really, <em>really</em> want to write Minecraft mods. I realized that in order to do that I would have to get really good at coding, and that drive sustained me through the difficult ordeal of learning to code.</p>
+  <p>My other hobbies include tennis and basketball. Between work, exercise, and personal software projects I don't have a lot of time for video games, but when I do, I play Super Smash or Rome Total War. My favorite TV shows are Arrested Development, Curb Your Enthusiasm, Six Feet Under, and The Office (if that even needed mentioning!)</p>
 
-<p>It also helped that my friend Matthew knew what he was doing, and was a patient teacher. Together we started a programming club (which eventually grew to *three* people) and met every Friday to plan projects and talk about coding. We started a "company" called <em>PlainSimple Apps</em>, which would publish beautiful, intuitive software. We wrote a few small programs, although we lacked the experience to produce anything amazing. Nevertheless it was an incredibly good experience for me, and made me comfortable coding and talking about code.</p>
-
-<p>But that was all in highschool. Since then, coding has become a big hobby of mine, and something that I love to do. There's nothing more satisfying than designing and building a complicated project, and I have notebooks full of sketches and specifications I created while brainstorming one project or another. I think coding is an intensely creative activity, and it gives individuals the ability to do super cool things with just their computer and their brain.</p>
-
-<p>My other hobbies include tennis and basketball. Between school, sport, and personal projects I don't have a lot of time for video games, but when I do I play Super Smash or Rome Total War. My favorite TV shows are Arrested Development, Curb Your Enthusiasm, Six Feet Under, and The Office (if that even needed mentioning!)</p>
-
-<p>Feel free to contact me <a href="http://linkedin.com/in/stefan-kussmaul">on LinkedIn</a>, or check out my <a href="http://github.com/profile/stefan4472">Github</a>.</p>
-
+  <p>Feel free to contact me <a href="http://linkedin.com/in/stefan-kussmaul">on LinkedIn</a>, or check out my <a href="http://github.com/profile/stefan4472">Github</a>.</p>
+</div>
 {% endblock %}
+</div>

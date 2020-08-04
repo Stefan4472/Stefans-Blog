@@ -38,10 +38,16 @@ def index():
     featured_posts = [post for post in featured_posts if post]
 
     # Create dict mapping post_slug -> list of tags
-    tags = { post['post_slug']: db.get_tags_by_post_slug(post['post_slug']) \
-             for post in recent_posts + featured_posts }
-    return render_template('blog/index.html', featured_posts=featured_posts, \
-                            recent_posts=recent_posts, tags=tags)
+    tags = { 
+        post['post_slug']: db.get_tags_by_post_slug(post['post_slug']) \
+            for post in recent_posts + featured_posts 
+    }
+    return render_template(
+        'blog/index.html', 
+        featured_posts=featured_posts,
+        recent_posts=recent_posts, 
+        tags=tags,
+    )
 
 @bp.route('/posts')
 @logged_visit
@@ -89,9 +95,15 @@ def post_view(slug):
     # retrieve tags this post is tagged under
     tags = db.get_tags_by_post_slug(slug)
     
-    return render_template('blog/post.html', post=post, tags=tags, \
-        post_html=post_html, banner_url=post['post_banner_url'], prev_post=prev_post, \
-        next_post=next_post)
+    return render_template(
+        'blog/post.html', 
+        post=post, 
+        tags=tags,
+        post_html=post_html, 
+        banner_url=post['post_banner_url'], 
+        prev_post=prev_post,
+        next_post=next_post,
+    )
 
 # show post widgets for all posts under the given tag
 @bp.route('/tag/<slug>')
@@ -127,6 +139,11 @@ def about_page():
 def highlights_page():
     return render_template('blog/highlights.html')
 
+@bp.route('/changelog')
+@logged_visit
+def changelog_page():
+    return render_template('blog/changelog.html')
+    
 @bp.errorhandler(404)
 @logged_visit
 def error_page(error):

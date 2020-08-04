@@ -6,7 +6,7 @@ from flask.cli import with_appcontext
 from . import database
 from . import blog
 from .search_engine import index 
-from .manage_blog import add_post
+from .manage_blog import add_post, upload_posts
 
 def create_app(test_config=None):
     # create and configure the app
@@ -50,6 +50,7 @@ def init_app(app):
     app.cli.add_command(init_db_command)
     app.cli.add_command(init_search_index_command)
     app.cli.add_command(add_post)
+    app.cli.add_command(upload_posts)
 
 # command-line function to re-init the database to the
 # original schema. Run using "flask init-db"

@@ -11,5 +11,5 @@ def get_featured_posts(max_num=5):
             
             posts.append(line)
             if len(posts) >= max_num:
-                break 
+                break
     return posts

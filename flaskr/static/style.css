@@ -17,7 +17,7 @@
 }
 
 .carousel-div {
-  background-color: black;
+  background-color: rgba(0, 0, 0, 0.8);
   text-align: center;
 }
 
@@ -29,4 +29,14 @@ pre {
 .resume {
   margin-bottom: 0rem;
   margin-top: 0 rem;
+}
+
+.figure {
+  width: 100%;
+}
+
+.figure-caption {
+  max-width: 70%;
+  margin: 0 auto;
+  font-style: italic;
 }

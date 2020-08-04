@@ -35,7 +35,7 @@ COLOR_GENERATOR = randomcolor.RandomColor()
 # Prescribed featured-image size
 FEATURED_IMG_SIZE = (1000, 540)
 # Prescribed banner size
-BANNER_SIZE = (1000, 300) # (1928, 768)
+BANNER_SIZE = (1000, 175) # (1928, 768)
 # Size of image thumbnails
 THUMBNAIL_SIZE = (400, 400)
 # The size that images in posts are resized to, by default
@@ -156,6 +156,7 @@ def add_post(
         quiet: bool, 
         compress_imgs: bool,
 ):
+    print('Running with post directory {}'.format(post_dir))
     # If provided path is not a directory, treat it as a relative path from
     # the path the script was executed from
     if not os.path.isdir(post_dir):
@@ -270,7 +271,7 @@ def add_post(
         img_path = askopenfilename(
             initialdir=post_dir,
             title = 'Select image',
-            filetypes = (('jpeg files','*.jpg'), ('png files', '*.png'), ('gif files', '*.gif')),
+            filetypes = (('jpg files','*.jpg'), ('jpeg files', '*.jpeg'), ('png files', '*.png'), ('gif files', '*.gif')),
         )
         # Exit if user did not select an image
         if not img_path:
