@@ -6,6 +6,7 @@ import pathlib
 import shutil
 import click
 import pysftp
+import typing
 from datetime import date, datetime
 from flask import current_app, url_for
 from flask.cli import with_appcontext
@@ -54,12 +55,36 @@ def get_static_url(filepath):
 def generate_random_color():
     return COLOR_GENERATOR.generate(luminosity='light', count=1)[0]
 
-# def resolve_path(
-#         path: str,
-#         curr_dir: pathlib.Path,
-# ) -> pathlib.Path:
-#     """Can handle absolute or relative path."""
+def resolve_directory_path(
+        starting_dir: pathlib.Path,
+        path: str,
+) -> pathlib.Path:
+    # Check the absolute path
+    abs_path = pathlib.Path(path)
+    if abs_path.is_dir():
+        return abs_path
+    # If that didn't work, check the relative path
+    rel_path = pathlib.Path(starting_dir) / path
+    if rel_path.is_dir():
+        return rel_path
+    # If that didn't work, raise error
+    raise ValueError('Couldnt\'t find directory at absolute or relative path')
 
+def resolve_file_path(
+        starting_dir: pathlib.Path,
+        path: str,
+) -> pathlib.Path:
+    # Check the absolute path
+    abs_path = pathlib.Path(path)
+    if abs_path.is_file():
+        return abs_path
+    # If that didn't work, check the relative path
+    rel_path = pathlib.Path(starting_dir) / path
+    if rel_path.is_file():
+        return rel_path
+    # If that didn't work, raise error
+    raise ValueError('Couldnt\'t find file at absolute or relative path')
+        
 # Takes the path to a Markdown file, read it, and renders it to HTML.
 # Returns (rendered HTML as a string, list of image sources found in <img> tags).
 # This function will render images as Bootstrap figures. 
@@ -131,6 +156,7 @@ def render_md_file(file_path, img_save_dir):
     
     return ''.join(html_snippets), images
 
+
 def copy_to_static(file_path, static_path):  # TODO: IMPROVE
     # Make sure the file exists
     if not (os.path.exists(file_path) and os.path.isfile(file_path)):
@@ -144,70 +170,21 @@ def copy_to_static(file_path, static_path):  # TODO: IMPROVE
     # Copy the image to the folder
     shutil.copyfile(file_path, dest_path)
 
-@click.command('add_post')
-@click.argument('post_dir')
-@click.option('--upload', is_flag=True, default=False, help='Whether to upload the post to PythonAnywhere')
-@click.option('--quiet', is_flag=True, default=False, help='Whether to suppress print statements and confirmation promts')
-@click.option('--compress_imgs', is_flag=True, default=True, help='Whether to resize images to {} and convert to JPG'.format(DEFAULT_IMG_SIZE))
-@with_appcontext
-def add_post(
-        post_dir: str, 
-        upload: bool, 
-        quiet: bool, 
-        compress_imgs: bool,
-):
-    print('Running with post directory {}'.format(post_dir))
-    # If provided path is not a directory, treat it as a relative path from
-    # the path the script was executed from
-    if not os.path.isdir(post_dir):
-        post_path = os.path.realpath(os.path.join(sys.argv[0], post_dir))
 
-    # Ensure the provided path is a directory that exists 
-    if not os.path.isdir(post_dir):
-        print ('ERROR: The provided path is not a directory or does not exist')
-        sys.exit(1)
-
-    if not quiet:
-        print('Adding post from directory "{}"'.format(post_dir))
-    
-    # Determine absolute path to the post file and the metadata file
-    post_path = os.path.join(post_dir, 'post.md')
-    meta_path = os.path.join(post_dir, 'post-meta.json')
-
-    post_markdown = ''
-    post_html = ''
-    post_data = {}
-
-    # Read the metadata file
-    try:
-        with open(meta_path, 'r', encoding='utf-8', errors='strict') as meta_file:
-            post_data = json.load(meta_file)
-    except IOError:
-        print ('ERROR: Could not read the meta-data file ("{}")'.format(meta_path))
-        sys.exit(1)
-
-    # Read the Markdown file 
-    try:
-        with open(post_path, 'r', encoding='utf-8', errors='strict') as post_file:
-            post_markdown = post_file.read()
-    except IOError:
-        print ('ERROR: Could not read the post file ("{}")'.format(post_path))
-        sys.exit(1)
-
+def process_post_data(
+        post_data: typing.Dict[str, typing.Any],
+) -> typing.Tuple[str, str, str, datetime]:
     # Make sure title is defined
     if KEY_TITLE in post_data:
         title = post_data[KEY_TITLE]
     else:
-        print ('ERROR: post-meta.json must contain a "{}" field'.format(KEY_TITLE))
-        sys.exit(1)
+        raise ValueError('post-meta.json must contain a "{}" field'.format(KEY_TITLE))
 
     # Get byline
     if KEY_BYLINE in post_data:
         byline = post_data[KEY_BYLINE]
         # Make sure byline is not more than 200 characters
         if len(byline) > 200:
-            if not quiet:
-                print ('Trimming byline to 200 characters')
             byline = byline[:200]
     else:
         # Just take the first 200 characters of Markdown
@@ -228,104 +205,226 @@ def add_post(
     else:  
         # Default to today's date
         post_date = date.today()
+    return title, byline, slug, post_date
 
-    # Get post image
+
+class PostImages:
+    def __init__(
+            self,        
+            featured_img: Image.Image = None,
+            featured_img_path: str = '',
+            thumbnail_img: Image.Image = None,
+            thumbnail_img_path: str = '',
+            banner_img: Image.Image = None,
+            banner_img_path: str = '',
+            changed: bool = False,
+    ):
+        self.featured_img = featured_img
+        self.featured_img_path = featured_img_path
+        self.thumbnail_img = thumbnail_img
+        self.thumbnail_img_path = thumbnail_img_path
+        self.banner_img = banner_img
+        self.banner_img_path = banner_img_path
+        self.changed = changed
+
+
+def get_post_images(
+        post_dir: pathlib.Path,
+        post_data: typing.Dict[str, typing.Any],
+) -> PostImages:
+    """Return featured image, thumbnail, banner image."""
+    # If image has been defined, get the other images from json. 
+    # Otherwise, run ImageCropper.
     if KEY_IMAGE in post_data:
-        post_img_path = os.path.realpath(os.path.join(post_dir, post_data[KEY_IMAGE]))
-        post_img = Image.open(post_img_path)
-        if post_img.width != FEATURED_IMG_SIZE[0] or \
-                post_img.height != FEATURED_IMG_SIZE[1]:
-            print('ERROR: featured image must be {}w x {}h px'.format(
-                FEATURED_IMG_SIZE[0], FEATURED_IMG_SIZE[1]))
-            sys.exit(1)
-    
-        # Get banner image
-        if KEY_BANNER in post_data:
-            banner_path = os.path.realpath(os.path.join(post_dir, post_data[KEY_BANNER]))
-            banner_img = Image.open(banner_path)
-            if banner_img.width != BANNER_SIZE[0] or \
-                    banner_img.height != BANNER_SIZE[1]:
-                print('ERROR: banner image must be {}w x {}h px'.format(
-                    BANNER_SIZE[0], BANNER_SIZE[1]))
-                sys.exit(1)
-        else:
-            print('ERROR: post-meta.json must contain a "{}" field'.format(KEY_BANNER))
-            sys.exit(1)
-
-        # Get thumbnail image
-        if KEY_THUMBNAIL in post_data:
-            thumbnail_path = os.path.realpath(os.path.join(post_dir, post_data[KEY_THUMBNAIL]))
-            thumbnail_img = Image.open(thumbnail_path)
-            if thumbnail_img.width != THUMBNAIL_SIZE[0] or \
-                    thumbnail_img.height != THUMBNAIL_SIZE[1]:
-                print('ERROR: banner image must be {}w x {}h px'.format(
-                    THUMBNAIL_SIZE[0], THUMBNAIL_SIZE[1]))
-                sys.exit(1)
-        else:
-            print('ERROR: post-meta.json must contain a "{}" field'.format(KEY_THUMBNAIL))
-            sys.exit(1)
-    # Run image-cropper for user to choose images themselves
+        return get_post_images_from_json(post_dir, post_data)
     else:
-        root = tk.Tk()
-        # Ask user to select an image for use
-        img_path = askopenfilename(
-            initialdir=post_dir,
-            title = 'Select image',
-            filetypes = (('jpg files','*.jpg'), ('jpeg files', '*.jpeg'), ('png files', '*.png'), ('gif files', '*.gif')),
+        return get_post_images_from_image_cropper(post_dir)
+
+
+def get_post_images_from_json(
+        post_dir: pathlib.Path,
+        post_data: typing.Dict[str, typing.Any],
+) -> PostImages:
+    # Get featured image
+    post_img_path = post_dir / post_data[KEY_IMAGE]
+    post_img = Image.open(post_img_path)
+    if post_img.width != FEATURED_IMG_SIZE[0] or \
+            post_img.height != FEATURED_IMG_SIZE[1]:
+        raise ValueError(
+            'Featured image must be {}w x {}h px'.format(
+                FEATURED_IMG_SIZE[0], FEATURED_IMG_SIZE[1])
         )
-        # Exit if user did not select an image
-        if not img_path:
-            print('No image selected')
-            sys.exit(1)
 
-        img_path = pathlib.Path(img_path)
+    # Get banner image
+    if KEY_BANNER in post_data:
+        banner_path = post_dir / post_data[KEY_BANNER]
+        banner_img = Image.open(banner_path)
+        if banner_img.width != BANNER_SIZE[0] or banner_img.height != BANNER_SIZE[1]:
+            raise ValueError(
+                'Banner image must be {}w x {}h px'.format(
+                    BANNER_SIZE[0], BANNER_SIZE[1])
+            )
+    else:
+        raise ValueError(
+            'post-meta.json must contain a "{}" field'.format(KEY_BANNER)
+        )
 
-        # Create featured image
-        app = ImageCropper(img_path, FEATURED_IMG_SIZE[0], FEATURED_IMG_SIZE[1])
-        app.mainloop()
-        if app.finished_successfully:
-            post_img = app.cropped_image
-        else:
-            print('Operation cancelled')
-            sys.exit(1)
+    # Get thumbnail image
+    if KEY_THUMBNAIL in post_data:
+        thumbnail_path = post_dir / post_data[KEY_THUMBNAIL]
+        thumbnail_img = Image.open(thumbnail_path)
+        if thumbnail_img.width != THUMBNAIL_SIZE[0] or \
+                thumbnail_img.height != THUMBNAIL_SIZE[1]:
+            raise ValueError(
+                'Banner image must be {}w x {}h px'.format(
+                    THUMBNAIL_SIZE[0], THUMBNAIL_SIZE[1])
+            )
+    else:
+        raise ValueError(
+            'post-meta.json must contain a "{}" field'.format(KEY_THUMBNAIL)
+        )
+
+    return PostImages(
+        featured_img=post_img,
+        featured_img_path=post_img_path,
+        thumbnail_img=thumbnail_img,
+        thumbnail_img_path=thumbnail_path,
+        banner_img=banner_img,
+        banner_img_path=banner_path,
+        changed=True,
+    )
+
+
+def get_post_images_from_image_cropper(
+        post_dir: pathlib.Path,
+) -> PostImages:
+    root = tk.Tk()
+    # Ask user to select an image for use
+    img_path = askopenfilename(
+        initialdir=post_dir,
+        title = 'Select image',
+        filetypes = (
+            ('jpg files','*.jpg'), 
+            ('jpeg files', '*.jpeg'), 
+            ('png files', '*.png'), 
+            ('gif files', '*.gif'),
+        ),
+    )
+    # Exit if user did not select an image
+    if not img_path:
+        raise ValueError('No image selected')
+
+    img_path = pathlib.Path(img_path)
+
+    # Create featured image
+    app = ImageCropper(img_path, FEATURED_IMG_SIZE[0], FEATURED_IMG_SIZE[1])
+    app.mainloop()
+    if app.finished_successfully:
+        post_img = app.cropped_image
+    else:
+        raise ValueError('Operation cancelled')
+    
+    # Create thumbnail
+    app = ImageCropper(str(img_path), THUMBNAIL_SIZE[0], THUMBNAIL_SIZE[1])
+    app.mainloop()
+    if app.finished_successfully:
+        thumbnail_img = app.cropped_image
+    else:
+        raise ValueError('Operation cancelled')
+
+    # Create banner
+    app = ImageCropper(img_path, BANNER_SIZE[0], BANNER_SIZE[1])
+    app.mainloop()
+    if app.finished_successfully:
+        banner_img = app.cropped_image
+    else:
+        raise ValueError('Operation cancelled')
+
+    # Create the paths for the newly-cropped images
+    featured_path = post_dir / 'featured.jpg'
+    thumbnail_path = post_dir / 'thumb.jpg'
+    banner_path = post_dir / 'banner.jpg'
+
+    # Save the images
+    post_img.save(featured_path)
+    thumbnail_img.save(thumbnail_path)
+    banner_img.save(banner_path)
+
+    return PostImages(
+        featured_img=post_img,
+        featured_img_path=featured_path.name,
+        thumbnail_img=thumbnail_img,
+        thumbnail_img_path=thumbnail_path.name,
+        banner_img=banner_img,
+        banner_img_path=banner_path.name,
+    )
+    
+
+@click.command('add_post')
+@click.argument('post_dir')
+@click.option('--quiet', is_flag=True, default=False, help='Whether to suppress print statements and confirmation prompts')
+@with_appcontext
+def add_post(
+        post_dir: str, 
+        quiet: bool, 
+):
+    try:
+        post_dir = resolve_directory_path(sys.argv[0], post_dir)
+    except ValueError as e:
+        print(e)
+        sys.exit(1)
+
+    if not quiet:
+        print('Adding post from directory "{}"'.format(post_dir))
+    
+    # Determine absolute path to the post file and the metadata file
+    post_path = post_dir / 'post.md'
+    meta_path = post_dir / 'post-meta.json'
+
+    # Post's Markdown
+    post_markdown = ''
+    # Post's generated HTML
+    post_html = ''
+    # Post's metadata
+    post_data: typing.Dict[str, typing.Any] = {}
+
+    # Read the metadata file
+    try:
+        with open(meta_path, 'r', encoding='utf-8', errors='strict') as meta_file:
+            post_data = json.load(meta_file)
+    except IOError:
+        print ('ERROR: Could not read the meta-data file ("{}")'.format(meta_path))
+        sys.exit(1)
+
+    # Read the Markdown file 
+    try:
+        with open(post_path, 'r', encoding='utf-8', errors='strict') as post_file:
+            post_markdown = post_file.read()
+    except IOError:
+        print ('ERROR: Could not read the post file ("{}")'.format(post_path))
+        sys.exit(1)
+
+    title, byline, slug, post_date = process_post_data(post_data)
+    
+    post_images = get_post_images(post_dir, post_data)
+
+    # Write image paths to the 'post-meta.json' file, overwriting
+    # any paths that are currently there. This is done in case the
+    # user has selected new images that weren't there before
+    if post_images.changed:
+        post_data['image'] = str(post_images.featured_img_path.name)
+        post_data['thumbnail'] = str(post_images.thumbnail_img_path.name)
+        post_data['banner'] = str(post_images.banner_img_path.name)
         
-        # Create thumbnail
-        app = ImageCropper(str(img_path), THUMBNAIL_SIZE[0], THUMBNAIL_SIZE[1])
-        app.mainloop()
-        if app.finished_successfully:
-            thumbnail_img = app.cropped_image
-        else:
-            print('Operation cancelled')
-            sys.exit(1)
-
-        # Create banner
-        app = ImageCropper(img_path, BANNER_SIZE[0], BANNER_SIZE[1])
-        app.mainloop()
-        if app.finished_successfully:
-            banner_img = app.cropped_image
-        else:
-            print('Operation cancelled')
-            sys.exit(1)
-
-        # Create the paths for the newly-cropped images
-        thumbnail_path = img_path.parent / (img_path.stem + '-thumb.jpg')
-        featured_path = img_path.parent / (img_path.stem + '-featured.jpg')
-        banner_path = img_path.parent / (img_path.stem + '-banner.jpg')
-
-        # Write image paths to the 'post-meta.json' file, overwriting
-        # any paths that are currently there
-        post_data['image'] = featured_path.name
-        post_data['thumbnail'] = thumbnail_path.name
-        post_data['banner'] = banner_path.name
-        
-        # Write out the updated post metadata
-        try:
-            with open(meta_path, 'w') as meta_file:
-                json.dump(post_data, meta_file, indent=4)
-                print('Saved images and updated "post-meta.json" successfully')
-        except IOError:
-            print ('ERROR: Could not read the meta-data file ("{}")'.format(meta_path))
-            sys.exit(1)
+    # TODO: HOW TO UPDATE METADATA PROPERLY?
+    # Write out the updated post metadata
+    try:
+        with open(meta_path, 'w') as meta_file:
+            json.dump(post_data, meta_file, indent=4)
+            print('Saved images and updated "post-meta.json" successfully')
+    except IOError:
+        print('Couldn\'t update the meta-data file ("{}")'.format(meta_path))
+        sys.exit(1)
 
     # Build URLs for the image, banner, and thumbnail.
     # They will have prescribed filenames ('image', 'banner', 'thumbnail') 
@@ -338,12 +437,20 @@ def add_post(
 
     # Add post to the database.
     # This will fail if there is a problem with the post data
-    database.add_post(title, byline, slug, post_date, post_img_url, post_banner_url, post_thumbnail_url)
+    # TODO: ACTUALLY, THE URLS SHOULD ALL BE STANDARDIZED AND DON'T NEED TO BE STORED IN THE DATABASE
+    database.add_post(
+        title, 
+        byline, 
+        slug, 
+        post_date, 
+        post_img_url, 
+        post_banner_url, 
+        post_thumbnail_url,
+    )
 
+    # Add tags to the database
     if KEY_TAGS in post_data:
-        tags = post_data[KEY_TAGS]
-        # Add tags to the database
-        for tag in tags:
+        for tag in post_data[KEY_TAGS]:
             # print ('Handling tag {}'.format(tag))
             tag_slug = generate_slug(tag)
             # Add tag to the database if not already there
@@ -369,16 +476,16 @@ def add_post(
             while confirm_use_dir != 'y':
                 confirm_use_dir = input('The post directory "{}" already exists. Continue? (y/n)'.format(post_static_path)).strip().lower()
                 if confirm_use_dir == 'n':
-                    print('No changes made')
-                    sys.exit(0)
+                    print('No changes made--aborted')
+                    sys.exit(1)
 
     # Render the Markdown file to HTML  NOTE: THE FILE HAS ALREADY BEEN READ!
     article_html, article_imgs = render_md_file(post_path, slug)  # TODO: IS THIS HANDLING BLANK LINES CORRECTLY?
     
-    # Save post images 
-    post_img.save(os.path.join(post_static_path, 'featured_img.jpg'))
-    banner_img.save(os.path.join(post_static_path, 'banner.jpg'))
-    thumbnail_img.save(os.path.join(post_static_path, 'thumbnail.jpg'))
+    # Save post images to 'static'
+    post_images.featured_img.save(os.path.join(post_static_path, 'featured_img.jpg'))
+    post_images.banner_img.save(os.path.join(post_static_path, 'banner.jpg'))
+    post_images.thumbnail_img.save(os.path.join(post_static_path, 'thumbnail.jpg'))
 
     # Copy image files to the article's directory
     for img_path in article_imgs:
@@ -426,48 +533,6 @@ def add_post(
     database.commit()
     # Commit search engine index changes
     search_index.commit()
-
-    if upload:
-        # Read the secret file to get host information
-        try:
-            with open(current_app.config['SECRET_PATH']) as secret_file:
-                secret_data = json.load(secret_file)
-                host = secret_data['host']
-                username = secret_data['username']
-                password = secret_data['password']
-        except IOError:
-            print ('No secret file found')
-            host = input('Enter host: ').strip()
-            username = input('Enter username: ').strip()
-            password = input('Enter password: ').strip()
-
-        if not quiet:
-            print ('Initiating SFTP connection with {}...'.format(host))
-
-        # Push files to PythonAnywhere, via SFTP
-        # SFTP instructions for PythonAnywhere: https://help.pythonanywhere.com/pages/SSHAccess
-        # From cmd, the following correctly copies the 'inventory-systems' folder to PythonAnywhere:
-        # 'put -r flaskr/static/inventory-systems Stefans-Blog/flaskr/static/inventory-systems'
-        with pysftp.Connection(host, username=username, password=password) as sftp:
-            # Create post directory on host and copy post files
-            with sftp.cd(r'/home/skussmaul/Stefans-Blog/flaskr/static'):
-                # Create post directory on host
-                try:
-                    sftp.mkdir(slug)
-                except IOError:
-                    print ('Warning: The directory already exists')
-                # Enter post directory
-                with sftp.cd(slug):
-                    # Copy all files in 'post_static_path' to host.
-                    # This is a workaround because the 'put_d' (put directory) command is not working.
-                    for file_to_copy in os.listdir(post_static_path):
-                        if not quiet:
-                            print ('Uploading {}...'.format(file_to_copy))
-                        sftp.put(os.path.join(post_static_path, file_to_copy))
-            # Copy instance files
-            with sftp.cd(r'/home/skussmaul/Stefans-Blog/instance'):
-                sftp.put(current_app.config['DATABASE_PATH'])
-                sftp.put(current_app.config['SEARCH_INDEX_PATH'])
 
 
 # upload_file: text file, each line has the slug of the post to upload.
@@ -526,3 +591,8 @@ def upload_posts(upload_file):
         with sftp.cd(r'/home/skussmaul/Stefans-Blog/instance'):
             sftp.put(current_app.config['DATABASE_PATH'])
             sftp.put(current_app.config['SEARCH_INDEX_PATH'])
+
+
+
+def sync_to_production():
+    return
