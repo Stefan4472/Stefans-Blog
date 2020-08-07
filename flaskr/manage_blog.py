@@ -20,6 +20,7 @@ def add_post(
         post_dir: str, 
         quiet: bool, 
 ):
+    """Add post from the specified directory to the local site instance."""
     try:
         post_dir = util.resolve_directory_path(sys.argv[0], post_dir)
     except ValueError as e:
@@ -30,12 +31,14 @@ def add_post(
         print('Adding post from directory "{}"'.format(post_dir))
     
     post_adder.PostAdder().add_post(
-        post_dir,
-        current_app.static_path,
-        current_app.config['MANIFEST_PATH'],
+        pathlib.Path(post_dir),
+        pathlib.Path(current_app.static_folder),
+        pathlib.Path(current_app.config['MANIFEST_PATH']),
+        pathlib.Path(current_app.config['DATABASE_PATH']),
         quiet,
     )
 
 def push_to_production():
+    """Push local site instance to the production server."""
     # TODO
     return
