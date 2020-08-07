@@ -17,4 +17,8 @@ def log_visit():
         'ip_addr': user_ip,  
         'user_agent': request.environ['HTTP_USER_AGENT'],
     }
-    requests.post('http://sedu.pythonanywhere.com/report_traffic', params=params)
+    try:
+        requests.post('http://127.0.0.1:5001/report_traffic', params=params)
+    except requests.exceptions.ConnectionError:
+        pass
+    # requests.post('http://sedu.pythonanywhere.com/report_traffic', params=params)

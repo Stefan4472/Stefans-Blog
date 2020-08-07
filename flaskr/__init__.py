@@ -5,8 +5,10 @@ from flask import Flask, current_app, g
 from flask.cli import with_appcontext
 from . import database
 from . import blog
+from .manifest import Manifest
 from .search_engine import index 
-from .manage_blog import add_post, upload_posts
+from .manage_blog import add_post
+
 
 def create_app(test_config=None):
     # create and configure the app
@@ -16,7 +18,8 @@ def create_app(test_config=None):
         SITE_LOG_PATH=os.path.join(app.instance_path, 'sitelog.txt'),
         FEATURED_POSTS_PATH=os.path.join(app.instance_path, 'featured_posts.txt'),
         SEARCH_INDEX_PATH=os.path.join(app.instance_path, 'index.json'),
-        SECRET_PATH=os.path.join(app.instance_path, 'secret.txt')  # YES I KNOW THIS SHOULDN'T BE PLAIN TEXT
+        SECRET_PATH=os.path.join(app.instance_path, 'secret.txt'),  # YES I KNOW THIS SHOULDN'T BE PLAIN TEXT
+        MANIFEST_PATH=os.path.join(app.instance_path, 'manifest.json'),
     )
 
     # Load the instance config, if it exists, when not testing
@@ -41,6 +44,9 @@ def create_app(test_config=None):
 
     # Init search engine instance and attach it to the 'app' object
     app.search_engine = index.connect(app.config['SEARCH_INDEX_PATH'])
+    # Init manifest instance
+    # print('Initializing manifest at {}'.format(app.config['MANIFEST_PATH']))
+    app.manifest = Manifest(app.config['MANIFEST_PATH'])
 
     return app
 
@@ -50,7 +56,7 @@ def init_app(app):
     app.cli.add_command(init_db_command)
     app.cli.add_command(init_search_index_command)
     app.cli.add_command(add_post)
-    app.cli.add_command(upload_posts)
+    # app.cli.add_command(upload_posts)
 
 # command-line function to re-init the database to the
 # original schema. Run using "flask init-db"
