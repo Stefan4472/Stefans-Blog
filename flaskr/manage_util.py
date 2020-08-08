@@ -39,21 +39,21 @@ DEFAULT_IMG_SIZE = (640, 480)
 
 
 @dc.dataclass
-class PostImage():
+class PostImage:
     image: Image.Image
-    path: pathlib.Path
+    in_memory_only: bool
+    path: typing.Optional[pathlib.Path] = None
 
-p = PostImage(10, 10)
 
 @dc.dataclass
-class PostImages():
+class PostImages:
     featured: PostImage
     thumbnail: PostImage
     banner: PostImage
 
 
 @dc.dataclass
-class PostData():
+class PostData:
     title: str
     byline: str
     slug: str
@@ -259,9 +259,9 @@ def get_post_images_from_json(
         )
 
     return PostImages(
-        featured=PostImage(post_img, post_img_path),
-        thumbnail=PostImage(thumbnail_img, thumbnail_path),
-        banner=PostImage(banner_img, banner_path),
+        featured=PostImage(post_img, False, path=post_img_path),
+        thumbnail=PostImage(thumbnail_img, False, path=thumbnail_path),
+        banner=PostImage(banner_img, False, path=banner_path),
     )
 
 
@@ -321,9 +321,9 @@ def get_post_images_from_image_cropper(
     banner_img.save(banner_path)
 
     return PostImages(
-        featured=PostImage(featured_img, featured_path),
-        thumbnail=PostImage(thumbnail_img, thumbnail_path),
-        banner=PostImage(banner_img, banner_path),
+        featured=PostImage(featured_img, False, path=featured_path),
+        thumbnail=PostImage(thumbnail_img, False, path=thumbnail_path),
+        banner=PostImage(banner_img, False, path=banner_path),
     )
 
 
@@ -436,7 +436,7 @@ def process_post_images(
             img.thumbnail(DEFAULT_IMG_SIZE, Image.ANTIALIAS)
             #img = img.convert('RGB')
         
-        post_images.append(PostImage(img, img_path))
+        post_images.append(PostImage(img, False, path=img_path))
         
     return post_images
     

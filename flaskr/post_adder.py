@@ -1,7 +1,9 @@
 import os
 import pathlib
 import typing
-import flaskr.manifest as manifest
+from flask import current_app, url_for
+from flask.cli import with_appcontext
+import flaskr.manifest as mn
 import flaskr.manage_util as util
 import flaskr.search_engine as se
 import flaskr.database as db
@@ -11,15 +13,18 @@ class PostAdder:
     """Performs the multi-step process of adding a post to the local site
     instance."""
     # TODO: THIS CAN JUST BE A STAND-ALONE FUNCTION
+    @with_appcontext
     def add_post(
             self,
             post_path: pathlib.Path, 
-            static_path: pathlib.Path,
-            manifest_path: pathlib.Path,
-            database_path: pathlib.Path,
-            search_index_path: pathlib.Path,
             quiet: bool,
     ):
+        # Create pathlib objects
+        static_path = pathlib.Path(current_app.static_folder)
+        manifest_path = pathlib.Path(current_app.config['MANIFEST_PATH'])
+        database_path = pathlib.Path(current_app.config['DATABASE_PATH'])
+        sindex_path = pathlib.Path(current_app.config['SEARCH_INDEX_PATH'])
+
         # Determine absolute paths to the Markdown and metadata files
         md_path = post_path / 'post.md'
         meta_path = post_path / 'post-meta.json'
@@ -30,7 +35,7 @@ class PostAdder:
         # Process metadata
         post_data = util.process_post_meta(post_path, post_json)
 
-        # Determine where the post data will live on this site's staticpath
+        # Create path where the post data will live on this site's staticpath
         post_static_path = static_path / post_data.slug
 
         # Render Markdown file, getting the HTML and sourced images
@@ -48,17 +53,30 @@ class PostAdder:
         )
         post_data.images = post_images
 
-        print(manifest.compute_hashes(post_data))
-
-        # TODO: HOW TO GET URL TO THE POST'S STATIC DIRECTORY?
+        # TODO: HOW TO GET URL TO THE POST'S STATIC DIRECTORY WITHOUT HARDCODING?
+        # url_for REQUIRES THE REQUEST CONTEXT
         post_static_url = '/' + 'static' + '/' + post_data.slug
-
+        post_static_rel_path = 'static' + '/' + post_data.slug
+        
         # Add post to database
-        util.add_post_to_database(
-            post_static_url,
-            database_path,
-            post_data,
-        )
+        # util.add_post_to_database(
+        #     post_static_url,
+        #     database_path,
+        #     post_data,
+        # )
+
+        # Compute hashes
+        files_to_add = mn.prepare_files_for_add(post_data, post_static_rel_path)
+        print(files_to_add)
+        # # Get diff
+        # manifest = mn.Manifest(manifest_path)
+        # post_diff = manifest.get_post_diff(post_data.slug, post_hashes)
+        # print(post_diff)
+
+        # if not quiet:
+        #     print('Will add {} files, delete {} files, and overwrite {} files'\
+        #         .format(len(diff.add_files), len(diff.rmv_files), 
+        #             len(diff.overwrite_files))
 
         # Create post's static path
         try:
@@ -81,25 +99,8 @@ class PostAdder:
             util.copy_to_static(post_static_path, post_image.path)
 
         # Add Markdown file to the search engine's index
-        search_index = se.index.connect(str(search_index_path))
+        search_index = se.index.connect(str(sindex_path))
         search_index.index_file(str(md_path), post_data.slug)
         search_index.commit()
 
-
-        # Get connection to manifest and determine what needs to 
-        # be done on disk
-        # manifest = Manifest(manifest_path)
-        # diff = manifest.calculate_diff(post_meta.slug, post_data)
-
-        # if not quiet:
-        #     print('Will add {} files, delete {} files, and overwrite {} files'\
-        #         .format(len(diff.add_files), len(diff.rmv_files), 
-        #             len(diff.overwrite_files))
-
-        # # Calculate hashes
-        # html_hash = util.calculate_str_hash(post_html)
-        # featured_img_hash = \
-        #     util.calculate_img_hash(post_meta.featured_img)
-
-        # hashes = util.calculate_hashes(
 

@@ -80,7 +80,6 @@ def post_view(slug):
     db = get_db()
     # retrieve post data
     post = db.get_post_by_slug(slug)
-    print(post[:])
     if not post:
         abort(404)
 
