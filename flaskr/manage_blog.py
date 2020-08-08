@@ -35,6 +35,7 @@ def add_post(
         pathlib.Path(current_app.static_folder),
         pathlib.Path(current_app.config['MANIFEST_PATH']),
         pathlib.Path(current_app.config['DATABASE_PATH']),
+        pathlib.Path(current_app.config['SEARCH_INDEX_PATH']),
         quiet,
     )
 

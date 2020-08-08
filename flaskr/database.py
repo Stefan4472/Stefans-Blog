@@ -23,8 +23,11 @@ class Database:
     def add_post(self, title, byline, slug, post_date, featured_url, banner_url, thumbnail_url):
         query = 'insert into Posts values (NULL, ?, ?, ?, ?, ?, ?, ?)'
         values = (title, byline, slug, post_date, featured_url, banner_url, thumbnail_url)
-        self.cur.execute(query, values)
-
+        try:
+            self.cur.execute(query, values)
+        except sqlite3.IntegrityError as e:
+            raise ValueError(str(e))
+        
     # returns post data for the given slug
     def get_post_by_slug(self, slug):
         query = 'select * from Posts where post_slug = ?'

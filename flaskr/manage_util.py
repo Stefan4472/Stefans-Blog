@@ -1,20 +1,13 @@
-# import sys  
 import re
-# import os
 import pathlib
-# import shutil
-# import click
-# import pysftp
+import shutil
 import typing
 import datetime
-# from flask import current_app, url_for
-# from flask.cli import with_appcontext
 from PIL import Image
 import json
 import markdown2 as md
 import randomcolor
 import flaskr.database as db
-# import flaskr.search_engine.index as index  # TODO: BETTER IMPORTS
 from flaskr.image_cropper.image_cropper import ImageCropper
 # from flaskr.manifest import Manifest
 import tkinter as tk
@@ -64,7 +57,6 @@ class PostData(typing.NamedTuple):
     thumbnail_img: PostImage
     banner_img: PostImage
     tags: typing.List[str] = []
-
 
 # class FileHash:
 #     def __init__(
@@ -160,7 +152,7 @@ def process_post_meta(
         post_meta: typing.Dict[str, typing.Any],
 ) -> PostData:
     title = get_post_title(post_meta)
-    byline = get_post_title(post_meta)
+    byline = get_post_byline(post_meta)
     slug = get_post_slug(post_meta, title)
     post_date = get_post_date(post_meta)
     post_images = get_post_images(post_dir, post_meta)
@@ -355,7 +347,7 @@ def get_post_images_from_image_cropper(
 
 def render_markdown_file(
         filepath: pathlib.Path,
-        img_save_dir: pathlib.Path,
+        post_slug: str,
 ) -> typing.Tuple[str, typing.List[str]]:
     """Read the provided Markdown file and render to HTML. 
     Images will be redered as Bootstrap figures.
@@ -397,9 +389,10 @@ def render_markdown_file(
         # Render the figure
         img_path = figure_match.group(1)
         img_caption = figure_match.group(2)
-        # print (img_path, img_caption)
-        img_url = get_static_url(pathlib.Path(img_path).name)  # TODO: CLEAN UP
-        # img_url = get_static_url(img_save_dir / os.path.basename(img_path))  # TODO: CLEAN UP
+
+        # TODO: CLEAN UP
+        img_url = get_static_url(post_slug + '/' + pathlib.Path(img_path).name) 
+        print(img_url)
 
         # Render with caption
         # TODO: HANDLE alt, and make this string a constant (?)
@@ -469,12 +462,13 @@ def process_post_images(
     
 
 def add_post_to_database(
+        post_static_url: str,
         db_path: pathlib.Path,
         post_data: PostData,
 ):
+    print(post_static_url)
     # Get connection to the post database
     database = db.Database(str(db_path))
-
     # Add post to the database.
     # This will fail if there is a problem with the post data
     # TODO: ACTUALLY, THE URLS SHOULD ALL BE STANDARDIZED AND DON'T NEED TO BE STORED IN THE DATABASE
@@ -482,36 +476,39 @@ def add_post_to_database(
         post_data.title,
         post_data.byline,
         post_data.slug,
-        post_data.post_date,
+        post_data.post_date.date(),
+        post_static_url + '/' + 'featured.jpg',
+        post_static_url + '/' + 'banner.jpg',
+        post_static_url + '/' + 'thumbnail.jpg',
     )
 
     # Add tags to the database
     for tag in post_data.tags:
-        print ('Handling tag {}'.format(tag))
         tag_slug = generate_slug(tag)
         # Add tag to the database if it doesn't already exist
         if not database.has_tag(tag_slug):
             database.add_tag(
-                tag, 
+                tag,
                 tag_slug, 
                 generate_random_color(),
             )
         # Add post->tag mapping to database
-        database.add_tag_to_post(tag_slug, slug)
+        database.add_tag_to_post(tag_slug, post_data.slug)
+    # TODO: ANY WAY TO *NOT* HAVE TO COMMIT BY DEFAULT?
+    database.commit()
 
 
-# # Copy to the post's static directory
-# copy_to_static(abs_path, post_static_path)
+def copy_to_static(
+        static_path: pathlib.Path,
+        file_path: pathlib.Path,
+):  
+    # TODO: IMPROVE
+    # Make sure the file exists
+    if not file_path.is_file():
+        raise ValueError('The file "{}" is not a real file'.format(file_path))  # TODO: RAISE EXCEPTION
 
-# def copy_to_static(file_path, static_path):  # TODO: IMPROVE
-#     # Make sure the file exists
-#     if not (os.path.exists(file_path) and os.path.isfile(file_path)):
-#         print ('ERROR: The image path "{}" is not a real file'.format(file_path))  # TODO: RAISE EXCEPTION
-#         return
-
-#     # Build destination path for the image
-#     dest_path = os.path.join(static_path, os.path.basename(file_path))
-#     # print (dest_path)
-    
-#     # Copy the image to the folder
-#     shutil.copyfile(file_path, dest_path)
+    # Build destination path
+    dest_path = static_path / file_path.name
+    print('Copying {} to {}'.format(file_path, dest_path))
+    # Copy the image to the folder
+    shutil.copyfile(file_path, dest_path)
