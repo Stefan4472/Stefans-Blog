@@ -4,6 +4,7 @@ import shutil
 import typing
 import datetime
 from PIL import Image
+import dataclasses as dc
 import json
 import markdown2 as md
 import randomcolor
@@ -37,18 +38,22 @@ THUMBNAIL_SIZE = (400, 400)
 DEFAULT_IMG_SIZE = (640, 480)
 
 
-class PostImage(typing.NamedTuple):
+@dc.dataclass
+class PostImage():
     image: Image.Image
     path: pathlib.Path
 
+p = PostImage(10, 10)
 
-class PostImages(typing.NamedTuple):
+@dc.dataclass
+class PostImages():
     featured: PostImage
     thumbnail: PostImage
     banner: PostImage
 
 
-class PostData(typing.NamedTuple):
+@dc.dataclass
+class PostData():
     title: str
     byline: str
     slug: str
@@ -56,32 +61,9 @@ class PostData(typing.NamedTuple):
     featured_img: PostImage
     thumbnail_img: PostImage
     banner_img: PostImage
-    tags: typing.List[str] = []
-
-# class FileHash:
-#     def __init__(
-#             self,
-#             filepath: str,
-#             _hash: bytes,
-#             filesize: int,
-#     ):
-#         self.filepath = filepath
-#         self.hash = _hash
-#         self.filesize = filesize
-
-
-# class PostHashes:
-#     def __init__(
-#         self,
-#         html_hash: FileHash,
-#         featured_img_hash: FileHash,
-#         thumbnail_img_hash: FileHash,
-#         banner_img_hash: FileHash,
-#     ):
-#         self.html_hash = html_hash
-#         self.featured_img_hash = featured_img_hash
-#         self.thumbnail_img_hash = thumbnail_img_hash
-#         self.banner_img_hash = banner_img_hash
+    tags: typing.List[str] = dc.field(default_factory=list)
+    html: str = ''
+    images: typing.List[PostImage] = dc.field(default_factory=list)
 
 
 # Generates a slug given a string.
@@ -392,7 +374,6 @@ def render_markdown_file(
 
         # TODO: CLEAN UP
         img_url = get_static_url(post_slug + '/' + pathlib.Path(img_path).name) 
-        print(img_url)
 
         # Render with caption
         # TODO: HANDLE alt, and make this string a constant (?)
@@ -437,7 +418,6 @@ def process_post_images(
     post_images: typing.List[PostImage] = []
     # Copy image files to the article's directory
     for img_src in img_sources:
-        print(img_src)
         # Ignore image links
         if img_src.startswith('http') or img_src.startswith('www'):
             continue 
@@ -466,7 +446,6 @@ def add_post_to_database(
         db_path: pathlib.Path,
         post_data: PostData,
 ):
-    print(post_static_url)
     # Get connection to the post database
     database = db.Database(str(db_path))
     # Add post to the database.
@@ -509,6 +488,6 @@ def copy_to_static(
 
     # Build destination path
     dest_path = static_path / file_path.name
-    print('Copying {} to {}'.format(file_path, dest_path))
+    # print('Copying {} to {}'.format(file_path, dest_path))
     # Copy the image to the folder
     shutil.copyfile(file_path, dest_path)

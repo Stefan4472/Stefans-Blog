@@ -1,7 +1,7 @@
 import os
 import pathlib
 import typing
-from flaskr.manifest import Manifest
+import flaskr.manifest as manifest
 import flaskr.manage_util as util
 import flaskr.search_engine as se
 import flaskr.database as db
@@ -10,6 +10,7 @@ import flaskr.database as db
 class PostAdder:
     """Performs the multi-step process of adding a post to the local site
     instance."""
+    # TODO: THIS CAN JUST BE A STAND-ALONE FUNCTION
     def add_post(
             self,
             post_path: pathlib.Path, 
@@ -37,6 +38,7 @@ class PostAdder:
             md_path,
             post_data.slug,
         )
+        post_data.html = post_html
 
         # Load post images into memory
         post_images = util.process_post_images(
@@ -44,6 +46,9 @@ class PostAdder:
             static_path,
             post_img_paths,
         )
+        post_data.images = post_images
+
+        print(manifest.compute_hashes(post_data))
 
         # TODO: HOW TO GET URL TO THE POST'S STATIC DIRECTORY?
         post_static_url = '/' + 'static' + '/' + post_data.slug

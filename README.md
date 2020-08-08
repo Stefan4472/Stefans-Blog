@@ -29,6 +29,7 @@ pip install Flask
 pip install Pillow
 pip install randomcolor
 pip install pysftp
+pip install dataclasses
 ```
 
 To run the site:
