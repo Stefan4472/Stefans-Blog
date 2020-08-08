@@ -68,35 +68,37 @@ class PostAdder:
         # Compute hashes
         files_to_add = mn.prepare_files_for_add(post_data, post_static_rel_path)
         print(files_to_add)
-        # # Get diff
-        # manifest = mn.Manifest(manifest_path)
-        # post_diff = manifest.get_post_diff(post_data.slug, post_hashes)
-        # print(post_diff)
 
+        # Get diff
+        manifest = mn.Manifest(manifest_path)
+        post_diff = manifest.calc_addpost_diff(post_data.slug, files_to_add)
+        print(post_diff)
+        # print(post_diff)
+        manifest.apply_addpost_diff(post_diff, files_to_add, static_path)
         # if not quiet:
         #     print('Will add {} files, delete {} files, and overwrite {} files'\
         #         .format(len(diff.add_files), len(diff.rmv_files), 
         #             len(diff.overwrite_files))
 
         # Create post's static path
-        try:
-            os.mkdir(post_static_path)
-        except FileExistsError:
-            pass
+        # try:
+        #     os.mkdir(post_static_path)
+        # except FileExistsError:
+        #     pass
 
-        # Save article html to 'static'
-        html_path = post_static_path / (post_data.slug + '.html')
-        with open(html_path, 'w', encoding='utf-8', errors='strict') as f:
-            f.write(post_html)
+        # # Save article html to 'static'
+        # html_path = post_static_path / (post_data.slug + '.html')
+        # with open(html_path, 'w', encoding='utf-8', errors='strict') as f:
+        #     f.write(post_html)
 
-        # Save post featured images to 'static'
-        post_data.featured_img.image.save(post_static_path / 'featured.jpg')
-        post_data.banner_img.image.save(post_static_path / 'banner.jpg')
-        post_data.thumbnail_img.image.save(post_static_path / 'thumbnail.jpg')
+        # # Save post featured images to 'static'
+        # post_data.featured_img.image.save(post_static_path / 'featured.jpg')
+        # post_data.banner_img.image.save(post_static_path / 'banner.jpg')
+        # post_data.thumbnail_img.image.save(post_static_path / 'thumbnail.jpg')
         
-        # Save other post images to 'static'
-        for post_image in post_images:
-            util.copy_to_static(post_static_path, post_image.path)
+        # # Save other post images to 'static'
+        # for post_image in post_images:
+        #     util.copy_to_static(post_static_path, post_image.path)
 
         # Add Markdown file to the search engine's index
         search_index = se.index.connect(str(sindex_path))
