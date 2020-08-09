@@ -3,6 +3,7 @@ import typing
 import hashlib
 import pathlib
 import io
+import os
 import dataclasses as dc
 from PIL import Image
 import flaskr.manage_util as util
@@ -57,11 +58,11 @@ class Manifest:
     def calc_addpost_diff(
             self,
             post_slug: str,
-            post_files: typing.List[FileToAdd],
+            post_files: typing.Dict[str, FileToAdd],
     ) -> PostDiff:
         """Note: assumes all post_files have the same post_slug"""
         diff = PostDiff(post_slug)
-        for f in post_files:
+        for f in post_files.values():
             if f.post_slug != post_slug:
                 raise ValueError('Found inconsistent post slug')
 
@@ -73,7 +74,7 @@ class Manifest:
                 set([filename for filename in curr_post_data])
             # Go through the `post_files` one by one, determining what needs 
             # to be added, removed, or overwritten
-            for post_file in post_files:
+            for post_file in post_files.values():
                 # This file is registered: compare hashes
                 if post_file.filename in curr_post_data:
                     # Hash is different: mark this file for overwrite
@@ -102,7 +103,7 @@ class Manifest:
             pass
         # No post with this slug exists: add everything
         else:
-            for post_file in post_files:
+            for post_file in post_files.values():
                 diff.write_files.append(ManifestFile(
                     post_file.hash,
                     post_file.post_slug,
@@ -113,19 +114,24 @@ class Manifest:
     def apply_addpost_diff(
             self,
             post_diff: PostDiff,
-            files_to_add: typing.List[FileToAdd],
+            files_to_add: typing.Dict[str, FileToAdd],
             static_path: pathlib.Path,
     ):  
         # TODO: MAKE 'FILES_TO_ADD' A DICT MAPPED BY FILENAME
+        # Build post's static path
+        post_static_path = static_path / post_diff.slug
+
+        # Check if we need to create the post's static directory
+        try:
+            os.mkdir(post_static_path)
+        except FileExistsError:
+            pass
 
         # Write files
         for manifest_file in post_diff.write_files:
-            file_to_add: FileToAdd = None
-            for f_to_add in files_to_add:
-                if f_to_add.filename == manifest_file.filename:
-                    file_to_add = f_to_add
+            file_to_add = files_to_add[manifest_file.filename]
             # Generate full path 
-            add_path = static_path / file_to_add.post_slug / file_to_add.filename
+            add_path = post_static_path / file_to_add.filename
             # Write out
             with open(add_path, 'wb') as out:
                 out.write(file_to_add.contents.getbuffer())
@@ -197,25 +203,20 @@ def prepare_text(
 def prepare_files_for_add(
         post_data: util.PostData,
         post_static_rel_path: str,
-) -> typing.List[FileToAdd]:
-    files_to_add: typing.List[FileToAdd] = []
-    static_path = post_static_rel_path
-    
-    files_to_add.append(
+) -> typing.Dict[str, FileToAdd]:
+    files_to_add: typing.Dict[FileToAdd] = {}
+
+    files_to_add['post.html'] = \
         prepare_text(post_data.html, post_data.slug, 'post.html')
-    )
-    files_to_add.append(
+    files_to_add['featured.jpg'] = \
         prepare_image(post_data.featured_img, post_data.slug, 'featured.jpg')
-    )
-    files_to_add.append(
+    files_to_add['thumbnail.jpg'] = \
         prepare_image(post_data.thumbnail_img, post_data.slug, 'thumbnail.jpg')
-    )
-    files_to_add.append(
+    files_to_add['banner.jpg'] = \
         prepare_image(post_data.banner_img, post_data.slug, 'banner.jpg')
-    )
 
     for post_img in post_data.images:
-        files_to_add.append(
+        files_to_add[post_img.path.name] = \
             prepare_image(post_img, post_data.slug, post_img.path.name)
-        )
+    
     return files_to_add

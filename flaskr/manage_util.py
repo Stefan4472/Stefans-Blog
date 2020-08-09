@@ -124,7 +124,7 @@ def read_meta_file(
             return json.load(f)
     except IOError:
         raise ValueError(
-            'Could not read the meta-data file ("{}")'.format(post_path))
+            'Could not read the meta-data file ("{}")'.format(filepath))
     except json.JSONDecodeError as e:  # TODO: TEST THAT THIS WORKS AS EXPECTED
         print(e)
 

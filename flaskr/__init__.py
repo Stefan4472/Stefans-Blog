@@ -7,7 +7,7 @@ from . import database
 from . import blog
 from .manifest import Manifest
 from .search_engine import index 
-from .manage_blog import add_post
+from .manage_blog import add_post_command, add_posts_command
 
 
 def create_app(test_config=None):
@@ -55,8 +55,9 @@ def init_app(app):
     app.teardown_appcontext(database.close_db)
     app.cli.add_command(init_db_command)
     app.cli.add_command(init_search_index_command)
-    app.cli.add_command(add_post)
+    app.cli.add_command(add_post_command)
     # app.cli.add_command(upload_posts)
+    app.cli.add_command(add_posts_command)
 
 # command-line function to re-init the database to the
 # original schema. Run using "flask init-db"

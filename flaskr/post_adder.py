@@ -1,4 +1,3 @@
-import os
 import pathlib
 import typing
 from flask import current_app, url_for
@@ -9,10 +8,10 @@ import flaskr.search_engine as se
 import flaskr.database as db
 
 
+# TODO: THIS CAN JUST BE A STAND-ALONE FUNCTION
 class PostAdder:
     """Performs the multi-step process of adding a post to the local site
     instance."""
-    # TODO: THIS CAN JUST BE A STAND-ALONE FUNCTION
     @with_appcontext
     def add_post(
             self,
@@ -59,11 +58,11 @@ class PostAdder:
         post_static_rel_path = 'static' + '/' + post_data.slug
         
         # Add post to database
-        # util.add_post_to_database(
-        #     post_static_url,
-        #     database_path,
-        #     post_data,
-        # )
+        util.add_post_to_database(
+            post_static_url,
+            database_path,
+            post_data,
+        )
 
         # Compute hashes
         files_to_add = mn.prepare_files_for_add(post_data, post_static_rel_path)
@@ -73,36 +72,24 @@ class PostAdder:
         manifest = mn.Manifest(manifest_path)
         post_diff = manifest.calc_addpost_diff(post_data.slug, files_to_add)
         print(post_diff)
-        # print(post_diff)
-        manifest.apply_addpost_diff(post_diff, files_to_add, static_path)
-        # if not quiet:
-        #     print('Will add {} files, delete {} files, and overwrite {} files'\
-        #         .format(len(diff.add_files), len(diff.rmv_files), 
-        #             len(diff.overwrite_files))
-
-        # Create post's static path
-        # try:
-        #     os.mkdir(post_static_path)
-        # except FileExistsError:
-        #     pass
-
-        # # Save article html to 'static'
-        # html_path = post_static_path / (post_data.slug + '.html')
-        # with open(html_path, 'w', encoding='utf-8', errors='strict') as f:
-        #     f.write(post_html)
-
-        # # Save post featured images to 'static'
-        # post_data.featured_img.image.save(post_static_path / 'featured.jpg')
-        # post_data.banner_img.image.save(post_static_path / 'banner.jpg')
-        # post_data.thumbnail_img.image.save(post_static_path / 'thumbnail.jpg')
         
-        # # Save other post images to 'static'
-        # for post_image in post_images:
-        #     util.copy_to_static(post_static_path, post_image.path)
+        if post_diff.write_files:
+            print('Files that will be written:')
+            for manifest_file in post_diff.write_files:
+                print('\t-{}'.format(manifest_file.filename))
+        else:
+            print('No files need to be written')
+
+        if post_diff.del_files:
+            print('Files that will be deleted:')
+            for manifest_file in post_diff.del_files:
+                print('\t-{}'.format(manifest_file.filename))
+        else:
+            print('No files need to be deleted')
+
+        manifest.apply_addpost_diff(post_diff, files_to_add, static_path)
 
         # Add Markdown file to the search engine's index
         search_index = se.index.connect(str(sindex_path))
         search_index.index_file(str(md_path), post_data.slug)
         search_index.commit()
-
-
