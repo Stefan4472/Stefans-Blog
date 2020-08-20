@@ -19,7 +19,7 @@ def create_app():
         SITE_LOG_PATH=os.path.join(app.instance_path, 'sitelog.txt'),
         FEATURED_POSTS_PATH=os.path.join(app.instance_path, 'featured_posts.txt'),
         SEARCH_INDEX_PATH=os.path.join(app.instance_path, 'index.json'),
-        SECRET_PATH=os.path.join(app.instance_path, 'secret.txt'),  # YES I KNOW THIS SHOULDN'T BE PLAIN TEXT
+        SECRET_PATH=os.path.join(app.instance_path, 'secret.json'),  # YES I KNOW THIS SHOULDN'T BE PLAIN TEXT
         MANIFEST_PATH=os.path.join(app.instance_path, 'manifest.json'),
     )
 
@@ -37,6 +37,7 @@ def init_app(flask_app):
     flask_app.cli.add_command(manage_blog.reset_site_command)
     flask_app.cli.add_command(manage_blog.add_post_command)
     flask_app.cli.add_command(manage_blog.add_posts_command)
+    flask_app.cli.add_command(manage_blog.push_to_remote_command)
     
     # Register blueprint
     flask_app.register_blueprint(blog.bp)

@@ -10,6 +10,7 @@ from . import manage_util as util
 
 
 class ManifestFile(typing.NamedTuple):
+    """Representation of a file being manipulated by the Manifest."""
     hash: str
     post_slug: str
     filename: str
@@ -17,6 +18,11 @@ class ManifestFile(typing.NamedTuple):
 
 @dc.dataclass
 class FileToAdd:
+    """Representation of a file being added to the site.
+
+    Pretty much a superset of `ManifestFile`, but also includes the file 
+    contents in memory (`contents`).
+    """
     contents: io.BytesIO
     hash: str
     post_slug: str
@@ -28,16 +34,17 @@ class FileToAdd:
 
 @dc.dataclass
 class PostDiff:
+    """Diff created when adding or removing a post."""
     slug: str
     write_files: typing.List[ManifestFile] = dc.field(default_factory=list)
     del_files: typing.List[ManifestFile] = dc.field(default_factory=list)
 
 
-# @dc.dataclass
-# class SyncDiff:
-#     add_files: typing.List[str] = dc.field(default_factory=list)
-#     rmv_files: typing.List[str] = dc.field(default_factory=list)
-#     overwrite_files: typing.List[str] = dc.field(default_factory=list)
+@dc.dataclass
+class SyncDiff:
+    """Diff created when syncing two site manifests."""
+    write_files: typing.List[ManifestFile] = dc.field(default_factory=list)
+    del_files: typing.List[ManifestFile] = dc.field(default_factory=list)
 
 
 class Manifest:
@@ -88,6 +95,11 @@ class Manifest:
             raise ValueError(
                 'Could not read manifest file: invalid JSON ({})'.format(str(e))
             )
+
+    # def _load_from_file(
+    #         self,
+    #         filepath: pathlib.Path,
+    # ):
 
     def clear(self):
         """Clears the manifest file. DANGEROUS! Only use when resetting 
@@ -183,18 +195,94 @@ class Manifest:
             # Delete file
             rmv_path.unlink()
             # Update manifest
-            del self.json_data[post_diff.slug][manifest_file.filename]
+            del self.post_data[post_diff.slug][manifest_file.filename]
 
         # Write out manifest
-        self.commit()  # TODO: TELL USER TO COMMIT?
+        self.commit()  # TODO: DON'T COMMIT BY DEFAULT?
 
     def calc_manifest_diff(
             self,
-            other_manifest: 'Manifest',
-    ):
-        """Calculate diff between this manifest and a different manifest."""
-        return
+            other_manifest_data: typing.Dict[str, typing.Any],
+    ) -> SyncDiff:
+        """Calculate diff between this manifest and the data from a different
+        manifest.
         
+        The diff will specify how to get from *this* manifest to the 
+        *specified* manifest.
+
+        TODO: BREAK INTO SUB-FUNCTIONS
+        """
+        this_slug_set: typing.Set[str] = set(self.post_data.keys())
+        other_slug_set: typing.Set[str] = set(other_manifest_data.keys())
+        # Find the posts that need to be removed from remote
+        posts_to_remove = other_slug_set - this_slug_set
+        # Find the posts that need to be added to remote
+        posts_to_add = this_slug_set - other_slug_set
+        # Find the posts that need to be modified (intersect)
+        posts_to_change = this_slug_set & other_slug_set
+
+        print('Remove: {}'.format(posts_to_remove))
+        print('Add: {}'.format(posts_to_add))
+        print('Change: {}'.format(posts_to_change))
+        print(self.post_data.keys())
+        diff = SyncDiff()
+
+        # Enumerate the files that need to be removed from remote
+        for slug_to_remove in posts_to_remove:
+            # Iterate over filenames to be removed for the slug
+            for filename in other_manifest_data[slug_to_remove]:
+                diff.del_files.append(ManifestFile(
+                    other_manifest_data[slug_to_remove][filename]['hash'],
+                    slug_to_remove,
+                    filename,
+                ))
+        
+        # Enumerate the files that need to be added to remote
+        for slug_to_add in posts_to_add:
+            for filename in self.post_data[slug_to_add]:
+                diff.write_files.append(ManifestFile(
+                    self.post_data[slug_to_add][filename]['hash'],
+                    slug_to_add,
+                    filename,
+                ))
+
+        # Go through the posts that have differences, and figure out
+        # what needs to be added/removed to settle those differences
+        for slug_to_change in posts_to_change:
+            remote_files = set(other_manifest_data[slug_to_change].keys())
+            for local_filename in self.post_data[slug_to_change]:
+                # Local file is also in remote: compare hashes
+                if local_filename in remote_files:
+                    local_hash = self.post_data[slug_to_change][local_filename]['hash']
+                    remote_hash = other_manifest_data[slug_to_change][local_filename]['hash']
+                    # Difference found: overwrite remote
+                    if local_hash != remote_hash:
+                        diff.write_files.append(ManifestFile(
+                            self.post_data[slug_to_change][local_filename]['hash'],
+                            slug_to_change,
+                            local_filename,
+                        ))
+                # Local file is not in remote: mark remote for deletion
+                else:
+                    diff.del_files.append(ManifestFile(
+                        other_manifest_data[slug_to_change][filename]['hash'],
+                        slug_to_change,
+                        filename,
+                    ))
+                # Remove filename from `remote_files` set
+                remote_files.remove(local_filename)
+            # Mark any remaining remote files for deletion (as they are not
+            # present locally)
+            for remote_filename in remote_files:
+                diff.del_files.append(ManifestFile(
+                    other_manifest_data[slug_to_change][remote_filename]['hash'],
+                    slug_to_change,
+                    remote_filename,
+                ))
+        print(diff.write_files)
+        print(diff.del_files)
+
+
     def commit(self):
         with open(self.filepath, 'w', encoding='utf8') as manifest_file:
             json.dump(self.json_data, manifest_file, indent=4)

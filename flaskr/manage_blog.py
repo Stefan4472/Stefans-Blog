@@ -5,6 +5,7 @@ import typing
 import flask
 from . import manage_util
 from . import post_adder
+from . import post_uploader
 from . import database_context
 
 
@@ -56,7 +57,6 @@ def push_to_production():
 @click.command('add_post')
 @click.argument('post_dir')
 @click.option('--quiet', is_flag=True, default=False, help='Whether to suppress print statements and confirmation prompts')
-@flask.cli.with_appcontext
 def add_post_command(
         post_dir: str, 
         quiet: bool, 
@@ -73,7 +73,6 @@ def add_post_command(
 @click.command('add_posts')
 @click.argument('post_file')
 @click.option('--quiet', is_flag=True, default=False, help='Whether to suppress print statements and confirmation prompts')
-@flask.cli.with_appcontext
 def add_posts_command(
         post_file: str,
         quiet: bool,
@@ -87,7 +86,15 @@ def add_posts_command(
 
 
 @click.command('reset_site')
-@flask.cli.with_appcontext
 def reset_site_command():
     """Resets the site. This includes the database, search index, and manifest."""
     reset_site()
+
+
+@click.command('push')
+@click.option('--quiet', is_flag=True, default=False, help='Whether to suppress print statements and confirmation prompts')
+def push_to_remote_command(
+        quiet: bool
+):
+    """Syncs the local site instance to the production server."""
+    post_uploader.push_to_remote(quiet)
