@@ -3,10 +3,16 @@ import typing
 import hashlib
 import pathlib
 import io
-import os
 import dataclasses as dc
 from PIL import Image
 from . import manage_util as util
+"""NOTE: this code is in its first iteration, and is likely difficult to understand."""
+
+
+class ManifestFile(typing.NamedTuple):
+    hash: str
+    post_slug: str
+    filename: str
 
 
 @dc.dataclass
@@ -16,11 +22,8 @@ class FileToAdd:
     post_slug: str
     filename: str
 
-
-class ManifestFile(typing.NamedTuple):
-    hash: str
-    post_slug: str
-    filename: str
+    def to_manifest_file(self) -> ManifestFile:
+        return ManifestFile(self.hash, self.post_slug, self.filename)
 
 
 @dc.dataclass
@@ -38,6 +41,35 @@ class PostDiff:
 
 
 class Manifest:
+    """The Manifest records all files required by the local site 
+    instance's posts.
+
+    The Manifest writes to a json file, which has one top level 'posts'
+    dictionary. Within the 'posts' dict, it is organized as follows:
+    ```
+    [post slug]: {
+        [filename]: {
+            "hash": [MD-5 hashed contents of file]
+        }
+        ...
+    }
+    ```
+    Each post slug is listed, and contains a dictionary of needed files. Each
+    file has a calculated hash.
+
+    The Manifest allows us to determine which files need to be written or
+    deleted whenever we add a post. When pushing to production, it allows
+    us to compare the local manifest to the remote manifest, and then only
+    copy the files that have changed.
+
+    One drawback of the current implementation of the manifest is that we
+    assume the file system has not been modified from that set by the site.
+    If the user does something that makes the filesystem no longer reflect 
+    the manifest, we have no way of knowing.
+
+    Because of this, it is important that the `static` post folders are never
+    changed by the user outside of this program!
+    """
     def __init__(
             self,
             filepath: str,
@@ -45,10 +77,12 @@ class Manifest:
         self.filepath = filepath
         try:
             with open(self.filepath, encoding='utf8') as manifest_file:
-                self.json_data = json.load(manifest_file)
+                self.json_data = json.load(manifest_file)  # TODO: THIS WILL FALL OUT OF DATE WITH POST_DATA
+                self.post_data = self.json_data['posts']
         except FileNotFoundError:
             # Create manifest and write blank json file
             self.json_data = {'posts': {}}
+            self.post_data = self.json_data['posts']
             self.commit()
         except json.JSONDecodeError as e:
             raise ValueError(
@@ -67,39 +101,39 @@ class Manifest:
             post_files: typing.Dict[str, FileToAdd],
     ) -> PostDiff:
         """Note: assumes all post_files have the same post_slug"""
-        diff = PostDiff(post_slug)
+        # Make sure that all `post_files` share the specified slug
         for f in post_files.values():
             if f.post_slug != post_slug:
                 raise ValueError('Found inconsistent post slug')
 
+        diff = PostDiff(post_slug)
+
         # A post with this slug already exists
-        if post_slug in self.json_data['posts']:
-            curr_post_data = self.json_data['posts'][post_slug]
+        if post_slug in self.post_data:
+            curr_post_data = self.post_data[post_slug]
+            
             # Get set of current filenames registered with that post 
-            curr_post_filenames = \
-                set([filename for filename in curr_post_data])
+            curr_post_filenames = set([filename for filename in curr_post_data])
+            
             # Go through the `post_files` one by one, determining what needs 
             # to be added, removed, or overwritten
-            for post_file in post_files.values():
+            for add_filename, add_file in post_files.items():
                 # This file is registered: compare hashes
-                if post_file.filename in curr_post_data:
+                if add_filename in curr_post_data:
+                    # Hash is the same: no need to do anything
+                    if add_file.hash == curr_post_data[add_filename]['hash']:
+                        pass
                     # Hash is different: mark this file for overwrite
-                    if post_file.hash != curr_post_data[post_file.filename]['hash']:
-                        diff.write_files.append(ManifestFile(
-                            post_file.hash,
-                            post_file.slug,
-                            post_file.filename,
-                        ))
+                    else:
+                        diff.write_files.append(add_file.to_manifest_file())
                     # Remove this file from `curr_post_filenames`
-                    curr_post_filenames.remove(post_file.filename)
+                    curr_post_filenames.remove(add_filename)
                 # This file is not registered: mark for addition
                 else:
-                    diff.write_files.append(ManifestFile(
-                        post_file.hash,
-                        post_file.slug,
-                        post_file.filename,
-                    ))
-            # Mark any files that are no longer used for deletion
+                    diff.write_files.append(add_file.to_manifest_file())
+            
+            # Any files remaining in the `curr_post_filenames` set are no
+            # longer needed: mark them for deletion
             for filename in curr_post_filenames:
                 diff.del_files.append(ManifestFile(
                     curr_post_data[filename]['hash'],
@@ -110,11 +144,7 @@ class Manifest:
         # No post with this slug exists: add everything
         else:
             for post_file in post_files.values():
-                diff.write_files.append(ManifestFile(
-                    post_file.hash,
-                    post_file.post_slug,
-                    post_file.filename,
-                ))
+                diff.write_files.append(post_file.to_manifest_file())
         return diff
 
     def apply_addpost_diff(
@@ -123,46 +153,40 @@ class Manifest:
             files_to_add: typing.Dict[str, FileToAdd],
             static_path: pathlib.Path,
     ):  
-        # TODO: MAKE 'FILES_TO_ADD' A DICT MAPPED BY FILENAME
-        # Build post's static path
+        # Build post's static path and create dir if it doesn't already exist
         post_static_path = static_path / post_diff.slug
+        post_static_path.mkdir(exist_ok=True)
 
-        # Check if we need to create the post's static directory
-        try:
-            os.mkdir(post_static_path)
-        except FileExistsError:
-            pass
+        # Add nested dictionary for the specified slug if it doesn't exist yet
+        if post_diff.slug not in self.post_data:
+            self.post_data[post_diff.slug] = {}
 
         # Write files
         for manifest_file in post_diff.write_files:
+            # Lookup the `FileToAdd` instance, which has the file contents 
+            # in-memory
             file_to_add = files_to_add[manifest_file.filename]
             # Generate full path 
             add_path = post_static_path / file_to_add.filename
-            # Write out
+            # Write file
             with open(add_path, 'wb') as out:
                 out.write(file_to_add.contents.getbuffer())
-            print('Wrote to {}'.format(add_path))
-
-            # Build nested dictionary if not already exists
-            if post_diff.slug not in self.json_data['posts']:
-                self.json_data['posts'][post_diff.slug] = {}
-            if manifest_file.filename not in self.json_data['posts'][post_diff.slug]:
-                self.json_data['posts'][post_diff.slug][manifest_file.filename] = {}
-            
             # Update manifest
-            self.json_data['posts'][post_diff.slug][manifest_file.filename]['hash'] = file_to_add.hash
+            self.post_data[post_diff.slug][manifest_file.filename] = {
+                'hash': file_to_add.hash,
+            }
             
         # Delete files
         for manifest_file in post_diff.del_files:
             # Generate full path 
-            rmv_path = static_path / manifest_file.post_slug / manifest_file.filename
+            rmv_path = post_static_path / manifest_file.filename
             # Delete file
             rmv_path.unlink()
-            print('Deleted {}'.format(rmv_path))
             # Update manifest
             del self.json_data[post_diff.slug][manifest_file.filename]
+
         # Write out manifest
-        self.commit()
+        self.commit()  # TODO: TELL USER TO COMMIT?
 
     def calc_manifest_diff(
             self,
@@ -217,6 +241,8 @@ def prepare_files_for_add(
         post_data: util.PostData,
         post_static_rel_path: str,
 ) -> typing.Dict[str, FileToAdd]:
+    """Transforms a `PostData` instance into a dictionary of `FileToAdd`
+    instances (mapped by filename)."""
     files_to_add: typing.Dict[FileToAdd] = {}
 
     files_to_add['post.html'] = \

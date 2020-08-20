@@ -15,9 +15,14 @@ def add_post(
     instance.
     
     In order:
-    - Read the metadata file 
-    - Render the markdown
-    - ...
+    - Read the metadata file
+      - If no images are specified, run `ImageCropper` to have the user select them
+    - Render the markdown to HTML
+    - Process the images in the post
+    - Add the post to the database
+    - Check the manifest to see which files need to be added/removed. Perform
+      the changes and update the manifest
+    - Add the rendered HTML to the search engine index
     """
     # Create pathlib objects
     static_path = pathlib.Path(current_app.static_folder)
@@ -63,7 +68,6 @@ def add_post(
 
     # Compute hashes
     files_to_add = mn.prepare_files_for_add(post_data, post_static_rel_path)
-    print(files_to_add)
 
     # Get diff
     post_diff = current_app.manifest.calc_addpost_diff(post_data.slug, files_to_add)
