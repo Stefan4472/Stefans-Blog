@@ -19,7 +19,8 @@ create table Tags (
   tag_id integer primary key autoincrement,
   tag_title text not null unique,
   tag_slug text not null unique,
-  tag_color text not null
+  tag_color text not null,
+  unique(tag_slug)
 );
 
 -- TODO: INDEX? store by post_id, tag_id?
