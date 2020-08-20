@@ -221,12 +221,7 @@ class Manifest:
         # Find the posts that need to be modified (intersect)
         posts_to_change = this_slug_set & other_slug_set
 
-        print('Remove: {}'.format(posts_to_remove))
-        print('Add: {}'.format(posts_to_add))
-        print('Change: {}'.format(posts_to_change))
-        print(self.post_data.keys())
         diff = SyncDiff()
-
         # Enumerate the files that need to be removed from remote
         for slug_to_remove in posts_to_remove:
             # Iterate over filenames to be removed for the slug
@@ -281,6 +276,7 @@ class Manifest:
                 ))
         print(diff.write_files)
         print(diff.del_files)
+        return diff
 
 
     def commit(self):

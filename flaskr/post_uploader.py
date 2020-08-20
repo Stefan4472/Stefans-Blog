@@ -23,41 +23,29 @@ def push_to_remote(
             password = secret_data['password']
             remote_base_path = secret_data['remote_base_path']
     except IOError:
-        print ('No secret file found')
+        print('No secret file found')
         host = input('Enter host: ').strip()
         username = input('Enter username: ').strip()
         password = input('Enter password: ').strip()
 
     if not quiet:
-        print ('Initiating SFTP connection with {}...'.format(host))
+        print('Initiating SFTP connection with {}...'.format(host))
 
-    # Push files to PythonAnywhere, via SFTP
-    # From cmd, the following correctly copies the 'inventory-systems' folder to PythonAnywhere:
-    # 'put -r flaskr/static/inventory-systems Stefans-Blog/flaskr/static/inventory-systems'
-    
-    
+    # Login over sftp, calculate and apply diff
     with pysftp.Connection(host, username=username, password=password) as sftp:
         remote_manifest_data = load_remote_manifest(sftp, remote_base_path)
-        current_app.manifest.calc_manifest_diff(remote_manifest_data)
-    #     # Create post directory on host and copy post files
-    #     with sftp.cd(r'/home/skussmaul/Stefans-Blog/flaskr/static'):
-    #         # Create post directory on host
-    #         try:
-    #             sftp.mkdir(slug)
-    #         except IOError:
-    #             print ('Warning: The directory already exists')
-    #         # Enter post directory
-    #         with sftp.cd(slug):
-    #             # Copy all files in 'post_static_path' to host.
-    #             # This is a workaround because the 'put_d' (put directory) command is not working.
-    #             for file_to_copy in os.listdir(post_static_path):
-    #                 if not quiet:
-    #                     print ('Uploading {}...'.format(file_to_copy))
-    #                 sftp.put(os.path.join(post_static_path, file_to_copy))
-    #     # Copy instance files
-    #     with sftp.cd(r'/home/skussmaul/Stefans-Blog/instance'):
-    #         sftp.put(current_app.config['DATABASE_PATH'])
-    #         sftp.put(current_app.config['SEARCH_INDEX_PATH'])
+        if not quiet:
+            print('Downloaded manifest')
+            
+        diff = current_app.manifest.calc_manifest_diff(remote_manifest_data)
+        if not quiet:
+            print('Calculated diff')
+
+        if diff.write_files or diff.del_files:
+            apply_diff_remotely(sftp, remote_base_path, diff)
+        else:
+            print('Nothing to do: already synced!')
+    
 
 def load_remote_manifest(
         connection: pysftp.Connection,
@@ -72,3 +60,55 @@ def load_remote_manifest(
     connection.getfo(remote_manifest_path, manifest_raw)
     manifest_raw.seek(0)
     return json.load(manifest_raw)['posts']
+
+
+def apply_diff_remotely(
+        connection: pysftp.Connection,
+        remote_base_path: str,
+        diff: mn.SyncDiff,
+):
+    # Make sure the 'static' folder exists
+    remote_static_path = remote_base_path + '/flaskr/static'
+    if not connection.exists(remote_static_path):  # TODO: USE `ISDIR()` INSTEAD
+        raise ValueError('Couldn\'t find "static" folder in remote')
+
+    # Determine the set of slugs to write and create their directories
+    posts_to_write = set([mfile.post_slug for mfile in diff.write_files])
+    for slug in posts_to_write:
+        post_path = remote_static_path + '/' + slug
+        # Create post directory if it doesn't exist
+        if not connection.exists(post_path):
+            print('Creating directory {}'.format(post_path))
+            # connection.mkdir(post_path)
+
+    # Get path to local 'static' folder
+    local_static_path = pathlib.Path(current_app.static_folder)
+
+    # Write files
+    for manifest_file in diff.write_files:
+        local_file_path = \
+            local_static_path / manifest_file.post_slug / manifest_file.filename
+        remote_file_path = \
+            remote_static_path + '/' + manifest_file.post_slug + '/' + manifest_file.filename
+        print('Copying from {} to {}'.format(local_file_path, remote_file_path))
+    
+    # Delete files
+    for manifest_file in diff.del_files:
+        remote_file_path = \
+            remote_static_path + '/' + manifest_file.post_slug + '/' + manifest_file.filename
+        print('Deleting {}'.format(remote_file_path))
+
+    # Determine posts that have been removed, and delete their directories 
+    # if now empty
+    slugs_with_removal = set([mfile.post_slug for mfile in diff.del_files])
+    for slug in slugs_with_removal:
+        post_path = remote_static_path + '/' + slug
+        if not connection.listdir(post_path):
+            print('Deleting directory {}'.format(post_path))
+
+    # Upload the local manifest (which the remote manifest now matches)
+    print('Uploading local manifest')
+
+    # with sftp.cd(r'/home/skussmaul/Stefans-Blog/instance'):
+    #     sftp.put(current_app.config['DATABASE_PATH'])
+    #     sftp.put(current_app.config['SEARCH_INDEX_PATH'])
