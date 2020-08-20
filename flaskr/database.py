@@ -1,5 +1,4 @@
 import sqlite3
-from flask import current_app, g  # TODO: REMOVE
 import datetime
 import typing
 
@@ -182,26 +181,3 @@ class Database:
                 'where pt.tag_slug = ?'
         values = (tag_slug,)
         return self.cur.execute(command, values).fetchall()
-        
-# get database for the current request
-# will be stored under 'db' in the current request object "g"
-def get_db():
-    if 'db' not in g:
-        # print ('Retrieving database at {}'.format(current_app.config['DATABASE_PATH']))
-        g.db = Database(current_app.config['DATABASE_PATH'])
-
-    return g.db
-
-# close database connection for the current request
-def close_db(e=None):
-    db = g.pop('db', None)
-
-    if db is not None:
-        db.close()
-
-# initialize the database to the schema file, clearing all data  TODO: MOVE THIS TO __INIT__.PY?
-def init_db():
-    print ('Initializing database')
-    db = get_db()
-    with current_app.open_resource('posts_schema.sql') as f:
-        db.run_script(f.read().decode('utf8'))

@@ -3,7 +3,7 @@ import sys
 import click
 from flask import Flask, current_app, g
 from flask.cli import with_appcontext
-from . import database
+from . import database_context
 from . import blog
 from .manifest import Manifest
 from .search_engine import index 
@@ -50,22 +50,24 @@ def create_app(test_config=None):
 
     return app
 
+
 # registers the Database teardown method, close_db()
 def init_app(app):
-    app.teardown_appcontext(database.close_db)
+    app.teardown_appcontext(database_context.close_db)
     app.cli.add_command(init_db_command)
     app.cli.add_command(init_search_index_command)
     app.cli.add_command(add_post_command)
-    # app.cli.add_command(upload_posts)
     app.cli.add_command(add_posts_command)
+
 
 # command-line function to re-init the database to the
 # original schema. Run using "flask init-db"
 @click.command('init_db')
 @with_appcontext
 def init_db_command():
-    database.init_db()
+    database_context.init_db()
     click.echo('Initialized the database.')
+
 
 @click.command('init_search_index')
 @with_appcontext

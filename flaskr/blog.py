@@ -6,7 +6,7 @@ from flask import (
 )
 from flask.cli import with_appcontext
 from werkzeug.exceptions import abort
-from flaskr.database import get_db
+from . import database_context
 from flaskr.site_logger import log_visit
 import flaskr.search_engine.index as index  # TODO: IMPROVE IMPORTS
 import flaskr.featured_posts as fp
@@ -30,7 +30,7 @@ def logged_visit(f):
 @bp.route('/')
 @logged_visit
 def index():
-    db = get_db()
+    db = database_context.get_db()
     # Retrieve recent and featured posts
     recent_posts = db.get_recent_posts(5)
     featured_posts = [db.get_post_by_slug(slug) for slug in fp.get_featured_posts()]
@@ -52,7 +52,7 @@ def index():
 @bp.route('/posts')
 @logged_visit
 def posts_page():
-    db = get_db()
+    db = database_context.get_db()
     query = request.args.get('query')
 
     # Get the optional search query, if present, and perform the search
@@ -77,7 +77,7 @@ def posts_page():
 @logged_visit
 def post_view(slug):
     # print ('Looking up {}'.format(slug))
-    db = get_db()
+    db = database_context.get_db()
     # retrieve post data
     post = db.get_post_by_slug(slug)
     if not post:
@@ -109,7 +109,7 @@ def post_view(slug):
 @bp.route('/tag/<slug>')
 @logged_visit
 def tag_view(slug):
-    db = get_db()
+    db = database_context.get_db()
     # Make sure the queried tag exists
     if not db.has_tag(slug):
         abort(404)
