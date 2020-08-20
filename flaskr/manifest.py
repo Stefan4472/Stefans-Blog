@@ -43,16 +43,23 @@ class Manifest:
             filepath: str,
     ):
         self.filepath = filepath
-        # print('manifest constructed with path {}'.format(self.filepath))
-        # TODO: CATCH EXCEPTIONS
         try:
             with open(self.filepath, encoding='utf8') as manifest_file:
                 self.json_data = json.load(manifest_file)
         except FileNotFoundError:
-            # print('Creating manifest')
             # Create manifest and write blank json file
-            with open(filepath, 'a', encoding='utf8') as manifest_file:
-                manifest_file.write(r'{"posts":{}}')
+            self.json_data = {'posts': {}}
+            self.commit()
+        except json.JSONDecodeError as e:
+            raise ValueError(
+                'Could not read manifest file: invalid JSON ({})'.format(str(e))
+            )
+
+    def clear(self):
+        """Clears the manifest file. DANGEROUS! Only use when resetting 
+        the whole site."""
+        self.json_data = {'posts': {}}
+        self.commit()
 
     def calc_addpost_diff(
             self,

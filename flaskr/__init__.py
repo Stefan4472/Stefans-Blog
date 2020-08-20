@@ -1,18 +1,19 @@
 import os
 import sys
 import click
-from flask import Flask, current_app, g
-from flask.cli import with_appcontext
+import flask
+import pathlib
 from . import database_context
 from . import blog
-from .manifest import Manifest
+from . import manifest as mn
+from . import manage_blog
 from .search_engine import index 
-from .manage_blog import add_post_command, add_posts_command
 
 
-def create_app(test_config=None):
+def create_app():
     # create and configure the app
-    app = Flask(__name__, instance_relative_config=True)
+    app = flask.Flask(__name__, instance_relative_config=True)
+    # TODO: MAKE INTO PATHLIB OBJECTS?
     app.config.from_mapping(
         DATABASE_PATH=os.path.join(app.instance_path, 'posts.db'),
         SITE_LOG_PATH=os.path.join(app.instance_path, 'sitelog.txt'),
@@ -22,62 +23,38 @@ def create_app(test_config=None):
         MANIFEST_PATH=os.path.join(app.instance_path, 'manifest.json'),
     )
 
-    # Load the instance config, if it exists, when not testing
-    if test_config is None:
-        app.config.from_pyfile('config.py', silent=True)
-    # Load the test config if passed in
-    else:
-        app.config.from_mapping(test_config)
+    # Create the instance folder if it doesn't already exist
+    pathlib.Path(app.instance_path).mkdir(exist_ok=True)
 
-    # Ensure the instance folder exists
-    try:
-        os.makedirs(app.instance_path)
-    except OSError:
-        pass
-
-    #
+    # Initialize and return app
     init_app(app)
-
-    # Register blueprint
-    app.register_blueprint(blog.bp)
-    app.add_url_rule('/', endpoint='index')
-
-    # Init search engine instance and attach it to the 'app' object
-    app.search_engine = index.connect(app.config['SEARCH_INDEX_PATH'])
-    # Init manifest instance
-    # print('Initializing manifest at {}'.format(app.config['MANIFEST_PATH']))
-    app.manifest = Manifest(app.config['MANIFEST_PATH'])
-
     return app
 
 
-# registers the Database teardown method, close_db()
-def init_app(app):
-    app.teardown_appcontext(database_context.close_db)
-    app.cli.add_command(init_db_command)
-    app.cli.add_command(init_search_index_command)
-    app.cli.add_command(add_post_command)
-    app.cli.add_command(add_posts_command)
+def init_app(flask_app):
+    """Perform any initialization for the provided Flask app instance."""
+    flask_app.teardown_appcontext(database_context.close_db)
+    flask_app.cli.add_command(reset_site_command)
+    flask_app.cli.add_command(manage_blog.add_post_command)
+    flask_app.cli.add_command(manage_blog.add_posts_command)
+    
+    # Register blueprint
+    flask_app.register_blueprint(blog.bp)
+    flask_app.add_url_rule('/', endpoint='index')
+
+    # Init search engine instance and attach it to the 'app' object
+    flask_app.search_engine = index.connect(app.config['SEARCH_INDEX_PATH'])
+    # Init manifest instance
+    # print('Initializing manifest at {}'.format(app.config['MANIFEST_PATH']))
+    flask_app.manifest = mn.Manifest(app.config['MANIFEST_PATH'])
 
 
-# command-line function to re-init the database to the
-# original schema. Run using "flask init-db"
-@click.command('init_db')
-@with_appcontext
-def init_db_command():
+@click.command('reset_site')
+@flask.cli.with_appcontext
+def reset_site_command():
+    """Resets the site. This includes the database, search index, and manifest."""
     database_context.init_db()
-    click.echo('Initialized the database.')
-
-
-@click.command('init_search_index')
-@with_appcontext
-def init_search_index_command():
-    search_index = None
-    if current_app.search_engine:
-        search_index = current_app.search_engine
-    else:
-        search_index = index.connect(current_app.config['SEARCH_INDEX_FILE'])
-
-    search_index.clear_all_data()
-    search_index.commit()
-    click.echo('Initialized the search engine index.')
+    flask.current_app.search_engine.clear_all_data()
+    flask.current_app.search_engine.commit()
+    flask.current_app.manifest.clear()
+    click.echo('Done')

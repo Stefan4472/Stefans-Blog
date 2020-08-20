@@ -41,19 +41,17 @@ def add_post(
     post_static_path = static_path / post_data.slug
 
     # Render Markdown file, getting the HTML and sourced images
-    post_html, post_img_paths = util.render_markdown_file(
+    post_data.html, post_img_paths = util.render_markdown_file(
         md_path,
         post_data.slug,
     )
-    post_data.html = post_html
 
     # Load post images into memory
-    post_images = util.process_post_images(
+    post_data.images = util.process_post_images(
         post_path,
         static_path,
         post_img_paths,
     )
-    post_data.images = post_images
 
     # TODO: HOW TO GET URL TO THE POST'S STATIC DIRECTORY WITHOUT HARDCODING?
     # url_for REQUIRES THE REQUEST CONTEXT
