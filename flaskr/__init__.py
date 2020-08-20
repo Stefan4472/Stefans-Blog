@@ -34,7 +34,7 @@ def create_app():
 def init_app(flask_app):
     """Perform any initialization for the provided Flask app instance."""
     flask_app.teardown_appcontext(database_context.close_db)
-    flask_app.cli.add_command(reset_site_command)
+    flask_app.cli.add_command(manage_blog.reset_site_command)
     flask_app.cli.add_command(manage_blog.add_post_command)
     flask_app.cli.add_command(manage_blog.add_posts_command)
     
@@ -42,19 +42,9 @@ def init_app(flask_app):
     flask_app.register_blueprint(blog.bp)
     flask_app.add_url_rule('/', endpoint='index')
 
-    # Init search engine instance and attach it to the 'app' object
-    flask_app.search_engine = index.connect(app.config['SEARCH_INDEX_PATH'])
-    # Init manifest instance
-    # print('Initializing manifest at {}'.format(app.config['MANIFEST_PATH']))
-    flask_app.manifest = mn.Manifest(app.config['MANIFEST_PATH'])
+    # Init search engine and manifest
+    flask_app.search_engine = index.connect(flask_app.config['SEARCH_INDEX_PATH'])
+    flask_app.manifest = mn.Manifest(flask_app.config['MANIFEST_PATH'])
 
 
-@click.command('reset_site')
-@flask.cli.with_appcontext
-def reset_site_command():
-    """Resets the site. This includes the database, search index, and manifest."""
-    database_context.init_db()
-    flask.current_app.search_engine.clear_all_data()
-    flask.current_app.search_engine.commit()
-    flask.current_app.manifest.clear()
-    click.echo('Done')
+

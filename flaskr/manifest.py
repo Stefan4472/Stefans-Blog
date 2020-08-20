@@ -6,7 +6,7 @@ import io
 import os
 import dataclasses as dc
 from PIL import Image
-import flaskr.manage_util as util
+from . import manage_util as util
 
 
 @dc.dataclass

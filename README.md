@@ -40,14 +40,9 @@ set FLASK_ENV=development
 python -m flask run
 ```
 
-To initialize/reset the database:
+To reset the site:
 ```
-python -m flask init_db
-```
-
-To initialize/reset the search index:
-```
-python -m flask init_search_index
+python -m flask reset_site
 ```
 
 To add a post:

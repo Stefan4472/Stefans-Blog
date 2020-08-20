@@ -1,14 +1,12 @@
 import pathlib
 import typing
-from flask import current_app, url_for
-from flask.cli import with_appcontext
-import flaskr.manifest as mn
-import flaskr.manage_util as util
-import flaskr.search_engine as se
-import flaskr.database as db
+import flask
+from flask import current_app
+from . import manifest as mn
+from . import manage_util as util
 
 
-@with_appcontext
+@flask.cli.with_appcontext
 def add_post(
         post_path: pathlib.Path, 
         quiet: bool,
@@ -23,9 +21,7 @@ def add_post(
     """
     # Create pathlib objects
     static_path = pathlib.Path(current_app.static_folder)
-    manifest_path = pathlib.Path(current_app.config['MANIFEST_PATH'])
     database_path = pathlib.Path(current_app.config['DATABASE_PATH'])
-    search_index_path = pathlib.Path(current_app.config['SEARCH_INDEX_PATH'])
 
     # Get paths to the Markdown and metadata files
     md_path = post_path / 'post.md'
@@ -70,8 +66,7 @@ def add_post(
     print(files_to_add)
 
     # Get diff
-    manifest = mn.Manifest(manifest_path)
-    post_diff = manifest.calc_addpost_diff(post_data.slug, files_to_add)
+    post_diff = current_app.manifest.calc_addpost_diff(post_data.slug, files_to_add)
     print(post_diff)
     
     if post_diff.write_files:
@@ -88,9 +83,8 @@ def add_post(
     else:
         print('No files need to be deleted')
 
-    manifest.apply_addpost_diff(post_diff, files_to_add, static_path)
+    current_app.manifest.apply_addpost_diff(post_diff, files_to_add, static_path)
 
     # Add Markdown file to the search engine's index
-    search_index = se.index.connect(str(search_index_path))
-    search_index.index_file(str(md_path), post_data.slug)
-    search_index.commit()
+    current_app.search_engine.index_file(str(md_path), post_data.slug)
+    current_app.search_engine.commit()
