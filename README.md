@@ -1,9 +1,9 @@
 # Stefans-Blog
-A blog platform written in Python using the [Flask](https://palletsprojects.com/p/flask/) framework. See it live at [www.stefanonsoftware.com](www.stefanonsoftware.com).
+A blog platform written in Python using the [Flask](https://palletsprojects.com/p/flask/) framework. See it live at [www.stefanonsoftware.com](https://www.stefanonsoftware.com/).
 
-This project isn't finished! I have plans for improvements, listed in the **Ideas for Improvement** section. 
+This project is a hobby of mine that I revisit once or twice a year. It is by no means finished, and a lot of the code is waiting to be cleaned up. Therefore, this project should be treated as a work in progress. You can read about some of my plans for improvements in the **Ideas for Improvement** section below.
 
-Also keep in mind that this project has not been thoroughly documented. One of my TODOs is a big code cleanup.
+Also keep in mind that this project is expected to change a lot and has not been thoroughly documented.
 
 ## Project Organization 
 This repository stores code only--it does not contain blog content.
@@ -54,7 +54,7 @@ To add a post:
 ```
 python -m flask add_post POST_DIR
 ```
-POST_DIR is an absolute or relative path to the post's directory.
+`POST_DIR` is an absolute or relative path to the post's directory.
 Run ```python -m flask add_post help``` for instructions on using the options.
 
 ## Ideas for Improvement

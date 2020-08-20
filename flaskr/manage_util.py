@@ -25,8 +25,6 @@ KEY_IMAGE = 'image'
 KEY_BANNER = 'banner'
 KEY_THUMBNAIL = 'thumbnail'
 
-# RandomColor object used to generate Tag colors
-COLOR_GENERATOR = randomcolor.RandomColor()
 
 # Prescribed featured-image size
 FEATURED_IMG_SIZE = (1000, 540)
@@ -40,6 +38,10 @@ DEFAULT_IMG_SIZE = (640, 480)
 
 @dc.dataclass
 class PostImage:
+    """Simple container for an image that belongs to a post. Stores the 
+    image in-memory, and also stores the path to the image (if exists
+    in the file-system.
+    """
     image: Image.Image
     in_memory_only: bool
     path: typing.Optional[pathlib.Path] = None
@@ -47,6 +49,7 @@ class PostImage:
 
 @dc.dataclass
 class PostImages:
+    """Container for the three images every post has."""
     featured: PostImage
     thumbnail: PostImage
     banner: PostImage
@@ -54,39 +57,58 @@ class PostImages:
 
 @dc.dataclass
 class PostData:
+    """Container for all of the data needed to create a post."""
     title: str
     byline: str
     slug: str
-    post_date: datetime.datetime
+    post_date: datetime.date
     featured_img: PostImage
     thumbnail_img: PostImage
     banner_img: PostImage
+    # List of tags
     tags: typing.List[str] = dc.field(default_factory=list)
+    # Generated post HTML
     html: str = ''
+    # All images that need to be uploaded with the post
     images: typing.List[PostImage] = dc.field(default_factory=list)
 
 
-# Generates a slug given a string.
-# Slugs are used to create readable urls
-def generate_slug(string):
+def generate_slug(
+        string: str,
+) -> str:
+    """Generates a slug from the given string.
+    
+    Slugs are used to create readable urls.
+    """
     string = string.replace(' ', '-').lower()
     # Remove any non letters, numbers, and non-dashes
     return re.sub(r'[^a-zA-Z0-9\-\+]+', '', string)
 
 
 # TODO: FLASK PROVIDES A METHOD FOR THIS
-def get_static_url(filepath):
-    return '{{{{ url_for(\'static\', filename=\'{}\') }}}}'.format(filepath)
+def get_static_url(
+        rel_path_from_static: str,
+) -> str:
+    return '{{{{ url_for(\'static\', filename=\'{}\') }}}}'.format(
+        rel_path_from_static
+    )
 
 
-def generate_random_color():
-    return COLOR_GENERATOR.generate(luminosity='light', count=1)[0]
+def generate_random_color() -> str:
+    """Generates a random color and returns the hex string representing
+    that color in RGB."""
+    return randomcolor.RandomColor().generate(luminosity='light', count=1)[0]
 
 
 def resolve_directory_path(
         starting_dir: pathlib.Path,
         path: str,
 ) -> pathlib.Path:
+    """Checks that the provided path is an existing directory. 
+    
+    First attempts to use `path` as an absolute path. If that doesn't work, 
+    attempts to use `path` as a relative path from `starting_dir`.
+    """
     # Check the absolute path
     abs_path = pathlib.Path(path)
     if abs_path.is_dir():
@@ -103,6 +125,11 @@ def resolve_file_path(
         starting_dir: pathlib.Path,
         path: str,
 ) -> pathlib.Path:
+    """Checks that the provided path is an existing file. 
+    
+    First attempts to use `path` as an absolute path. If that doesn't work, 
+    attempts to use `path` as a relative path from `starting_dir`.
+    """
     # Check the absolute path
     abs_path = pathlib.Path(path)
     if abs_path.is_file():
@@ -118,21 +145,32 @@ def resolve_file_path(
 def read_meta_file(
         filepath: pathlib.Path,
 ) -> typing.Dict[str, typing.Any]:
-    """Read and return the JSON from the provided meta-data file."""
+    """Read the provided meta-data file and return its parsed JSON."""
     try:
         with open(filepath, 'r', encoding='utf-8', errors='strict') as f:
             return json.load(f)
     except IOError:
         raise ValueError(
-            'Could not read the meta-data file ("{}")'.format(filepath))
-    except json.JSONDecodeError as e:  # TODO: TEST THAT THIS WORKS AS EXPECTED
+            'Could not open the provided meta-data file ("{}")'.format(filepath)
+        )
+    except json.JSONDecodeError as e:
+        # TODO: TEST THAT THIS WORKS AS EXPECTED
         print(e)
+        raise ValueError(
+            'Invalid JSON in the provided meta-data file: {}'.format(str(e))
+        )
 
 
 def process_post_meta(
         post_dir: pathlib.Path,
         post_meta: typing.Dict[str, typing.Any],
 ) -> PostData:
+    """Validates the user-provided post meta-data, applies some logic, and 
+    returns a `PostData` instance with any outstanding data filled in.
+
+    Note: This method will run the `ImageCropper` GUI if no images have
+    been specified in `post_meta`.
+    """ 
     title = get_post_title(post_meta)
     byline = get_post_byline(post_meta)
     slug = get_post_slug(post_meta, title)
@@ -159,7 +197,8 @@ def get_post_title(
         return post_meta[KEY_TITLE]
     else:
         raise ValueError(
-            'post-meta.json must contain a "{}" field'.format(KEY_TITLE))
+            'post-meta.json must contain a "{}" field'.format(KEY_TITLE)
+        )
 
 
 def get_post_byline(
@@ -176,7 +215,8 @@ def get_post_byline(
         # TODO: INSTEAD, GRAB THE CONTENTS OF THE FIRST '<p>' TAG?
         # byline = post_markdown[:200]
         raise ValueError(
-            'post-meta.json must contain a "{}" field'.format(KEY_BYLINE))
+            'post-meta.json must contain a "{}" field'.format(KEY_BYLINE)
+        )
 
 
 def get_post_slug(
@@ -193,13 +233,13 @@ def get_post_slug(
 
 def get_post_date(
         post_meta: typing.Dict[str, typing.Any],
-) -> datetime.datetime:
+) -> datetime.date:
     if KEY_DATE in post_meta:
         # Parse the date in the format "MM/DD/YY"
-        return datetime.datetime.strptime(post_meta[KEY_DATE], "%m/%d/%y")# .date()
+        return datetime.datetime.strptime(post_meta[KEY_DATE], "%m/%d/%y").date()
     else:  
         # Default to today's date
-        return date.today()
+        return datetime.datetime.now().date()
 
 
 def get_post_images(
@@ -208,9 +248,9 @@ def get_post_images(
 ) -> PostImages:
     """Return featured image, thumbnail, banner image."""
     # If image has been defined, get the other images from json. 
-    # Otherwise, run ImageCropper.
     if KEY_IMAGE in post_meta:
         return get_post_images_from_json(post_dir, post_meta)
+    # Otherwise, run ImageCropper.
     else:
         return get_post_images_from_image_cropper(post_dir)
 
@@ -219,21 +259,34 @@ def get_post_images_from_json(
         post_dir: pathlib.Path,
         post_meta: typing.Dict[str, typing.Any],
 ) -> PostImages:
+    # TODO: ALLOW ABSOLUTE *OR* RELATIVE PATHS
     # Get featured image
-    post_img_path = post_dir / post_meta[KEY_IMAGE]
-    post_img = Image.open(post_img_path)
-    if post_img.width != FEATURED_IMG_SIZE[0] or \
-            post_img.height != FEATURED_IMG_SIZE[1]:
+    if KEY_IMAGE in post_meta:
+        # Construct relative path
+        post_img_path = post_dir / post_meta[KEY_IMAGE]
+        # Make sure the provided image is a .jpg
+        if post_img_path.suffix != '.jpg':
+            raise ValueError('"{}" must be a .jpg file'.format(KEY_IMAGE))
+        # Read into memory and check that the dimensions are exactly correct
+        post_img = Image.open(post_img_path)
+        if (post_img.width, post_img.height) != FEATURED_IMG_SIZE:
+            raise ValueError(
+                'Featured image must be {}w x {}h px'.format(
+                    FEATURED_IMG_SIZE[0], FEATURED_IMG_SIZE[1]
+                )
+            )
+    else:
         raise ValueError(
-            'Featured image must be {}w x {}h px'.format(
-                FEATURED_IMG_SIZE[0], FEATURED_IMG_SIZE[1])
+            'post-meta.json must contain a "{}" field'.format(KEY_IMAGE)
         )
 
     # Get banner image
     if KEY_BANNER in post_meta:
         banner_path = post_dir / post_meta[KEY_BANNER]
+        if banner_path.suffix != '.jpg':
+            raise ValueError('"{}" must be a .jpg file'.format(KEY_BANNER))
         banner_img = Image.open(banner_path)
-        if banner_img.width != BANNER_SIZE[0] or banner_img.height != BANNER_SIZE[1]:
+        if (banner_img.width, banner_img.height) != BANNER_SIZE:
             raise ValueError(
                 'Banner image must be {}w x {}h px'.format(
                     BANNER_SIZE[0], BANNER_SIZE[1])
@@ -246,12 +299,14 @@ def get_post_images_from_json(
     # Get thumbnail image
     if KEY_THUMBNAIL in post_meta:
         thumbnail_path = post_dir / post_meta[KEY_THUMBNAIL]
+        if thumbnail_path.suffix != '.jpg':
+            raise ValueError('"{}" must be a .jpg file'.format(KEY_THUMBNAIL))
         thumbnail_img = Image.open(thumbnail_path)
-        if thumbnail_img.width != THUMBNAIL_SIZE[0] or \
-                thumbnail_img.height != THUMBNAIL_SIZE[1]:
+        if (thumbnail_img.width, thumbnail_img.height) != THUMBNAIL_SIZE:
             raise ValueError(
                 'Banner image must be {}w x {}h px'.format(
-                    THUMBNAIL_SIZE[0], THUMBNAIL_SIZE[1])
+                    THUMBNAIL_SIZE[0], THUMBNAIL_SIZE[1]
+                )
             )
     else:
         raise ValueError(
@@ -272,7 +327,7 @@ def get_post_images_from_image_cropper(
     # Ask user to select an image for use
     img_path = askopenfilename(
         initialdir=post_dir,
-        title = 'Select image',
+        title='Select featured image',
         filetypes = (
             ('jpg files','*.jpg'), 
             ('jpeg files', '*.jpeg'), 
@@ -338,7 +393,8 @@ def render_markdown_file(
     found in the document.
     
     TODO: EXPLAIN HOW TO ADD A CAPTION
-    TODO: THIS WHOLE FUNCTION SHOULD BE CLEANED UP, AND SHOULDN'T DEAL WITH 'IMG_SAVE_DIR'
+    TODO: THIS WHOLE FUNCTION SHOULD BE CLEANED UP
+    TODO: MOVE OUT TO ITS OWN `MARKDOWN.PY` FILE
     -> create "Markdown Processer" class
     """
     # Regex used to match custom "[figure]" lines.
@@ -415,6 +471,18 @@ def process_post_images(
         post_static_path: pathlib.Path,
         img_sources: typing.List[str],
 ) -> typing.List[PostImage]:
+    """Process all images that are required to be uploaded for the post.
+
+    For each image:
+    - Load it into memory
+    - Resize it
+    - Save it to the post's static directory
+
+    Note that we currently can't convert images to jpeg, because that would
+    require potentially changing their urls in the already-rendered HTML.
+
+    Returns a list of processed `PostImage`s.
+    """
     post_images: typing.List[PostImage] = []
     # Copy image files to the article's directory
     for img_src in img_sources:
@@ -430,12 +498,10 @@ def process_post_images(
             continue
 
         img = Image.open(img_path)
-
         # Resize non-gif images
         if img_path.suffix != '.gif':
             img.thumbnail(DEFAULT_IMG_SIZE, Image.ANTIALIAS)
             #img = img.convert('RGB')
-        
         post_images.append(PostImage(img, False, path=img_path))
         
     return post_images
@@ -446,16 +512,17 @@ def add_post_to_database(
         db_path: pathlib.Path,
         post_data: PostData,
 ):
+    """Adds the provided `PostData` to the database."""
     # Get connection to the post database
     database = db.Database(str(db_path))
     # Add post to the database.
     # This will fail if there is a problem with the post data
-    # TODO: ACTUALLY, THE URLS SHOULD ALL BE STANDARDIZED AND DON'T NEED TO BE STORED IN THE DATABASE
+    # TODO: ACTUALLY, THE URLS SHOULD ALL BE STANDARDIZED AND DON'T NEED TO BE STORED IN THE DATABASE!
     database.add_post(
         post_data.title,
         post_data.byline,
         post_data.slug,
-        post_data.post_date.date(),
+        post_data.post_date,
         post_static_url + '/' + 'featured.jpg',
         post_static_url + '/' + 'banner.jpg',
         post_static_url + '/' + 'thumbnail.jpg',
@@ -473,21 +540,4 @@ def add_post_to_database(
             )
         # Add post->tag mapping to database
         database.add_tag_to_post(tag_slug, post_data.slug)
-    # TODO: ANY WAY TO *NOT* HAVE TO COMMIT BY DEFAULT?
     database.commit()
-
-
-def copy_to_static(
-        static_path: pathlib.Path,
-        file_path: pathlib.Path,
-):  
-    # TODO: IMPROVE
-    # Make sure the file exists
-    if not file_path.is_file():
-        raise ValueError('The file "{}" is not a real file'.format(file_path))  # TODO: RAISE EXCEPTION
-
-    # Build destination path
-    dest_path = static_path / file_path.name
-    # print('Copying {} to {}'.format(file_path, dest_path))
-    # Copy the image to the folder
-    shutil.copyfile(file_path, dest_path)

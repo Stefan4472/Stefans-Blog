@@ -19,8 +19,8 @@ def add_post(
     """Add post from the specified directory to the local site instance."""
     if not quiet:
         print('Adding post from directory "{}"'.format(post_dir))
-    
-    post_adder.PostAdder().add_post(
+    print('quiet = {}'.format(quiet))
+    post_adder.add_post(
         post_dir,
         quiet,
     )

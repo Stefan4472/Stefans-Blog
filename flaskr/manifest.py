@@ -9,8 +9,6 @@ from PIL import Image
 import flaskr.manage_util as util
 
 
-# TODO: ACTUALLY, WE DO NEED TO KNOW THE ASSOCIATED SLUG, SO THAT WE CAN
-# REMOVE FILES THAT ARE NO LONGER NEEDED
 @dc.dataclass
 class FileToAdd:
     contents: io.BytesIO
@@ -23,6 +21,7 @@ class ManifestFile(typing.NamedTuple):
     hash: str
     post_slug: str
     filename: str
+
 
 @dc.dataclass
 class PostDiff:
@@ -158,6 +157,13 @@ class Manifest:
         # Write out manifest
         self.commit()
 
+    def calc_manifest_diff(
+            self,
+            other_manifest: 'Manifest',
+    ):
+        """Calculate diff between this manifest and a different manifest."""
+        return
+        
     def commit(self):
         with open(self.filepath, 'w', encoding='utf8') as manifest_file:
             json.dump(self.json_data, manifest_file, indent=4)
