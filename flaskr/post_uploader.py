@@ -66,6 +66,7 @@ def apply_diff_remotely(
         connection: pysftp.Connection,
         remote_base_path: str,
         diff: mn.SyncDiff,
+        quiet: bool = False,
 ):
     # Make sure the 'static' folder exists
     remote_static_path = remote_base_path + '/flaskr/static'
@@ -79,7 +80,7 @@ def apply_diff_remotely(
         # Create post directory if it doesn't exist
         if not connection.exists(post_path):
             print('Creating directory {}'.format(post_path))
-            # connection.mkdir(post_path)
+            connection.mkdir(post_path)
 
     # Get path to local 'static' folder
     local_static_path = pathlib.Path(current_app.static_folder)
@@ -91,12 +92,14 @@ def apply_diff_remotely(
         remote_file_path = \
             remote_static_path + '/' + manifest_file.post_slug + '/' + manifest_file.filename
         print('Copying from {} to {}'.format(local_file_path, remote_file_path))
+        connection.put(local_file_path, remote_file_path)
     
     # Delete files
     for manifest_file in diff.del_files:
         remote_file_path = \
             remote_static_path + '/' + manifest_file.post_slug + '/' + manifest_file.filename
         print('Deleting {}'.format(remote_file_path))
+        connection.remove(remote_file_path)
 
     # Determine posts that have been removed, and delete their directories 
     # if now empty
@@ -105,10 +108,28 @@ def apply_diff_remotely(
         post_path = remote_static_path + '/' + slug
         if not connection.listdir(post_path):
             print('Deleting directory {}'.format(post_path))
+            connection.rmdir(post_path)
+
+    # Build remote paths
+    remote_instance_path = remote_base_path + '/instance'
+    remote_manifest_path = remote_instance_path + '/manifest.json'
+    remote_database_path = remote_instance_path + '/posts.db'
+    remote_search_index_path = remote_instance_path + '/index.json'
 
     # Upload the local manifest (which the remote manifest now matches)
-    print('Uploading local manifest')
+    if not quiet:
+        print('Uploading local manifest')
+    connection.put(current_app.config['MANIFEST_PATH'], remote_manifest_path)
 
-    # with sftp.cd(r'/home/skussmaul/Stefans-Blog/instance'):
-    #     sftp.put(current_app.config['DATABASE_PATH'])
-    #     sftp.put(current_app.config['SEARCH_INDEX_PATH'])
+    # Upload local database
+    if not quiet:
+        print('Uploading local database')
+    connection.put(current_app.config['DATABASE_PATH'], remote_database_path)
+
+    # Upload local search index
+    if not quiet:
+        print('Uploading local search index')
+    connection.put(current_app.config['SEARCH_INDEX_PATH'], remote_search_index_path)
+
+    if not quiet:
+        print('Done')
