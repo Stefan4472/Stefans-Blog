@@ -18,7 +18,16 @@ def log_visit():
         'user_agent': request.environ['HTTP_USER_AGENT'],
     }
     try:
-        requests.post('http://127.0.0.1:5001/report_traffic', params=params)
+        requests.post('http://sedu.pythonanywhere.com/report_traffic', params=params)
+        # requests.post('http://127.0.0.1:5001/report_traffic', params=params)
     except requests.exceptions.ConnectionError:
         pass
-    # requests.post('http://sedu.pythonanywhere.com/report_traffic', params=params)
+
+    # Log to local file
+    timestamp = datetime.datetime.now().strftime(r'%m-%d-%Y-%H:%M:%S:%f')[:-3]
+    url = request.path
+    # see https://stackoverflow.com/questions/3759981/get-ip-address-of-visitors-using-flask-for-python
+    ip_addr = request.environ.get('HTTP_X_FORWARDED_FOR', request.environ['REMOTE_ADDR'])
+    user_agent = request.environ['HTTP_USER_AGENT']
+    with open(current_app.config['SITE_LOG_PATH'], 'a') as log_file:
+        log_file.write('{},{},{},{}\n'.format(timestamp, url, ip_addr, user_agent))
