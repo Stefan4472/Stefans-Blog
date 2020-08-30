@@ -292,7 +292,15 @@ def prepare_image(
     # https://stackoverflow.com/a/33117447
     img_byte_array = io.BytesIO()
     # Save image to byte array
-    post_image.image.save(img_byte_array, format=post_image.image.format)
+    print(post_image)
+    print(post_image.image)
+    print(post_image.image.format)
+
+    if filename.endswith('.jpg'):
+        format = 'jpeg'
+    else:
+        format = pathlib.Path(filename).suffix[1:]
+    post_image.image.save(img_byte_array, format)
     # Calculate MD5 hash of the image
     img_hash = hashlib.md5(img_byte_array.getvalue())
 

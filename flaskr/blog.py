@@ -84,7 +84,7 @@ def post_view(slug):
         abort(404)
 
     # Alternate possibility to address UTF-8 encoding issues
-    html_path = os.path.join(current_app.static_folder, slug, slug + '.html')  # TODO: CALL ALL HTML 'POST.HTML'
+    html_path = os.path.join(current_app.static_folder, slug, 'post.html')
     with open(html_path, encoding='utf-8', errors='strict') as post_file:
         post_html = render_template_string(post_file.read())
 

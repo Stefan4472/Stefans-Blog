@@ -77,13 +77,14 @@ def add_posts_command(
         post_file: str,
         quiet: bool,
 ):
-    try:
-        post_file_path = manage_util.resolve_file_path(sys.argv[0], post_file)
-        add_posts(post_file_path, quiet)
-    except ValueError as e:
-        print('ERROR: {}'.format(e))
-        sys.exit(1)
-
+    # try:
+    #     post_file_path = manage_util.resolve_file_path(sys.argv[0], post_file)
+    #     add_posts(post_file_path, quiet)
+    # except ValueError as e:
+    #     print('ERROR: {}'.format(e))
+    #     sys.exit(1)
+    post_file_path = manage_util.resolve_file_path(sys.argv[0], post_file)
+    add_posts(post_file_path, quiet)
 
 @click.command('reset_site')
 def reset_site_command():
