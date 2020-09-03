@@ -3,6 +3,7 @@ import sys
 import click
 import flask
 import pathlib
+import json
 from . import database_context
 from . import blog
 from . import manifest as mn
@@ -13,14 +14,22 @@ from .search_engine import index
 def create_app():
     # create and configure the app
     app = flask.Flask(__name__, instance_relative_config=True)
+
+    # YES I KNOW THIS SHOULDN'T BE PLAIN TEXT
+    secret_path = os.path.join(app.instance_path, 'secret.json')
+    with open(secret_path, 'r') as secret_file:
+        secret_data = json.load(secret_file)
+        # TODO: MAKE SURE ALL VALUES HAVE BEEN SET
+    
     # TODO: MAKE INTO PATHLIB OBJECTS?
     app.config.from_mapping(
         DATABASE_PATH=os.path.join(app.instance_path, 'posts.db'),
         SITE_LOG_PATH=os.path.join(app.instance_path, 'sitelog.txt'),
         FEATURED_POSTS_PATH=os.path.join(app.instance_path, 'featured_posts.txt'),
         SEARCH_INDEX_PATH=os.path.join(app.instance_path, 'index.json'),
-        SECRET_PATH=os.path.join(app.instance_path, 'secret.json'),  # YES I KNOW THIS SHOULDN'T BE PLAIN TEXT
         MANIFEST_PATH=os.path.join(app.instance_path, 'manifest.json'),
+        SECRET_PATH=secret_path,
+        SECRET_VALS=secret_data,
     )
 
     # Create the instance folder if it doesn't already exist
