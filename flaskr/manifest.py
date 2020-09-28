@@ -296,11 +296,24 @@ def prepare_image(
     print(post_image.image)
     print(post_image.image.format)
 
+    # TODO: Clean up this logic
     if filename.endswith('.jpg'):
-        format = 'jpeg'
+        _format = 'jpeg'
     else:
-        format = pathlib.Path(filename).suffix[1:]
-    post_image.image.save(img_byte_array, format)
+        _format = pathlib.Path(filename).suffix[1:]
+
+    # Note: this bit of logic is needed because the `save()` function
+    # on a .gif takes the `save_all` parameter (otherwise, only the 
+    # first frame is saved). That's why we need separate logic to handle
+    # gifs.
+    # See: https://pillow.readthedocs.io/en/5.1.x/reference/Image.html#PIL.Image.Image.save vs.
+    # https://pillow.readthedocs.io/en/5.1.x/handbook/image-file-formats.html#gif 
+    # for the difference between the regular `save()` and the .gif `save()`.
+    if post_image.image.format == 'GIF':
+        print('Found .gif')
+        post_image.image.save(img_byte_array, _format, save_all=True)
+    else:
+        post_image.image.save(img_byte_array, _format)
     # Calculate MD5 hash of the image
     img_hash = hashlib.md5(img_byte_array.getvalue())
 
