@@ -1,5 +1,3 @@
-# really simple site visit logging
-# space-separated: url timestamp IP-address
 import datetime
 import requests
 from flask import request, current_app
@@ -18,8 +16,9 @@ def log_visit():
         'user_agent': request.environ['HTTP_USER_AGENT'],
         'secret': current_app.config['SECRET_VALS']['traffic_api_key'],
     }
+
     try:
-        # requests.post('http://sedu.pythonanywhere.com/report_traffic', params=params)
+        # requests.post('http://skussmaul.pythonanywhere.com/report_traffic', params=params)
         requests.post('http://127.0.0.1:5001/report_traffic', params=params)
     except requests.exceptions.ConnectionError as e:
         pass

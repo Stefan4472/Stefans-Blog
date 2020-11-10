@@ -38,7 +38,7 @@ class Database:
         """Creates an entry for a new post with the given meta-data.
 
         Throws ValueError if a database constraint is violated (e.g., a post
-        with the provided slug already exists.
+        with the provided slug already exists).
         """
         command = \
             'insert into Posts(post_title, post_byline, post_slug, ' \
@@ -56,7 +56,11 @@ class Database:
             self, 
             slug: str,
     ) -> typing.Optional[typing.Dict[str, typing.Any]]:
-        """Looks up and returns the post data for the given slug. May be None."""
+        """Looks up and returns the post data for the given slug. 
+        
+        Returns None if there is no post with the specified slug.
+        TODO: THROW VALUEERROR IF NOT FOUND
+        """
         # TODO: CREATE A `POST` DATACLASS
         command = 'select * from Posts where post_slug = ?'
         values = (slug,)
@@ -67,7 +71,9 @@ class Database:
             post_id: int,
     ) -> typing.Optional[typing.Dict[str, typing.Any]]:
         """Looks up and returns the post data for the given post ID.
-        May be None.
+        
+        Returns None if there is no post with the specified ID.
+        TODO: THROW VALUEERROR IF NOT FOUND
         """
         command = 'select * from Posts where post_id = ?'
         values = (post_id,)
@@ -78,7 +84,8 @@ class Database:
             num_posts: int,
     ) -> typing.List[typing.Dict[str, typing.Any]]:
         """Returns the `num_posts` most recent posts, sorted by `post_date`
-        descending (most recent first)."""
+        descending (most recent first).
+        """
         command = 'select * from Posts order by post_date desc limit ?'
         values = (num_posts,)
         return self.cur.execute(command, values).fetchall()

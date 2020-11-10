@@ -6,7 +6,6 @@ import flaskr.database as db
 def get_db():
     """Add database connection to the request object, `g`."""
     if 'db' not in g:
-        # Create database if not exists
         g.db = db.Database(current_app.config['DATABASE_PATH'])
 
     return g.db
@@ -20,7 +19,9 @@ def close_db(e=None):
 
 
 def init_db():
-    """Initialize the database instance."""
+    """Initialize the database to the schema file. 
+    WARNING: resets the database.
+    """
     db = get_db()
     with current_app.open_resource('posts_schema.sql') as f:
         db.run_script(f.read().decode('utf8'))

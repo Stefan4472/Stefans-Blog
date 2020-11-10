@@ -53,10 +53,10 @@ python -m flask add_post POST_DIR
 Run ```python -m flask add_post help``` for instructions on using the options.
 
 ## Ideas for Improvement
+- Allow for "reference links", which add a "?ref=xxxxxx" key to the end of a URL. This way, we can track which clicks came from a specific LinkedIn post, for example.
 - Use AJAX to display the "posts" page (load more posts dynamically), and provide Tag filters.
 - Build a web interface for adding posts
 - Provide tools for creating better thumbnails and banner images
-- "LifeOfStefan": a special section of "daily life" posts that contain a single image and paragraph of text. These posts should be handled separately from the main blog posts, which are meant to be full articles.
 
 Some links I need to read:
 - http://exploreflask.com/en/latest/views.html
