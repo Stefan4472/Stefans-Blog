@@ -12,7 +12,7 @@ from .search_engine import index
 
 
 def create_app():
-    # create and configure the app
+    """Create and configure the Flask app."""
     app = flask.Flask(__name__, instance_relative_config=True)
 
     # YES I KNOW THIS SHOULDN'T BE PLAIN TEXT

@@ -1,3 +1,7 @@
+'''Utility functions for site-management.
+
+TODO: SPLIT INTO SEVERAL SMALLER FILES AND MOVE INTO 'MANAGE' DIRECTORY.
+'''
 import re
 import pathlib
 import shutil
@@ -183,9 +187,9 @@ def process_post_meta(
         byline=byline,
         slug=slug,
         post_date=post_date,
-        featured_img = post_images.featured,
-        thumbnail_img = post_images.thumbnail,
-        banner_img = post_images.banner,
+        featured_img=post_images.featured,
+        thumbnail_img=post_images.thumbnail,
+        banner_img=post_images.banner,
         tags=tags,
     )
 

@@ -71,23 +71,17 @@ def add_post(
 
     # Get diff
     post_diff = current_app.manifest.calc_addpost_diff(post_data.slug, files_to_add)
-    print(post_diff)
     
-    if post_diff.write_files:
-        print('Files that will be written:')
-        for manifest_file in post_diff.write_files:
-            print('\t-{}'.format(manifest_file.filename))
-    else:
-        print('No files need to be written')
+    print('Identified {} files to write and {} files to delete'.format(
+        len(post_diff.write_files),
+        len(post_diff.del_files),
+    ))
 
-    if post_diff.del_files:
-        print('Files that will be deleted:')
-        for manifest_file in post_diff.del_files:
-            print('\t-{}'.format(manifest_file.filename))
-    else:
-        print('No files need to be deleted')
-
-    current_app.manifest.apply_addpost_diff(post_diff, files_to_add, static_path)
+    current_app.manifest.apply_addpost_diff(
+        post_diff, 
+        files_to_add, 
+        static_path,
+    )
 
     # Add Markdown file to the search engine's index
     current_app.search_engine.index_file(str(md_path), post_data.slug)

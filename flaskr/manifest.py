@@ -112,7 +112,11 @@ class Manifest:
             post_slug: str,
             post_files: typing.Dict[str, FileToAdd],
     ) -> PostDiff:
-        """Note: assumes all post_files have the same post_slug"""
+        """Calculates the diff created by adding a post with the given
+        `post_slug` and files (`post_files`).
+
+        Note: all provided `post_files` must belong to the specified `post_slug`.
+        """
         # Make sure that all `post_files` share the specified slug
         for f in post_files.values():
             if f.post_slug != post_slug:
@@ -122,21 +126,21 @@ class Manifest:
 
         # A post with this slug already exists
         if post_slug in self.post_data:
+            # Get the data for the files currently belonging to the post
+            # with this slug
             curr_post_data = self.post_data[post_slug]
             
-            # Get set of current filenames registered with that post 
+            # Get set of filenames currently registered with that post 
             curr_post_filenames = set([filename for filename in curr_post_data])
             
             # Go through the `post_files` one by one, determining what needs 
             # to be added, removed, or overwritten
             for add_filename, add_file in post_files.items():
-                # This file is registered: compare hashes
+                # This file is already registered in the site: compare hashes
                 if add_filename in curr_post_data:
-                    # Hash is the same: no need to do anything
-                    if add_file.hash == curr_post_data[add_filename]['hash']:
-                        pass
-                    # Hash is different: mark this file for overwrite
-                    else:
+                    # Hash is different: mark this file for overwrite.
+                    # If the hashes are the same, then we don't need to do anything.
+                    if add_file.hash != curr_post_data[add_filename]['hash']:
                         diff.write_files.append(add_file.to_manifest_file())
                     # Remove this file from `curr_post_filenames`
                     curr_post_filenames.remove(add_filename)
@@ -152,7 +156,6 @@ class Manifest:
                     post_slug,
                     curr_post_data[filename],
                 ))
-            pass
         # No post with this slug exists: add everything
         else:
             for post_file in post_files.values():
@@ -164,7 +167,13 @@ class Manifest:
             post_diff: PostDiff,
             files_to_add: typing.Dict[str, FileToAdd],
             static_path: pathlib.Path,
-    ):  
+    ):
+        """Applies the `PostDiff` instance created when adding a post to
+        the site.
+
+        This involves writing every file in `write_files`, and deleting 
+        every file in `del_files`.
+        """
         # Build post's static path and create dir if it doesn't already exist
         post_static_path = static_path / post_diff.slug
         post_static_path.mkdir(exist_ok=True)
@@ -175,6 +184,7 @@ class Manifest:
 
         # Write files
         for manifest_file in post_diff.write_files:
+            print('Writing file {}...'.format(manifest_file.filename))
             # Lookup the `FileToAdd` instance, which has the file contents 
             # in-memory
             file_to_add = files_to_add[manifest_file.filename]
@@ -190,6 +200,7 @@ class Manifest:
             
         # Delete files
         for manifest_file in post_diff.del_files:
+            print('Deleting file {}...'.format(manifest_file.filename))
             # Generate full path 
             rmv_path = post_static_path / manifest_file.filename
             # Delete file
@@ -198,7 +209,7 @@ class Manifest:
             del self.post_data[post_diff.slug][manifest_file.filename]
 
         # Write out manifest
-        self.commit()  # TODO: DON'T COMMIT BY DEFAULT?
+        self.commit()
 
     def calc_manifest_diff(
             self,
@@ -274,8 +285,6 @@ class Manifest:
                     slug_to_change,
                     remote_filename,
                 ))
-        print(diff.write_files)
-        print(diff.del_files)
         return diff
 
 
@@ -289,19 +298,20 @@ def prepare_image(
         post_slug: str,
         filename: str,
 ) -> FileToAdd:
+    """Given the data for an image to be displayed in the post, writes
+    the image data to a binary array and returns a `FileToAdd` instance.
+    """
     # https://stackoverflow.com/a/33117447
     img_byte_array = io.BytesIO()
-    # Save image to byte array
-    print(post_image)
-    print(post_image.image)
-    print(post_image.image.format)
 
+    # Determine image format. Note that '.jpg' is officially of format 'jpeg'
     # TODO: Clean up this logic
     if filename.endswith('.jpg'):
         _format = 'jpeg'
     else:
         _format = pathlib.Path(filename).suffix[1:]
 
+    # Save image to byte array.
     # Note: this bit of logic is needed because the `save()` function
     # on a .gif takes the `save_all` parameter (otherwise, only the 
     # first frame is saved). That's why we need separate logic to handle
@@ -310,10 +320,10 @@ def prepare_image(
     # https://pillow.readthedocs.io/en/5.1.x/handbook/image-file-formats.html#gif 
     # for the difference between the regular `save()` and the .gif `save()`.
     if post_image.image.format == 'GIF':
-        print('Found .gif')
         post_image.image.save(img_byte_array, _format, save_all=True)
     else:
         post_image.image.save(img_byte_array, _format)
+
     # Calculate MD5 hash of the image
     img_hash = hashlib.md5(img_byte_array.getvalue())
 
@@ -330,6 +340,9 @@ def prepare_text(
         post_slug: str,
         filename: str,
 ) -> FileToAdd:
+    """Given the text for a specified file to be added to the post,
+    writes the text data to a binary array and returns a `FileToAdd` instance.
+    """
     str_byte_array = io.BytesIO()
     str_byte_array.write(string.encode())
     str_hash = hashlib.md5(str_byte_array.getvalue())

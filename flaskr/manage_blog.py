@@ -3,6 +3,7 @@ import pathlib
 import click
 import typing
 import flask
+import timeit
 from . import manage_util
 from . import post_adder
 from . import post_uploader
@@ -11,6 +12,7 @@ from . import database_context
 
 @flask.cli.with_appcontext
 def reset_site():
+    """Reset all post data. Includes the database, search index, and manifest."""
     database_context.init_db()
     flask.current_app.search_engine.clear_all_data()
     flask.current_app.search_engine.commit()
@@ -36,7 +38,12 @@ def add_posts(
         post_file_path: pathlib.Path,
         quiet: bool,
 ):
-    print('Adding posts from {}'.format(post_file_path))
+    """Adds all posts from the specified file.
+
+    The file should consist of one absolute path per line.
+    """
+    if not quiet:
+        print('Adding posts from {}'.format(post_file_path))
     try:
         with open(post_file_path, 'r') as post_file:
             for line in post_file:
@@ -47,10 +54,10 @@ def add_posts(
 
 
 @flask.cli.with_appcontext
-def push_to_production():
+def push_to_remote():
     """Push local site instance to the production server."""
-    # TODO
-    return
+    print('Pushing to production')
+    post_uploader.push_to_remote(False)
 
 
 """Click wrapper functions"""
@@ -64,7 +71,12 @@ def add_post_command(
     """Add post from the specified directory to the local site instance."""
     try:
         post_dir = manage_util.resolve_directory_path(sys.argv[0], post_dir)
+        start = timeit.default_timer()
+        # Call the `add_post` function
         add_post(post_dir, quiet)
+        end = timeit.default_timer()
+        if not quiet:
+            print('Completed in {} seconds'.format(end - start))
     except ValueError as e:
         print('ERROR: {}'.format(e))
         sys.exit(1)
@@ -77,14 +89,14 @@ def add_posts_command(
         post_file: str,
         quiet: bool,
 ):
-    # try:
-    #     post_file_path = manage_util.resolve_file_path(sys.argv[0], post_file)
-    #     add_posts(post_file_path, quiet)
-    # except ValueError as e:
-    #     print('ERROR: {}'.format(e))
-    #     sys.exit(1)
     post_file_path = manage_util.resolve_file_path(sys.argv[0], post_file)
+    start = timeit.default_timer()
+    # Call the `add_posts` function
     add_posts(post_file_path, quiet)
+    end = timeit.default_timer()
+    if not quiet:
+        print('Completed in {} seconds'.format(end - start))
+
 
 @click.command('reset_site')
 def reset_site_command():
@@ -98,4 +110,10 @@ def push_to_remote_command(
         quiet: bool
 ):
     """Syncs the local site instance to the production server."""
-    post_uploader.push_to_remote(quiet)
+    start = timeit.default_timer()
+    # Call the `push_to_remote()` function
+    push_to_remote()
+    end = timeit.default_timer()
+    if not quiet:
+        print('Completed in {} seconds'.format(end - start))
+            
