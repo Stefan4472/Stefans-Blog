@@ -11,29 +11,34 @@
   <li>Post tags (with accompanying SQLite database implementation)</li>
   <li>Search engine</li>
   <li>"Featured" posts</li>
-  <li>Responsive carousel and banners</li>
+  <li><a href="/post/javascript-for-responsive-web-design">Responsive carousel and banners</a></li>
   <li>Simple site analytics</li>
-  <li>Back-end "devops" toolchain to push new posts to production</li>
+  <li>Back-end "devops" toolchain to create new posts</li>
+  <li><a href="/post/remote-synchronization-of-a-blog-instance">"Content-management system" to sync dev-files with the production server</a></li>
 </ul>
 
 <h3>Summary of Planned Features</h3>
 <ul>
-  <li>Serious code cleanup (frontend and backend)</li>
+  <li>Stand-alone site analytics server with sophisticated metrics</li>
   <li>Custom Markdown-to-HTML generator</li>
   <li>Syntax highlighting (preferably as part of the HTML generation process)</li>
-  <li>"Content-management system" to sync dev-files with the production server</li>
-  <li>Stand-alone site analytics server</li>
-  <li>An email list</li>
+  <li>Email list</li>
   <li>Full web-only post upload interface</li>
   <li>Comment sections</li>
 </ul>
 <hr>
 
+<h3>November 13th, 2020</h3>
+<ul>
+  <li>Implemented a blog "manifest" to track the posts and files belonging to a blog instance.</li>
+  <li>On the backend, wrote code that uses the manifest to synchronize a local blog instance to a remote web server, e.g. to "push" to production. <a href="/post/remote-synchronization-of-a-blog-instance">Read the accompanying blog post.</a></li>
+</ul>
+
 <h3>August 5th, 2020</h3>
 <ul>
   <li>Wrote a Python/Tkinter program to make it much easier to crop and resize images to the desired standard sizes. Then went through <i>all</i> my posts and resized the images to look better. That was a lot of work!</li>
   <li>Implemented a "responsive" carousel to show Featured posts on the home page. The carousel uses Javascript to detect the window width and either show post information overlayed on top of the carousel, or beneath the carousel. For narrow screens (e.g., people viewing the site from their phones), the overlayed text looks really bad, so we instead show the post information below the carousel and hide the overlay. For large screens, we show the overlayed text, and hide the stuff beneath the carousel.</li>
-  <li>Implemented "responsive" banners to show a different resolution image based on window width. The banner uses Javascript to detect the window width. On narrow screens, we show the post's "featured" image, which is currently set to 1000 x 540px. On wide screens, we show the post's "banner" image, which is currently set to 1000 x 300 px. This way, the banner looks pretty good on all screen sizes.</li>
+  <li>Implemented "responsive" banners to show a different resolution image based on window width. The banner uses Javascript to detect the window width. On narrow screens, we show the post's "featured" image, which is currently set to 1000 x 540px. On wide screens, we show the post's "banner" image, which is currently set to 1000 x 300 px. This way, the banner looks pretty good on all screen sizes. <a href="/post/javascript-for-responsive-web-design">Read the accompanying blog post.</a></li>
 </ul>
 
 <h3>September 17th, 2019</h3>
