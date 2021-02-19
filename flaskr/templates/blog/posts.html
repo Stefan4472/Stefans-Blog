@@ -17,6 +17,8 @@
 	{% endfor %}
 {% else %}  
 	<!-- No search query: just display the posts -->
+	<h2>{{ posts|length }} Posts</h2>
+	<hr>
 	{% for post in posts %}
 		{{ macros.post_widget(post, tags[post['post_slug']]) }}
 		<br>

@@ -116,11 +116,13 @@ window.onresize = onWindowSizeChanged;
 </script>
 
 <!-- Show the most recent posts -->
-<h2>The Latest</h2>
+<h2>Latest Posts</h2>
 <hr>
 {% for post in recent_posts %}
 	{{ macros.post_widget(post, tags[post['post_slug']]) }}
 	<br>
 {% endfor %}
-
+<div class="clearfix">
+	<a href="{{ url_for('blog.posts_page') }}" class="float-right">See All Posts ></a>
+</div>
 {% endblock %}
