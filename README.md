@@ -1,12 +1,12 @@
 # Stefans-Blog
-A blog platform written in Python using the [Flask](https://palletsprojects.com/p/flask/) framework. See it live at [www.stefanonsoftware.com](https://www.stefanonsoftware.com/).
 
-This project is a hobby of mine that I revisit once or twice a year. It is by no means finished, and a lot of the code is waiting to be cleaned up. Therefore, this project should be treated as a work in progress. You can read about some of my plans for improvements in the **Ideas for Improvement** section below.
+A blog platform written in Python 3.9 using the [Flask](https://palletsprojects.com/p/flask/) framework. See it live at [www.stefanonsoftware.com](https://www.stefanonsoftware.com/).
 
-Also keep in mind that this project is expected to change a lot and has not been thoroughly documented.
+**This project is a Work In Progress**. It is a hobby of mine that I revisit once or twice a year, and a lot of the code is waiting to be cleaned up and documented.
 
 ## Project Organization 
 This repository stores code only--it does not contain blog content.
+```
 - flaskr
   - search_engine: Pure-Python search engine implementation using QL scoring.
   - static: CSS and favicon. As articles are added to the blog, this folder will store post images and HTML.
@@ -19,22 +19,19 @@ This repository stores code only--it does not contain blog content.
   - posts_schema.sql: SQLite schema used for the post database.
   - site_logger.py: Simple code which logs site accesses.
 - setup.bat: A Batch script for setting up a local Flask instance with several articles. I use this for a "single-step" build process.
-
-## Virtual Environment
-To setup the virtual environment:
-```
-python -m venv venv
-venv\Scripts\activate
-pip install Flask
-pip install Pillow
-pip install randomcolor
-pip install pysftp
-pip install dataclasses
 ```
 
-To run the site:
+## Setup
+The following creates a virtual environment called `blogenv` and installs the required packages:
 ```
-venv\Scripts\activate
+python3 -m venv blogenv
+blogenv\Scripts\activate
+pip install -r requirements.txt
+```
+
+## Usage
+To run the site, activate the virtual environment and the run Flask:
+```
 set FLASK_APP=flaskr
 set FLASK_ENV=development
 python -m flask run
@@ -56,18 +53,3 @@ Run ```python -m flask add_post help``` for instructions on using the options.
 - Allow for "reference links", which add a "?ref=xxxxxx" key to the end of a URL. This way, we can track which clicks came from a specific LinkedIn post, for example.
 - Use AJAX to display the "posts" page (load more posts dynamically), and provide Tag filters.
 - Build a web interface for adding posts
-- Provide tools for creating better thumbnails and banner images
-
-Some links I need to read:
-- http://exploreflask.com/en/latest/views.html
-- https://stackoverflow.com/questions/36143283/pass-javascript-variable-to-flask-url-for
-- https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xvi-full-text-search
-- https://flask.palletsprojects.com/en/1.1.x/patterns/viewdecorators/
-- https://click.palletsprojects.com/en/5.x/quickstart/
-- https://getbootstrap.com/docs/4.0/content/images/
-- https://click.palletsprojects.com/en/7.x/options/
-- https://pillow.readthedocs.io/en/3.1.x/reference/Image.html
-- https://flask.palletsprojects.com/en/1.1.x/appcontext/
-- Image centering: https://www.w3schools.com/howto/howto_css_image_center.asp
-
-Markdown guide: https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#headers
