@@ -8,7 +8,6 @@ from . import database_context
 from . import blog
 from . import manifest as mn
 from . import manage_blog
-from .search_engine import index
 from simplesearch.searchengine import SearchEngine
 
 
