@@ -69,7 +69,7 @@ def posts_page():
     # Perform the search and retrieve results if user has entered a query
     if query:
         search_results = flask.current_app.search_engine.search(query)
-        posts = [db.get_post_by_slug(result_slug) for result_slug, _ in search_results]
+        posts = [db.get_post_by_slug(result.slug) for result in search_results]
     # Otherwise, get all posts
     else:
         posts = db.get_all_posts()

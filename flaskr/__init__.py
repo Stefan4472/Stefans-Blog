@@ -9,6 +9,7 @@ from . import blog
 from . import manifest as mn
 from . import manage_blog
 from .search_engine import index
+from simplesearch.searchengine import SearchEngine
 
 
 def create_app():
@@ -53,7 +54,7 @@ def init_app(flask_app):
     flask_app.add_url_rule('/', endpoint='index')
 
     # Init search engine and manifest
-    flask_app.search_engine = index.connect(flask_app.config['SEARCH_INDEX_PATH'])
+    flask_app.search_engine = SearchEngine(pathlib.Path(flask_app.config['SEARCH_INDEX_PATH']))
     flask_app.manifest = mn.Manifest(flask_app.config['MANIFEST_PATH'])
 
 
