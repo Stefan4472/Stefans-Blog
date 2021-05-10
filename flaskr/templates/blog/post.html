@@ -1,17 +1,17 @@
 {% extends "blog/base_template.html" %}
-
-<!-- Bootstrap reference: https://getbootstrap.com/docs/4.3/layout/grid/ -->
 {% block content %}
-
 <h1>{{ post['post_title'] }}</h1>
 {% if tags %}
-<h3 class="d-inline">
-  {% for tag in tags %}
-  <span class="badge badge-primary" style="background-color: {{ tag['tag_color'] }};">
-    <a class="link-override" href="{{ url_for('blog.tag_view', slug=tag['tag_slug']) }}">{{ tag['tag_title'] }}</a>
-  </span>
-  {% endfor %}
-</h3>
+    <h3 class="d-inline">
+    {% for tag in tags %}
+        <span class="badge badge-primary" style="background-color: {{ tag['tag_color'] }};">
+            <a
+                class="link-override"
+                href="{{ url_for('blog.tag_view', slug=tag['tag_slug']) }}"
+            >{{ tag['tag_title'] }}</a>
+        </span>
+    {% endfor %}
+    </h3>
 {% endif %}
 <p><em>Posted on {{ post['post_date'].strftime('%B %d, %Y') }}</em></p>
 <hr>

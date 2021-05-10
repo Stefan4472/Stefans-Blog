@@ -2,7 +2,6 @@
 {% import "blog/macros.html" as macros %}
 
 {% block content %}
-
 <!-- The posts being shown are for a specific query -->
 {% if search_query %}
 	<div class="jumbotron">
@@ -13,7 +12,6 @@
 	<hr>
 	{% for post in posts %}
 		{{ macros.post_widget(post, tags[post['post_slug']]) }}  <!-- TODO: Provide rank and score of each result-->
-		<br>
 	{% endfor %}
 {% else %}  
 	<!-- No search query: just display the posts -->
@@ -21,8 +19,6 @@
 	<hr>
 	{% for post in posts %}
 		{{ macros.post_widget(post, tags[post['post_slug']]) }}
-		<br>
 	{% endfor %}
 {% endif %}
-
 {% endblock %}

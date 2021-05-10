@@ -3,104 +3,104 @@
 {% block content %}
 
 <div id="post-content">
-<h1>Changelog</h1>
-<hr>
+    <h1>Changelog</h1>
+    <hr>
 
-<h3>Summary of Implemented Features</h3>
-<ul>
-  <li>Post tags (with accompanying SQLite database implementation)</li>
-  <li><a href="https://github.com/Stefan4472/simple-search-engine">Search engine</a></li>
-  <li>"Featured" posts</li>
-  <li><a href="/post/javascript-for-responsive-web-design">Responsive carousel and banners</a></li>
-  <li><a href="https://github.com/Stefan4472/site-analytics">Simple site analytics</a></li>
-  <li>Back-end "devops" toolchain to create new posts</li>
-  <li><a href="/post/remote-synchronization-of-a-blog-instance">"Content-management system" to sync dev-files with the production server</a></li>
-</ul>
+    <h3>Summary of Implemented Features</h3>
+    <ul>
+        <li>Post tags (with accompanying SQLite database implementation)</li>
+        <li><a href="https://github.com/Stefan4472/simple-search-engine">Search engine</a></li>
+        <li>"Featured" posts</li>
+        <li><a href="/post/javascript-for-responsive-web-design">Responsive carousel and banners</a></li>
+        <li><a href="https://github.com/Stefan4472/site-analytics">Simple site analytics</a></li>
+        <li>Back-end "devops" toolchain to create new posts</li>
+        <li><a href="/post/remote-synchronization-of-a-blog-instance">"Content-management system" to sync dev-files with the production server</a></li>
+    </ul>
 
-<h3>Summary of Planned Features</h3>
-<ul>
-  <li>Stand-alone site analytics server with sophisticated metrics</li>
-  <li>Custom Markdown-to-HTML generator</li>
-  <li>Syntax highlighting (preferably as part of the HTML generation process)</li>
-  <li>Email list</li>
-  <li>Full web-only post upload interface</li>
-  <li>Comment sections</li>
-</ul>
-<hr>
+    <h3>Summary of Planned Features</h3>
+    <ul>
+        <li>Stand-alone site analytics server with sophisticated metrics</li>
+        <li>Custom Markdown-to-HTML generator</li>
+        <li>Syntax highlighting (preferably as part of the HTML generation process)</li>
+        <li>Email list</li>
+        <li>Full web-only post upload interface</li>
+        <li>Comment sections</li>
+    </ul>
+    <hr>
 
-<h3>March 7th, 2021</h3>
-<ul>
-  <li>Minor styling improvements of post widgets, and Portfolio updates.</li>
-  <li>Upgraded to Python3.9 and now using my <a href="https://github.com/Stefan4472/simple-search-engine">simple-search-engine</a> project for search results.</a></li>
-</ul>
+    <h3>March 7th, 2021</h3>
+    <ul>
+        <li>Minor styling improvements of post widgets, and Portfolio updates.</li>
+        <li>Upgraded to Python3.9 and now using my <a href="https://github.com/Stefan4472/simple-search-engine">simple-search-engine</a> project for search results.</a></li>
+    </ul>
 
-<h3>November 13th, 2020</h3>
-<ul>
-  <li>Implemented a blog "manifest" to track the posts and files belonging to a blog instance.</li>
-  <li>On the backend, wrote code that uses the manifest to synchronize a local blog instance to a remote web server, e.g. to "push" to production. <a href="/post/remote-synchronization-of-a-blog-instance">Read the accompanying blog post.</a></li>
-</ul>
+    <h3>November 13th, 2020</h3>
+    <ul>
+        <li>Implemented a blog "manifest" to track the posts and files belonging to a blog instance.</li>
+        <li>On the backend, wrote code that uses the manifest to synchronize a local blog instance to a remote web server, e.g. to "push" to production. <a href="/post/remote-synchronization-of-a-blog-instance">Read the accompanying blog post.</a></li>
+    </ul>
 
-<h3>August 5th, 2020</h3>
-<ul>
-  <li>Wrote a Python/Tkinter program to make it much easier to crop and resize images to the desired standard sizes. Then went through <i>all</i> my posts and resized the images to look better. That was a lot of work!</li>
-  <li>Implemented a "responsive" carousel to show Featured posts on the home page. The carousel uses Javascript to detect the window width and either show post information overlayed on top of the carousel, or beneath the carousel. For narrow screens (e.g., people viewing the site from their phones), the overlayed text looks really bad, so we instead show the post information below the carousel and hide the overlay. For large screens, we show the overlayed text, and hide the stuff beneath the carousel.</li>
-  <li>Implemented "responsive" banners to show a different resolution image based on window width. The banner uses Javascript to detect the window width. On narrow screens, we show the post's "featured" image, which is currently set to 1000 x 540px. On wide screens, we show the post's "banner" image, which is currently set to 1000 x 300 px. This way, the banner looks pretty good on all screen sizes. <a href="/post/javascript-for-responsive-web-design">Read the accompanying blog post.</a></li>
-</ul>
+    <h3>August 5th, 2020</h3>
+    <ul>
+        <li>Wrote a Python/Tkinter program to make it much easier to crop and resize images to the desired standard sizes. Then went through <i>all</i> my posts and resized the images to look better. That was a lot of work!</li>
+        <li>Implemented a "responsive" carousel to show Featured posts on the home page. The carousel uses Javascript to detect the window width and either show post information overlayed on top of the carousel, or beneath the carousel. For narrow screens (e.g., people viewing the site from their phones), the overlayed text looks really bad, so we instead show the post information below the carousel and hide the overlay. For large screens, we show the overlayed text, and hide the stuff beneath the carousel.</li>
+        <li>Implemented "responsive" banners to show a different resolution image based on window width. The banner uses Javascript to detect the window width. On narrow screens, we show the post's "featured" image, which is currently set to 1000 x 540px. On wide screens, we show the post's "banner" image, which is currently set to 1000 x 300 px. This way, the banner looks pretty good on all screen sizes. <a href="/post/javascript-for-responsive-web-design">Read the accompanying blog post.</a></li>
+    </ul>
 
-<h3>September 17th, 2019</h3>
-<ul>
-  <li>Implemented "banner" and "thumbnail" for each post.</li>
-  <li>Vastly improved the "devops" process of creating new posts and uploading them to the production server. Each post now has a "post.md" Markdown file, which contains its text, and a "post-meta.json" configuration file, which defines information such as the post's title, byline, official publish date, featured image, etc. The `manage_blog.py` script renders the post markdown, copies its images, and uses the metadata to add the post to the database. It then indexes the post and adds it to the search engine. Finally, if the user has turned the `--upload` setting on, the script uses SFTP to upload the new post HTML and images, along with the updated search index and database, to the production server.</li>
-  <li>Small HTML/CSS styling improvements to center images and make captions look better.</li>
-</ul>
+    <h3>September 17th, 2019</h3>
+    <ul>
+        <li>Implemented "banner" and "thumbnail" for each post.</li>
+        <li>Vastly improved the "devops" process of creating new posts and uploading them to the production server. Each post now has a "post.md" Markdown file, which contains its text, and a "post-meta.json" configuration file, which defines information such as the post's title, byline, official publish date, featured image, etc. The `manage_blog.py` script renders the post markdown, copies its images, and uses the metadata to add the post to the database. It then indexes the post and adds it to the search engine. Finally, if the user has turned the `--upload` setting on, the script uses SFTP to upload the new post HTML and images, along with the updated search index and database, to the production server.</li>
+        <li>Small HTML/CSS styling improvements to center images and make captions look better.</li>
+    </ul>
 
-<h3>September 6th, 2019</h3>
-<ul>
-  <li>Modified a search engine I developed in order to use it for this site. This included implementing a way for the search index to save itself to a file (currently using JSON, because it's simple--although inefficient).</li>
-  <li>Added search bar, with search results page.</li>
-  <li>Added logging of visitor information (timestamp, url, IP address)--will be used for analysis in the future.</li>
-  <li>Added carousel of "featured" posts.</li>
-  <li>Now using the Python "RandomColor" library to generate tag colors randomly.</li>
-</ul>
+    <h3>September 6th, 2019</h3>
+    <ul>
+        <li>Modified a search engine I developed in order to use it for this site. This included implementing a way for the search index to save itself to a file (currently using JSON, because it's simple--although inefficient).</li>
+        <li>Added search bar, with search results page.</li>
+        <li>Added logging of visitor information (timestamp, url, IP address)--will be used for analysis in the future.</li>
+        <li>Added carousel of "featured" posts.</li>
+        <li>Now using the Python "RandomColor" library to generate tag colors randomly.</li>
+    </ul>
 
-<h3>September 3rd, 2019</h3>
-<ul>
-  <li>Created a fresh Flask install and followed the tutorial, setting things up the right way. "Doing it right". Everything is in a new repository now.</li>
-</ul>
+    <h3>September 3rd, 2019</h3>
+    <ul>
+        <li>Created a fresh Flask install and followed the tutorial, setting things up the right way. "Doing it right". Everything is in a new repository now.</li>
+    </ul>
 
-<h3>March 13th, 2019</h3>
-<ul>
-  <li>Database re-write to really simplify things and make back-end improvements easier. The schema is now much simpler and the `Database` interface much easier to use.</li>
-  <li>Added "Next" and "Previous" post links to each post. Just uses the post's index and adds or subtracts one. The next step will be to fetch the next/previous posts chronologically.</li>
-  <li>Added the "recent posts" feature to the home page.</li>
-  <li>Added the "Spaceships" site favicon.</li>
-</ul>
+    <h3>March 13th, 2019</h3>
+    <ul>
+        <li>Database re-write to really simplify things and make back-end improvements easier. The schema is now much simpler and the `Database` interface much easier to use.</li>
+        <li>Added "Next" and "Previous" post links to each post. Just uses the post's index and adds or subtracts one. The next step will be to fetch the next/previous posts chronologically.</li>
+        <li>Added the "recent posts" feature to the home page.</li>
+        <li>Added the "Spaceships" site favicon.</li>
+    </ul>
 
-<h3>June 24th, 2018</h3>
-<ul>
-  <li>Rewrote a lot of the HTML to use Bootstrap.</li>
-</ul>
+    <h3>June 24th, 2018</h3>
+    <ul>
+        <li>Rewrote a lot of the HTML to use Bootstrap.</li>
+    </ul>
 
-<h3>December 30th, 2017</h3>
-<ul>
-  <li>Got article tags working.</li>
-  <li>Added "Posts" page, which shows all posts in chronological order.</li>
-</ul>
+    <h3>December 30th, 2017</h3>
+    <ul>
+        <li>Got article tags working.</li>
+        <li>Added "Posts" page, which shows all posts in chronological order.</li>
+    </ul>
 
-<h3>November 19th, 2017</h3>
-<ul>
-  <li>Significant back-end improvements to render Markdown post content to HTML via a new `site_manager.py` script. Post metadata is defined in a specific format at the top of each Markdown file.</li>
-  <li>Much improved database schema and queries.</li>
-</ul>
+    <h3>November 19th, 2017</h3>
+    <ul>
+        <li>Significant back-end improvements to render Markdown post content to HTML via a new `site_manager.py` script. Post metadata is defined in a specific format at the top of each Markdown file.</li>
+        <li>Much improved database schema and queries.</li>
+    </ul>
 
-<h3>October 28th, 2017</h3>
-<ul>
-  <li>Started using Flask and created Jinja templates.</li>
-</ul>
+    <h3>October 28th, 2017</h3>
+    <ul>
+        <li>Started using Flask and created Jinja templates.</li>
+    </ul>
 
-<h3>September 10th, 2017</h3>
-<ul>
-  <li>Created website using plain ol' HTML. Wrote several articles.</li>
-</ul>
+    <h3>September 10th, 2017</h3>
+    <ul>
+        <li>Created website using plain ol' HTML. Wrote several articles.</li>
+    </ul>
+    </div>
 {% endblock %}
-</div>

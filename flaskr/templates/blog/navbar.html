@@ -1,32 +1,35 @@
-<!--
-Displays site navbar.
-See https://getbootstrap.com/docs/4.3/examples/navbars/# 
--->
-<nav class="navbar navbar-expand-lg navbar-light bg-light rounded" style="margin-bottom: 2rem;">
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExample09" aria-controls="navbarsExample09" aria-expanded="false" aria-label="Toggle navigation">
+<!-- Displays site navbar. See https://getbootstrap.com/docs/4.3/examples/navbars/# -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light rounded mb-2">
+    <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#site-nav"
+        aria-controls="site-nav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+    >
         <span class="navbar-toggler-icon"></span>
     </button>
 
-    <div class="collapse navbar-collapse" id="navbarsExample09">
+    <div class="collapse navbar-collapse" id="site-nav">
         <ul class="navbar-nav mr-auto">
-        <li class="nav-item active">
-            <a class="nav-link" href="{{ url_for('blog.index') }}">Home <span class="sr-only">(current)</span></a>
-        </li>
-        <li class="nav-item active">
-            <a class="nav-link" href="{{ url_for('blog.posts_page') }}">Posts</a>
-        </li>
-        <li class="nav-item active">
-            <a class="nav-link" href="{{ url_for('blog.portfolio_page') }}">Portfolio</a>
-        </li>
-        <li class="nav-item active">
-            <a class="nav-link" href="{{ url_for('blog.about_page') }}">About</a>
-        </li>
-        
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('blog.index') }}">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('blog.posts_page') }}">Posts</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('blog.portfolio_page') }}">Portfolio</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('blog.about_page') }}">About</a>
+            </li>
         </ul>
         <form action="javascript:searchInput();" class="form-inline my-2 my-md-0">
             <input id="searchInput" class="form-control" type="text" placeholder="Search" aria-label="Search">
         </form>
-        
     </div>
 </nav>
 
@@ -37,7 +40,6 @@ function searchInput() {
     var search_entry = document.getElementById("searchInput");
     var search_string = search_entry.value;
     search_entry.value = "";
-    console.log("Search Input '" + search_string + "'");
     window.location.href = '/posts?query=' + search_string;
 }
 </script>

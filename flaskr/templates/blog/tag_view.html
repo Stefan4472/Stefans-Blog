@@ -2,17 +2,13 @@
 Displays a page with widgets to all posts categorized under the given tag.
 tag_title: title of the tag being shown
 posts: list of Posts
-
 -->
 {% extends "blog/base_template.html" %}
 {% import "blog/macros.html" as macros %}
 
 {% block content %}
 <h1>{{ posts|length }} Post{% if posts|length != 1 %}s{% endif %} Tagged Under "{{ tag_title }}"</h1>
-
 {% for post in posts %}
 	{{ macros.post_widget(post) }}
-	<br>
 {% endfor %}
-
 {% endblock %}
