@@ -11,6 +11,7 @@ FEATURED_IMG_SIZE = (1000, 540)
 BANNER_SIZE = (1000, 175)
 THUMBNAIL_SIZE = (400, 400)
 
+
 class AnchorPosition(enum.Enum):
     NONE = 0
     LEFT = 1

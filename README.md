@@ -29,17 +29,23 @@ This repository stores code only--it does not contain blog content.
 ```
 
 ## Setup
-The following creates a virtual environment called `blogenv` and installs the required packages:
+Create a virtual environment and install the required packages:
 ```
 python3 -m venv blogenv
-blogenv\Scripts\activate
+call blogenv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-Next, you need to install my `simplesearch` package. It's not yet on pip, so you have to get it via Github:
+Install my `simplesearch` package. It's not yet on pip, so you have to get it via Github:
 ```
 git clone https://github.com/Stefan4472/simple-search-engine
 cd simple-search-engine
+pip install .
+```
+
+Install the `imagecropper` package:
+```
+cd imagecropper
 pip install .
 ```
 

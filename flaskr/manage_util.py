@@ -1,10 +1,5 @@
-'''Utility functions for site-management.
-
-TODO: SPLIT INTO SEVERAL SMALLER FILES AND MOVE INTO 'MANAGE' DIRECTORY.
-'''
 import re
 import pathlib
-import shutil
 import typing
 import datetime
 from PIL import Image
@@ -13,10 +8,14 @@ import json
 import markdown2 as md
 import randomcolor
 import flaskr.database as db
-from flaskr.image_cropper.image_cropper import ImageCropper
+from imagecropper.imagecropper import ImageCropper
 # from flaskr.manifest import Manifest
 import tkinter as tk
 from tkinter.filedialog import askopenfilename
+'''
+Utility functions for site-management.
+TODO: SPLIT INTO SEVERAL SMALLER FILES AND MOVE INTO 'MANAGE' DIRECTORY.
+'''
 
 
 # Keys used in post-meta.json
