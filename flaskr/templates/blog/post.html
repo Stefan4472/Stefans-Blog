@@ -1,19 +1,17 @@
 {% extends "blog/base_template.html" %}
 {% block content %}
-<h1>{{ post['post_title'] }}</h1>
-{% if tags %}
-    <h3 class="d-inline">
-    {% for tag in tags %}
+<h1>{{ post.title }}</h1>
+<h3 class="d-inline">
+    {% for tag in post.tags %}
         <span class="badge badge-primary" style="background-color: {{ tag['tag_color'] }};">
             <a
                 class="link-override"
-                href="{{ url_for('blog.tag_view', slug=tag['tag_slug']) }}"
-            >{{ tag['tag_title'] }}</a>
+                href="{{ url_for('blog.tag_view', slug=tag.slug) }}"
+            >{{ tag.name }}</a>
         </span>
     {% endfor %}
-    </h3>
-{% endif %}
-<p><em>Posted on {{ post['post_date'].strftime('%B %d, %Y') }}</em></p>
+</h3>
+<p><em>Posted on {{ post.date.strftime('%B %d, %Y') }}</em></p>
 <hr>
 <div id="post-content">  <!-- TODO: PUT ALL CONTENT IN A CARD, WITH 1px BORDER? -->
   {{ post_html|safe }}
@@ -37,17 +35,16 @@
 
 <!-- TODO: MAKE THIS LOOK BETTER. SEE THE ABOVE COMMENTED CODE FOR WHAT I WAS TRYING TO DO 
 ALSO: SHOULD IT INCLUDE THE THUMBNAILS FOR NEXT&PREVIOUS POSTS?-->
-<br>
-<hr>
+<hr/>
 <div class="row">
   <div class="col-6">
     {% if prev_post %}
-    <p class="float-left">Previous Post: <a href="{{ url_for('blog.post_view', slug=prev_post['post_slug']) }}">{{ prev_post['post_title'] }}</a></p>
+    <p class="float-left">Previous Post: <a href="{{ url_for('blog.post_view', slug=prev_post.slug) }}">{{ prev_post.title }}</a></p>
     {% endif %}
   </div>
   <div class="col-6">
     {% if next_post %}
-    <p class="float-right">Next Post: <a href="{{ url_for('blog.post_view', slug=next_post['post_slug']) }}">{{ next_post['post_title'] }}</a></p>
+    <p class="float-right">Next Post: <a href="{{ url_for('blog.post_view', slug=next_post.slug) }}">{{ next_post.title }}</a></p>
     {% endif %}
   </div>
 </div>

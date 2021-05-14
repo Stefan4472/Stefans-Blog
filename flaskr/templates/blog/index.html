@@ -26,9 +26,9 @@
 		<div id="featured_carousel" class="carousel-inner">
 			{% for i in range(0, featured_posts|length) %}
                 <div class="carousel-item {% if i == 0 %}active{% endif %} carousel-div">
-                    <a href="{{ url_for('blog.post_view', slug=featured_posts[i]['post_slug']) }}">
+                    <a href="{{ url_for('blog.post_view', slug=featured_posts[i].slug) }}">
                         <img
-                            src="{{ featured_posts[i]['post_image_url'] }}"
+                            src="{{ featured_posts[i].image_url }}"
                             class="d-block carousel-image"
                             alt="..."
                         >
@@ -38,15 +38,15 @@
                             <h1
                                 id="carousel-title"
                                 class="carousel-overlay"
-                            >{{ featured_posts[i]['post_title'] }}</h1>
+                            >{{ featured_posts[i].title }}</h1>
                             <p
                                 id="carousel-byline"
                                 class="carousel-overlay"
-                            >{{ featured_posts[i]['post_byline'] }}</p>
+                            >{{ featured_posts[i].byline }}</p>
                             <a
                                 id="carousel-button"
                                 class="btn btn-lg btn-primary carousel-overlay"
-                                href="{{ url_for('blog.post_view', slug=featured_posts[i]['post_slug']) }}"
+                                href="{{ url_for('blog.post_view', slug=featured_posts[i].slug) }}"
                                 role="button"
                             >Read More</a>
                         </div>
@@ -141,7 +141,7 @@ window.onresize = onWindowSizeChanged;
 <h2>Latest Posts</h2>
 <hr/>
 {% for post in recent_posts %}
-	{{ macros.post_widget(post, tags[post['post_slug']]) }}
+	{{ macros.post_widget(post) }}
 {% endfor %}
 <div class="clearfix">
 	<a href="{{ url_for('blog.posts_page') }}" class="float-right">See All Posts ></a>

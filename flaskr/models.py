@@ -1,4 +1,3 @@
-import randomcolor as rc
 from . import db
 # TODO: LOOK INTO SETTING THE 'LAZY' FIELD FOR BETTER PERFORMANCE
 
@@ -32,7 +31,7 @@ class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     slug = db.Column(db.String, nullable=False, unique=True)
     name = db.Column(db.String, nullable=False)
-    color = db.Column(db.String, nullable=False, default=rc.RandomColor().generate(luminosity='light', count=1)[0])
+    color = db.Column(db.String, nullable=False)
 
     def __repr__(self):
-        return 'Tag(slug={})'.format(self.slug)
+        return 'Tag(slug={}, color={})'.format(self.slug, self.color)

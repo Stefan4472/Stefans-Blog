@@ -538,8 +538,9 @@ def add_post_to_database(
             tag = models.Tag(
                 slug=tag_slug,
                 name=tag_name,
+                color=generate_random_color(),
             )
-        # Add to post
-        post.tags.append(tag)
+        # Add to post  TODO: FIGURE OUT HOW TO AVOID CAUSING INTEGRITY ERROR (DUPLICATE)
+        # post.tags.append(tag)
     db.session.add(post)
     db.session.commit()

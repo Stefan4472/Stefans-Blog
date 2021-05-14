@@ -3,11 +3,11 @@ import functools
 import typing
 import flask
 import werkzeug.exceptions
+from sqlalchemy import asc, desc
 from . import database_context
 from . import site_logger
 from . import featured_posts as fp
 from . import models
-from .database import db
 
 
 # Blueprint under which all views will be assigned
@@ -27,42 +27,22 @@ def logged_visit(f: typing.Callable):
 @logged_visit
 def index():
     """Site index. Displays featured and recent posts."""
-    post = models.Post.query.get(1)
-    print(post)
-    # t = models.Tag(slug='yo', name='hi')
-    # print(tag)
-    # print(t)
-    # db.create_all()
-    # db.session.add(t)
-    # db.session.commit()
+    recent_posts = models.Post.query.order_by(desc('date')).limit(5).all()
+    # TODO: MOVE FEATURED POSTS TO THE DATABASE
+    featured_posts = \
+        [models.Post.query.filter_by(slug=slug).first() for slug in fp.get_featured_posts()]
 
-    # db = database_context.get_db()
-    # # Retrieve recent and featured posts
-    # # TODO: MOVE FEATURED POSTS TO THE DATABASE
-    # recent_posts = db.get_recent_posts(5)
-    # featured_posts = \
-    #     [db.get_post_by_slug(slug) for slug in fp.get_featured_posts()]
-    #
-    # # Filter out any `None` values.
-    # # This occurs when a featured post slug is not found in the database,
-    # # and should generally be an exceptional case (i.e., the user made a
-    # # mistake in th e"featured_posts" file.
-    # featured_posts = [post for post in featured_posts if post]
-    #
-    # # Create dict mapping post_slug -> list of tags
-    # # TODO: IMPROVE THE WAY WE HANDLE TAGS (CONFUSING)
-    # tags = {
-    #     post['post_slug']: db.get_tags_by_post_slug(post['post_slug']) \
-    #         for post in recent_posts + featured_posts
-    # }
-    #
-    # return flask.render_template(
-    #     'blog/index.html',
-    #     featured_posts=featured_posts,
-    #     recent_posts=recent_posts,
-    #     tags=tags,
-    # )
-    return 'hello world'
+    # Filter out any `None` values.
+    # This occurs when a featured post slug is not found in the database,
+    # and should generally be an exceptional case (i.e., the user made a
+    # mistake in th e"featured_posts" file.
+    featured_posts = [post for post in featured_posts if post]
+
+    return flask.render_template(
+        'blog/index.html',
+        featured_posts=featured_posts,
+        recent_posts=recent_posts,
+    )
 
 
 @BLUEPRINT.route('/posts')
@@ -73,32 +53,24 @@ def posts_page():
     Also handles the user entering a search query.
 
     TODO: PAGINATION, ALLOW FILTERING BY TAGS, AND FIND A BETTER WAY TO
-    HANDLE SEARCH QUERIES
+      HANDLE SEARCH QUERIES  -> a `search()` url?
     """
-    db = database_context.get_db()
-    # Retrieve search query (may be None)
+    # Check search query (may be None)
     query = flask.request.args.get('query')
 
     # Perform the search and retrieve results if user has entered a query
     if query:
         search_results = flask.current_app.search_engine.search(query)
-        posts = [db.get_post_by_slug(result.slug) for result in search_results]
+        posts = [models.Post.query.filter_by(slug=result.slug).first() for result in search_results]
     # Otherwise, get all posts
     else:
-        posts = db.get_all_posts()
-
-    # Retrieve tag data
-    tags = {
-        post['post_slug']: db.get_tags_by_post_slug(post['post_slug']) \
-            for post in posts
-    }
+        posts = models.Post.query.all()
 
     # Render and return
     return flask.render_template(
         'blog/posts.html', 
         search_query=query, 
         posts=posts, 
-        tags=tags,
     )
 
 
@@ -106,9 +78,8 @@ def posts_page():
 @logged_visit
 def post_view(slug):
     """Shows the page for the post with the specified slug."""
-    db = database_context.get_db()
     # Retrieve post data
-    post = db.get_post_by_slug(slug)
+    post = models.Post.query.filter_by(slug=slug).first()
     # Throw 404 if there is no post with the given slug in the database.
     if not post:
         werkzeug.exceptions.abort(404)
@@ -120,19 +91,14 @@ def post_view(slug):
         post_html = flask.render_template_string(post_file.read())
 
     # Retrieve data for the posts coming before and after the current post.
-    # TODO: GET NEXT/PREV BY *CHRONOLOGICAL* ORDER
-    prev_post = db.get_post_by_postid(post['post_id'] - 1)
-    next_post = db.get_post_by_postid(post['post_id'] + 1)
+    prev_post = models.Post.query.filter(models.Post.date < post.date).order_by(desc('date')).first()
+    next_post = models.Post.query.filter(models.Post.date > post.date).order_by(asc('date')).first()
 
-    # Retrieve tag info for this post
-    tags = db.get_tags_by_post_slug(slug)
-    
     return flask.render_template(
         'blog/post.html', 
         post=post, 
-        tags=tags,
-        post_html=post_html, 
-        banner_url=post['post_banner_url'], 
+        post_html=post_html,
+        banner_url=post.banner_url,
         prev_post=prev_post,
         next_post=next_post,
     )
