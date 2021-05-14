@@ -6,6 +6,7 @@ click==7.1.2
 cryptography==3.4.6
 Flask==1.1.2
 idna==2.10
+-e git+https://github.com/Stefan4472/Stefans-Blog.git@c1796891a626be87c6adf61c22fafa10c4bcaab6#egg=imagecropper&subdirectory=imagecropper
 itsdangerous==1.1.0
 Jinja2==2.11.3
 markdown2==2.4.0
@@ -15,8 +16,10 @@ Pillow==8.1.2
 pycparser==2.20
 PyNaCl==1.4.0
 pysftp==0.2.9
+python-dotenv==0.17.1
 randomcolor==0.4.4.5
 requests==2.25.1
+-e git+https://github.com/Stefan4472/simple-search-engine.git@d3c7d1c7b27c6e910eca8b2f68458eafbdb1fadc#egg=simplesearch
 six==1.15.0
 urllib3==1.26.4
 Werkzeug==1.0.1

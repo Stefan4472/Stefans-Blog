@@ -50,21 +50,20 @@ pip install .
 ```
 
 ## Usage
-To run the site, activate the virtual environment and the run Flask:
+To run the site, simply run Flask from the `flaskr` directory. The `python-dotenv` will use the `.flaskenv` config file to set environment variables for you.
 ```
-set FLASK_APP=flaskr
-set FLASK_ENV=development
-python -m flask run
+cd flaskr 
+flask run
 ```
 
 To reset the site:
 ```
-python -m flask reset_site
+flask reset_site
 ```
 
 To add a post:
 ```
-python -m flask add_post POST_DIR
+flask add_post POST_DIR
 ```
 `POST_DIR` is an absolute or relative path to the post's directory.
 Run ```python -m flask add_post help``` for instructions on using the options.
