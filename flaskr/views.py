@@ -4,7 +4,6 @@ import typing
 import flask
 import werkzeug.exceptions
 from sqlalchemy import asc, desc
-from . import database_context
 from . import site_logger
 from . import featured_posts as fp
 from . import models
@@ -51,9 +50,8 @@ def posts_page():
     """
     The "posts" page, which displays all posts on the site.
     Also handles the user entering a search query.
-
-    TODO: PAGINATION, ALLOW FILTERING BY TAGS, AND FIND A BETTER WAY TO
-      HANDLE SEARCH QUERIES  -> a `search()` url?
+    TODO: SEPARATE URL FOR SEARCH QUERIES
+    TODO: PAGINATION, ALLOW FILTERING BY TAGS
     """
     # Check search query (may be None)
     query = flask.request.args.get('query')
@@ -107,26 +105,26 @@ def post_view(slug):
 @BLUEPRINT.route('/tag/<slug>')
 @logged_visit
 def tag_view(slug):
-    """Display all posts that have the given tag.
+    """
+    Display all posts that have the given tag.
+
     TODO: PAGINATION, POTENTIALLY COMBINE INTO THE 'POSTS' URL
     """
-    db = database_context.get_db()
+    tag = models.Tag.query.filter_by(slug=slug).first()
     # Make sure the queried tag exists
-    if not db.has_tag(slug):
+    if not tag:
         werkzeug.exceptions.abort(404)
 
-    tag_title = db.get_tag_by_tagslug(slug)['tag_title']
-    # Get list of posts under the given tag    
-    posts = db.get_posts_by_tag_slug(slug)
-    # # Retrieve tag data for each post
-    # tags = { post['post_slug']: db.get_tags_by_post_slug(post['post_slug']) \
-    #          for post in posts }
-    
-    return flask.render_template(
-        'blog/tag_view.html', 
-        posts=posts,
-        tag_title=tag_title,
-    )
+    # Get list of posts under the given tag
+    # posts = models.Post.get_posts_by_tag_slug(slug)
+
+    # TODO: HOW TO DO THE REVERSE LOOKUP? (TAG -> POSTS)
+    # return flask.render_template(
+    #     'blog/tag_view.html',
+    #     posts=posts,
+    #     tag_title=tag_title,
+    # )
+    return 'hello world'
 
 
 @BLUEPRINT.route('/portfolio')

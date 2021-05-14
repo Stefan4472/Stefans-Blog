@@ -23,7 +23,6 @@ This repository stores code only--it does not contain blog content.
   - database.py: Python Database class providing methods to execute SQL queries on the database.
   - featured_posts.py: Simple code which retrieves a list of "featured" posts. 
   - manage_blog.py: Command-line functions for adding posts to the site. Includes SFTP code for uploading the code to the site host.
-  - posts_schema.sql: SQLite schema used for the post database.
   - site_logger.py: Simple code which logs site accesses.
 - setup.bat: A Batch script for setting up a local Flask instance with several articles. I use this for a "single-step" build process.
 ```

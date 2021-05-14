@@ -1,19 +1,19 @@
 import sys  
 import pathlib
 import click
-import typing
 import flask
 import timeit
 from . import manage_util
 from . import post_adder
 from . import post_uploader
-from . import database_context
+from .database import db
 
 
 @flask.cli.with_appcontext
 def reset_site():
     """Reset all post data. Includes the database, search index, and manifest."""
-    database_context.init_db()
+    db.drop_all()
+    db.create_all()
     flask.current_app.search_engine.clear_all_data()
     flask.current_app.search_engine.commit()
     flask.current_app.manifest.clear()

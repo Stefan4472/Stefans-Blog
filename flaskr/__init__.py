@@ -3,7 +3,6 @@ import pathlib
 from .database import db
 from . import views
 from . import config as cfg
-from . import database_context
 from . import manage_blog
 from . import manifest as mn
 from simplesearch.searchengine import SearchEngine
@@ -37,8 +36,5 @@ def create_app():
     app.cli.add_command(manage_blog.add_post_command)
     app.cli.add_command(manage_blog.add_posts_command)
     app.cli.add_command(manage_blog.push_to_remote_command)
-
-    # Register `close_db` on teardown
-    app.teardown_appcontext(database_context.close_db)
 
     return app
