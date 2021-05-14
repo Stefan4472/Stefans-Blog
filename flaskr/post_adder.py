@@ -62,7 +62,6 @@ def add_post(
     # Add post to database
     util.add_post_to_database(
         post_static_url,
-        database_path,
         post_data,
     )
 

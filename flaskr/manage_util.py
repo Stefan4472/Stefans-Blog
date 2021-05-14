@@ -7,7 +7,8 @@ import dataclasses as dc
 import json
 import markdown2 as md
 import randomcolor
-import flaskr.database as db
+from flaskr.database import db
+import flaskr.models as models
 from imagecropper.imagecropper import ImageCropper
 # from flaskr.manifest import Manifest
 import tkinter as tk
@@ -69,7 +70,7 @@ class PostData:
     thumbnail_img: PostImage
     banner_img: PostImage
     # List of tags
-    tags: typing.List[str] = dc.field(default_factory=list)
+    tag_names: typing.List[str] = dc.field(default_factory=list)
     # Generated post HTML
     html: str = ''
     # All images that need to be uploaded with the post
@@ -179,7 +180,7 @@ def process_post_meta(
     slug = get_post_slug(post_meta, title)
     post_date = get_post_date(post_meta)
     post_images = get_post_images(post_dir, post_meta)
-    tags = post_meta['tags'] if 'tags' in post_meta else []
+    tag_names = post_meta['tags'] if 'tags' in post_meta else []
 
     return PostData(
         title=title,
@@ -189,7 +190,7 @@ def process_post_meta(
         featured_img=post_images.featured,
         thumbnail_img=post_images.thumbnail,
         banner_img=post_images.banner,
-        tags=tags,
+        tag_names=tag_names,
     )
 
 
@@ -512,35 +513,33 @@ def process_post_images(
 
 def add_post_to_database(
         post_static_url: str,
-        db_path: pathlib.Path,
         post_data: PostData,
 ):
     """Adds the provided `PostData` to the database."""
-    # Get connection to the post database
-    database = db.Database(str(db_path))
     # Add post to the database.
     # This will fail if there is a problem with the post data
     # TODO: ACTUALLY, THE URLS SHOULD ALL BE STANDARDIZED AND DON'T NEED TO BE STORED IN THE DATABASE!
-    database.add_post(
-        post_data.title,
-        post_data.byline,
-        post_data.slug,
-        post_data.post_date,
-        post_static_url + '/' + 'featured.jpg',
-        post_static_url + '/' + 'banner.jpg',
-        post_static_url + '/' + 'thumbnail.jpg',
+    post = models.Post(
+        slug=post_data.slug,
+        title=post_data.title,
+        byline=post_data.byline,
+        date=post_data.post_date,
+        image_url=post_static_url + '/' + 'featured.jpg',
+        banner_url=post_static_url + '/' + 'banner.jpg',
+        thumbnail_url=post_static_url + '/' + 'thumbnail.jpg',
     )
 
-    # Add tags to the database
-    for tag in post_data.tags:
-        tag_slug = generate_slug(tag)
-        # Add tag to the database if it doesn't already exist
-        if not database.has_tag(tag_slug):
-            database.add_tag(
-                tag,
-                tag_slug, 
-                generate_random_color(),
+    for tag_name in post_data.tag_names:
+        tag_slug = generate_slug(tag_name)
+        # Lookup tag in the database
+        tag = models.Tag.query.filter_by(slug='test').first()
+        # Create tag if doesn't exist already
+        if not tag:
+            tag = models.Tag(
+                slug=tag_slug,
+                name=tag_name,
             )
-        # Add post->tag mapping to database
-        database.add_tag_to_post(tag_slug, post_data.slug)
-    database.commit()
+        # Add to post
+        post.tags.append(tag)
+    db.session.add(post)
+    db.session.commit()

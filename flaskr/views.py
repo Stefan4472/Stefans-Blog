@@ -7,6 +7,8 @@ from . import database_context
 from . import site_logger
 from . import featured_posts as fp
 from . import models
+from .database import db
+
 
 # Blueprint under which all views will be assigned
 BLUEPRINT = flask.Blueprint('blog', __name__)
@@ -25,32 +27,42 @@ def logged_visit(f: typing.Callable):
 @logged_visit
 def index():
     """Site index. Displays featured and recent posts."""
-    db = database_context.get_db()
-    # Retrieve recent and featured posts
-    # TODO: MOVE FEATURED POSTS TO THE DATABASE
-    recent_posts = db.get_recent_posts(5)
-    featured_posts = \
-        [db.get_post_by_slug(slug) for slug in fp.get_featured_posts()]
-        
-    # Filter out any `None` values.
-    # This occurs when a featured post slug is not found in the database,
-    # and should generally be an exceptional case (i.e., the user made a
-    # mistake in th e"featured_posts" file.
-    featured_posts = [post for post in featured_posts if post]
+    post = models.Post.query.get(1)
+    print(post)
+    # t = models.Tag(slug='yo', name='hi')
+    # print(tag)
+    # print(t)
+    # db.create_all()
+    # db.session.add(t)
+    # db.session.commit()
 
-    # Create dict mapping post_slug -> list of tags
-    # TODO: IMPROVE THE WAY WE HANDLE TAGS (CONFUSING)
-    tags = { 
-        post['post_slug']: db.get_tags_by_post_slug(post['post_slug']) \
-            for post in recent_posts + featured_posts 
-    }
-
-    return flask.render_template(
-        'blog/index.html', 
-        featured_posts=featured_posts,
-        recent_posts=recent_posts, 
-        tags=tags,
-    )
+    # db = database_context.get_db()
+    # # Retrieve recent and featured posts
+    # # TODO: MOVE FEATURED POSTS TO THE DATABASE
+    # recent_posts = db.get_recent_posts(5)
+    # featured_posts = \
+    #     [db.get_post_by_slug(slug) for slug in fp.get_featured_posts()]
+    #
+    # # Filter out any `None` values.
+    # # This occurs when a featured post slug is not found in the database,
+    # # and should generally be an exceptional case (i.e., the user made a
+    # # mistake in th e"featured_posts" file.
+    # featured_posts = [post for post in featured_posts if post]
+    #
+    # # Create dict mapping post_slug -> list of tags
+    # # TODO: IMPROVE THE WAY WE HANDLE TAGS (CONFUSING)
+    # tags = {
+    #     post['post_slug']: db.get_tags_by_post_slug(post['post_slug']) \
+    #         for post in recent_posts + featured_posts
+    # }
+    #
+    # return flask.render_template(
+    #     'blog/index.html',
+    #     featured_posts=featured_posts,
+    #     recent_posts=recent_posts,
+    #     tags=tags,
+    # )
+    return 'hello world'
 
 
 @BLUEPRINT.route('/posts')

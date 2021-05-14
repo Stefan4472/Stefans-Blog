@@ -1,26 +1,38 @@
+import randomcolor as rc
 from . import db
+# TODO: LOOK INTO SETTING THE 'LAZY' FIELD FOR BETTER PERFORMANCE
 
 
 # https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html#many-to-many
-class PostsToTags(db.MetaData):
-    post = db.Column(db.Integer, db.ForeignKey('post.id')),
-    tag = db.Column(db.Integer, db.ForeignKey('tag.id'))
+posts_to_tags = db.Table('posts_to_tags',
+    db.Column('post', db.Integer, db.ForeignKey('post.id')),
+    db.Column('tag', db.Integer, db.ForeignKey('tag.id')),
+)
 
 
 class Post(db.Model):
+    __tablename__ = 'post'
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String)
-    byline = db.Column(db.String)
-    slug = db.Column(db.String)
-    date = db.Column(db.DateTime)
-    image_url = db.Column(db.String)
-    banner_url = db.Column(db.String)
-    thumbnail_url = db.Column(db.String)
-    tags = db.RelationshipProperty('Child', secondary=PostsToTags)
+    slug = db.Column(db.String, nullable=False, unique=True)
+    title = db.Column(db.String, nullable=False)
+    byline = db.Column(db.String, nullable=False)
+    date = db.Column(db.DateTime, nullable=False)
+    # TODO: THESE URLS CAN BE STATICALLY DETERMINED FROM OTHER INFO
+    image_url = db.Column(db.String, nullable=False)
+    banner_url = db.Column(db.String, nullable=False)
+    thumbnail_url = db.Column(db.String, nullable=False)
+    tags = db.relationship('Tag', secondary=posts_to_tags)
+
+    def __repr__(self):
+        return 'Post(slug={}, tags={})'.format(self.slug, self.tags)
 
 
 class Tag(db.Model):
+    __tablename__ = 'tag'
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String)
-    slug = db.Column(db.String)
-    color = db.Column(db.String)
+    slug = db.Column(db.String, nullable=False, unique=True)
+    name = db.Column(db.String, nullable=False)
+    color = db.Column(db.String, nullable=False, default=rc.RandomColor().generate(luminosity='light', count=1)[0])
+
+    def __repr__(self):
+        return 'Tag(slug={})'.format(self.slug)
