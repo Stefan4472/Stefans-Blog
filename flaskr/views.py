@@ -6,9 +6,10 @@ import werkzeug.exceptions
 from . import database_context
 from . import site_logger
 from . import featured_posts as fp
+from . import models
 
-# Create blueprint
-bp = flask.Blueprint('blog', __name__)
+# Blueprint under which all views will be assigned
+BLUEPRINT = flask.Blueprint('blog', __name__)
 
 
 def logged_visit(f: typing.Callable):
@@ -20,12 +21,10 @@ def logged_visit(f: typing.Callable):
     return decorated_function
 
 
-@bp.route('/')
+@BLUEPRINT.route('/')
 @logged_visit
 def index():
-    """Shows site index, which displays the featured posts and the five most
-    recent posts.
-    """
+    """Site index. Displays featured and recent posts."""
     db = database_context.get_db()
     # Retrieve recent and featured posts
     # TODO: MOVE FEATURED POSTS TO THE DATABASE
@@ -53,10 +52,12 @@ def index():
         tags=tags,
     )
 
-@bp.route('/posts')
+
+@BLUEPRINT.route('/posts')
 @logged_visit
 def posts_page():
-    """Shows the "posts" page, which displays all posts on the site.
+    """
+    The "posts" page, which displays all posts on the site.
     Also handles the user entering a search query.
 
     TODO: PAGINATION, ALLOW FILTERING BY TAGS, AND FIND A BETTER WAY TO
@@ -88,7 +89,8 @@ def posts_page():
         tags=tags,
     )
 
-@bp.route('/post/<slug>')
+
+@BLUEPRINT.route('/post/<slug>')
 @logged_visit
 def post_view(slug):
     """Shows the page for the post with the specified slug."""
@@ -123,7 +125,8 @@ def post_view(slug):
         next_post=next_post,
     )
 
-@bp.route('/tag/<slug>')
+
+@BLUEPRINT.route('/tag/<slug>')
 @logged_visit
 def tag_view(slug):
     """Display all posts that have the given tag.
@@ -147,27 +150,30 @@ def tag_view(slug):
         tag_title=tag_title,
     )
 
-@bp.route('/portfolio')
+
+@BLUEPRINT.route('/portfolio')
 @logged_visit
 def portfolio_page():
     """Show the "Portfolio" page."""
     return flask.render_template('blog/portfolio.html')
 
-@bp.route('/about')
+
+@BLUEPRINT.route('/about')
 @logged_visit
 def about_page():
     """Show the "About" page."""
     return flask.render_template('blog/about.html')
 
-@bp.route('/changelog')
+
+@BLUEPRINT.route('/changelog')
 @logged_visit
 def changelog_page():
     """Show the "Changelog" page."""
     return flask.render_template('blog/changelog.html')
-    
-@bp.errorhandler(404)
+
+
+@BLUEPRINT.errorhandler(404)
 @logged_visit
 def error_page(error):
     """Show the 404 error page."""
     return flask.render_template('blog/404.html'), 404
-

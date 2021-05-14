@@ -1,6 +1,9 @@
 import sqlite3
 import datetime
 import typing
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
 
 
 class Database:

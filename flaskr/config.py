@@ -15,6 +15,8 @@ class Config:
     MANIFEST_PATH: pathlib.Path
     TRAFFIC_API: typing.Optional[str] = None
     TRAFFIC_KEY: typing.Optional[str] = None
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + r'C:\Users\stefa\Downloads\app.db'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     @staticmethod
     def get_env_path(key: str) -> typing.Optional[pathlib.Path]:
