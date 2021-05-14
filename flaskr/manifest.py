@@ -79,7 +79,7 @@ class Manifest:
     """
     def __init__(
             self,
-            filepath: str,
+            filepath: pathlib.Path,
     ):
         self.filepath = filepath
         try:

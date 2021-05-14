@@ -26,8 +26,8 @@ def push_to_remote(
 
     SFTP instructions for PythonAnywhere: https://help.pythonanywhere.com/pages/SSHAccess
     """
-    # Read the secret file to get host information
     try:
+        # TODO: UPDATE TO USE CONFIG VARIABLES ('SECRET_PATH' HAS BEEN REMOVED)
         with open(current_app.config['SECRET_PATH']) as secret_file:
             secret_data = json.load(secret_file)
             host = secret_data['host']
