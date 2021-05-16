@@ -73,6 +73,25 @@ def post_view(slug):
     )
 
 
+@BLUEPRINT.route('/tag/<slug>')
+@logged_visit
+def tag_view(slug):
+    """
+    Display all posts that have the given tag.
+    TODO: PAGINATION, POTENTIALLY COMBINE INTO THE 'POSTS' URL
+    """
+    tag = models.Tag.query.filter_by(slug=slug).first()
+    # Make sure the queried tag exists
+    if not tag:
+        werkzeug.exceptions.abort(404)
+
+    return flask.render_template(
+        'blog/tag_view.html',
+        tag=tag,
+        posts=tag.posts.all(),
+    )
+
+
 @BLUEPRINT.route('/search')
 @logged_visit
 def search_page():
@@ -95,31 +114,6 @@ def search_page():
         query=query,
         posts=posts,
     )
-
-
-@BLUEPRINT.route('/tag/<slug>')
-@logged_visit
-def tag_view(slug):
-    """
-    Display all posts that have the given tag.
-
-    TODO: PAGINATION, POTENTIALLY COMBINE INTO THE 'POSTS' URL
-    """
-    tag = models.Tag.query.filter_by(slug=slug).first()
-    # Make sure the queried tag exists
-    if not tag:
-        werkzeug.exceptions.abort(404)
-
-    # Get list of posts under the given tag
-    # posts = models.Post.get_posts_by_tag_slug(slug)
-
-    # TODO: HOW TO DO THE REVERSE LOOKUP? (TAG -> POSTS)
-    # return flask.render_template(
-    #     'blog/tag_view.html',
-    #     posts=posts,
-    #     tag_title=tag_title,
-    # )
-    return 'hello world'
 
 
 @BLUEPRINT.route('/portfolio')

@@ -1,8 +1,7 @@
 from . import db
-# TODO: LOOK INTO SETTING THE 'LAZY' FIELD FOR BETTER PERFORMANCE
 
 
-# https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html#many-to-many
+# YouTube tutorial for many-to-many relationships: https://www.youtube.com/watch?v=OvhoYbjtiKc
 posts_to_tags = db.Table('posts_to_tags',
     db.Column('post', db.Integer, db.ForeignKey('post.id')),
     db.Column('tag', db.Integer, db.ForeignKey('tag.id')),
@@ -20,7 +19,7 @@ class Post(db.Model):
     image_url = db.Column(db.String, nullable=False)
     banner_url = db.Column(db.String, nullable=False)
     thumbnail_url = db.Column(db.String, nullable=False)
-    tags = db.relationship('Tag', secondary=posts_to_tags)
+    tags = db.relationship('Tag', secondary=posts_to_tags, backref=db.backref('posts', lazy='dynamic'))
     is_featured = db.Column(db.Boolean, default=False)
 
     def __repr__(self):

@@ -532,7 +532,7 @@ def add_post_to_database(
     for tag_name in post_data.tag_names:
         tag_slug = generate_slug(tag_name)
         # Lookup tag in the database
-        tag = models.Tag.query.filter_by(slug='test').first()
+        tag = models.Tag.query.filter_by(slug=tag_slug).first()
         # Create tag if doesn't exist already
         if not tag:
             tag = models.Tag(
@@ -540,7 +540,8 @@ def add_post_to_database(
                 name=tag_name,
                 color=generate_random_color(),
             )
-        # Add to post  TODO: FIGURE OUT HOW TO AVOID CAUSING INTEGRITY ERROR (DUPLICATE)
-        # post.tags.append(tag)
+            db.session.add(tag)
+        # Register the post under this tag
+        tag.posts.append(post)
     db.session.add(post)
     db.session.commit()
