@@ -15,8 +15,9 @@ class Config:
     MANIFEST_PATH: pathlib.Path
     TRAFFIC_API: typing.Optional[str] = None
     TRAFFIC_KEY: typing.Optional[str] = None
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + r'C:\Users\stefa\Downloads\app.db'
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # Note: for SQLite, URI must start with `sqlite:///`
+    SQLALCHEMY_DATABASE_URI: str = 'sqlite:///'
+    SQLALCHEMY_TRACK_MODIFICATIONS: bool = False
 
     @staticmethod
     def get_env_path(key: str) -> typing.Optional[pathlib.Path]:
@@ -24,12 +25,14 @@ class Config:
 
     @staticmethod
     def load_from_env(instance_path: pathlib.Path) -> 'Config':
+        db_path = Config.get_env_path('DATABASE_PATH') or instance_path / 'posts.db'
         return Config(
-            Config.get_env_path('DATABASE_PATH') or instance_path / 'posts.db',
+            db_path,
             Config.get_env_path('LOG_PATH') or instance_path / 'sitelog.txt',
             Config.get_env_path('FEATURED_POSTS_PATH') or instance_path / 'featured_posts.txt',
             Config.get_env_path('SEARCH_INDEX_PATH') or instance_path / 'index.json',
             Config.get_env_path('MANIFEST_PATH') or instance_path / 'manifest.json',
             TRAFFIC_API=os.environ.get('TRAFFIC_API'),
             TRAFFIC_KEY=os.environ.get('TRAFFIC_KEY'),
+            SQLALCHEMY_DATABASE_URI='sqlite:///' + str(db_path),
         )

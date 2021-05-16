@@ -26,7 +26,6 @@ def add_post(
     """
     # Create pathlib objects
     static_path = pathlib.Path(current_app.static_folder)
-    database_path = pathlib.Path(current_app.config['DATABASE_PATH'])
 
     # Get paths to the Markdown and metadata files
     md_path = post_path / 'post.md'
