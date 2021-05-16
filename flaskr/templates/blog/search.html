@@ -1,0 +1,15 @@
+{% extends "blog/base_template.html" %}
+{% import "blog/macros.html" as macros %}
+
+{% block content %}
+<div class="jumbotron">
+    <h1 class="display-5">You are using StefanSearch</h1>
+    <p class="lead">These search results were generated using a search engine I wrote in Python. It uses an index to find all posts that have at least one of the search queries' terms, and then calculates their relevance using the QL language model.</p>
+</div>
+<h3>Found {{ posts|length }} result{% if posts|length != 1 %}s{% endif %} for "{{ query }}":</h3>
+<hr/>
+<!-- TODO: Provide rank and score of each result?-->
+{% for post in posts %}
+    {{ macros.post_widget(post) }}
+{% endfor %}
+{% endblock %}

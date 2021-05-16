@@ -37,9 +37,11 @@
     Form a URL from the search input and redirect the user to the results page. -->
 <script>
 function searchInput() {
-    var search_entry = document.getElementById("searchInput");
-    var search_string = search_entry.value;
-    search_entry.value = "";
-    window.location.href = '/posts?query=' + search_string;
+    let search_element = document.getElementById("searchInput");
+    let search_string = search_element.value;
+    if (search_string !== '' && search_string !== undefined) {
+        search_element.value = "";
+        window.location.href = '/search?query=' + search_string;
+    }
 }
 </script>

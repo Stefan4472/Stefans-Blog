@@ -47,28 +47,11 @@ def index():
 @BLUEPRINT.route('/posts')
 @logged_visit
 def posts_page():
-    """
-    The "posts" page, which displays all posts on the site.
-    Also handles the user entering a search query.
-    TODO: SEPARATE URL FOR SEARCH QUERIES
-    TODO: PAGINATION, ALLOW FILTERING BY TAGS
-    """
-    # Check search query (may be None)
-    query = flask.request.args.get('query')
-
-    # Perform the search and retrieve results if user has entered a query
-    if query:
-        search_results = flask.current_app.search_engine.search(query)
-        posts = [models.Post.query.filter_by(slug=result.slug).first() for result in search_results]
-    # Otherwise, get all posts
-    else:
-        posts = models.Post.query.all()
-
-    # Render and return
+    """The "posts" page, which displays all posts on the site."""
+    # TODO: PAGINATION, ALLOW FILTERING BY TAGS
     return flask.render_template(
         'blog/posts.html', 
-        search_query=query, 
-        posts=posts, 
+        posts=models.Post.query.all(),
     )
 
 
@@ -99,6 +82,30 @@ def post_view(slug):
         banner_url=post.banner_url,
         prev_post=prev_post,
         next_post=next_post,
+    )
+
+
+@BLUEPRINT.route('/search')
+@logged_visit
+def search_page():
+    """
+    Displays search results for a particular query, which should be
+    passed in as the `query` arg.
+    """
+    query = flask.request.args.get('query') or ''
+    posts = []
+
+    # Perform search and fetch results
+    if query:
+        posts = [
+            models.Post.query.filter_by(slug=result.slug).first()
+            for result in flask.current_app.search_engine.search(query)
+        ]
+
+    return flask.render_template(
+        'blog/search.html',
+        query=query,
+        posts=posts,
     )
 
 
