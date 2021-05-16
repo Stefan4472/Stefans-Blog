@@ -5,7 +5,6 @@ import flask
 import werkzeug.exceptions
 from sqlalchemy import asc, desc
 from . import site_logger
-from . import featured_posts as fp
 from . import models
 
 
@@ -27,16 +26,7 @@ def logged_visit(f: typing.Callable):
 def index():
     """Site index. Displays featured and recent posts."""
     recent_posts = models.Post.query.order_by(desc('date')).limit(5).all()
-    # TODO: MOVE FEATURED POSTS TO THE DATABASE
-    featured_posts = \
-        [models.Post.query.filter_by(slug=slug).first() for slug in fp.get_featured_posts()]
-
-    # Filter out any `None` values.
-    # This occurs when a featured post slug is not found in the database,
-    # and should generally be an exceptional case (i.e., the user made a
-    # mistake in th e"featured_posts" file.
-    featured_posts = [post for post in featured_posts if post]
-
+    featured_posts = models.Post.query.filter(models.Post.is_featured).all()
     return flask.render_template(
         'blog/index.html',
         featured_posts=featured_posts,
@@ -59,19 +49,17 @@ def posts_page():
 @logged_visit
 def post_view(slug):
     """Shows the page for the post with the specified slug."""
-    # Retrieve post data
+    # Retrieve post
     post = models.Post.query.filter_by(slug=slug).first()
     # Throw 404 if there is no post with the given slug in the database.
     if not post:
         werkzeug.exceptions.abort(404)
 
-    # Retrieve the HTML file containing the post's contents,
-    # and render it as a template.
+    # Retrieve the HTML file containing the post's contents and render as template.
     html_path = os.path.join(flask.current_app.static_folder, slug, 'post.html')
     with open(html_path, encoding='utf-8', errors='strict') as post_file:
         post_html = flask.render_template_string(post_file.read())
 
-    # Retrieve data for the posts coming before and after the current post.
     prev_post = models.Post.query.filter(models.Post.date < post.date).order_by(desc('date')).first()
     next_post = models.Post.query.filter(models.Post.date > post.date).order_by(asc('date')).first()
 

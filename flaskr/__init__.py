@@ -36,5 +36,7 @@ def create_app():
     app.cli.add_command(manage_blog.add_post_command)
     app.cli.add_command(manage_blog.add_posts_command)
     app.cli.add_command(manage_blog.push_to_remote_command)
+    app.cli.add_command(manage_blog.print_featured_posts_command)
+    app.cli.add_command(manage_blog.feature_post_command)
 
     return app

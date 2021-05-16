@@ -21,6 +21,7 @@ class Post(db.Model):
     banner_url = db.Column(db.String, nullable=False)
     thumbnail_url = db.Column(db.String, nullable=False)
     tags = db.relationship('Tag', secondary=posts_to_tags)
+    is_featured = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
         return 'Post(slug={}, tags={})'.format(self.slug, self.tags)

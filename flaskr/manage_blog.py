@@ -4,6 +4,7 @@ import click
 import flask
 import timeit
 from . import manage_util
+from . import models
 from . import post_adder
 from . import post_uploader
 from .database import db
@@ -106,9 +107,7 @@ def reset_site_command():
 
 @click.command('push')
 @click.option('--quiet', is_flag=True, default=False, help='Whether to suppress print statements and confirmation prompts')
-def push_to_remote_command(
-        quiet: bool
-):
+def push_to_remote_command(quiet: bool):
     """Syncs the local site instance to the production server."""
     start = timeit.default_timer()
     # Call the `push_to_remote()` function
@@ -116,4 +115,28 @@ def push_to_remote_command(
     end = timeit.default_timer()
     if not quiet:
         print('Completed in {} seconds'.format(end - start))
-            
+
+
+@click.command('featured')
+@flask.cli.with_appcontext
+def print_featured_posts_command():
+    """List the featured posts."""
+    for post in models.Post.query.filter(models.Post.is_featured).all():
+        click.echo(post.slug)
+
+
+@click.command('feature_post')
+@click.argument('slug')
+@click.option('--featured', type=bool, default=True)
+@flask.cli.with_appcontext
+def feature_post_command(
+        slug: str,
+        featured: bool,
+):
+    """Sets the post with specified slug to be featured."""
+    post = models.Post.query.filter_by(slug=slug).first()
+    if post:
+        post.is_featured = featured
+        db.session.commit()
+    else:
+        click.echo('No post with specified slug')
