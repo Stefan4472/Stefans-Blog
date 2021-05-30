@@ -34,14 +34,20 @@ def index():
     )
 
 
-@BLUEPRINT.route('/posts')
+@BLUEPRINT.route('/posts', defaults={'page': 1})
+@BLUEPRINT.route('/posts/<int:page>', methods=['GET'])
 @logged_visit
-def posts_page():
+def posts_page(page: int = 1):
     """The "posts" page, which displays all posts on the site."""
-    # TODO: PAGINATION, ALLOW FILTERING BY TAGS
+    # Using pagination example from https://stackoverflow.com/a/57348599
+    posts = models.Post.query.paginate(
+        page,
+        flask.current_app.config['PAGINATE_POSTS_PER_PAGE'],
+        error_out=False,
+    )
     return flask.render_template(
         'blog/posts.html', 
-        posts=models.Post.query.all(),
+        posts=posts,
     )
 
 
