@@ -18,7 +18,7 @@ class Config:
     SQLALCHEMY_DATABASE_URI: str = 'sqlite:///'
     SQLALCHEMY_TRACK_MODIFICATIONS: bool = False
     # Number of posts to show per page (used for pagination)
-    PAGINATE_POSTS_PER_PAGE = 2
+    PAGINATE_POSTS_PER_PAGE = 8
 
     @staticmethod
     def get_env_path(key: str) -> typing.Optional[pathlib.Path]:

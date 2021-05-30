@@ -442,7 +442,7 @@ def render_markdown_file(
             rendered_html = \
 '''
 <figure class="figure text-center">
-    <img src="{}" class="figure-img img-fluid" alt="">
+    <img src="{}" class="figure-img img-fluid img-thumbnail rounded" alt="">
     <figcaption class="figure-caption">{}</figcaption>
 </figure>
 
@@ -452,7 +452,7 @@ def render_markdown_file(
             rendered_html = \
 '''
 <figure class="figure text-center">
-    <img src="{}" class="figure-img img-fluid" alt="">
+    <img src="{}" class="figure-img img-fluid img-thumbnail rounded" alt="">
 </figure>
 
 '''.format(img_url)

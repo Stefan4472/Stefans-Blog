@@ -2,37 +2,52 @@
 {% import "blog/macros.html" as macros %}
 <!--Note: `posts` is expected to be a Pagination result-->
 {% block content %}
-<h2>{{ posts.items|length }} Post{% if posts.items|length != 1 %}s{% endif %}</h2>
+<h2>{{ posts.total }} Post{% if posts.total != 1 %}s{% endif %}</h2>
 <hr/>
+
 {% for post in posts.items %}
     {{ macros.post_widget(post) }}
 {% endfor %}
 
-{#    https://stackoverflow.com/a/57348599 #}
-{% if posts.has_prev %}
-<a class="" href="{{ url_for('blog.posts_page', page=posts.prev_num) }}">Previous</a>
-{% else %}
-<a class="page-link btn disabled" href="#">Previous</a>
+<!--Pagination menu-->
+{% if posts.pages > 1 %}
+  <nav>
+    <ul class="pagination justify-content-center">
+      {% if posts.has_prev %}
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('blog.posts_page', page=posts.prev_num) }}">Previous Page</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled">
+          <a class="page-link" href="#">Previous Page</a>
+        </li>
+      {% endif %}
+      {% for page in posts.iter_pages() %}
+        {% if page %}
+          {% if page == posts.page %}
+            <li class="page-item">
+              <strong><a class="page-link" href="{{ url_for('blog.posts_page', page=page) }}">{{page}}</a></strong>
+            </li>
+          {% else %}
+            <li class="page-item">
+              <a class="page-link" href="{{ url_for('blog.posts_page', page=page) }}">{{page}}</a>
+            </li>
+          {% endif %}
+        {% else %}
+          <span class=ellipsis>…</span>
+        {% endif %}
+      {% endfor %}
+      {% if posts.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('blog.posts_page', page=posts.next_num) }}">Next Page</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled">
+          <a class="page-link" href="#">Next Page</a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
 {% endif %}
 
-
-{% if posts.has_next %}
-<a class="" href="{{ url_for('blog.posts_page', page=posts.next_num) }}">Next</a>
-{% else %}
-<a class="btn disabled" href="#">Next</a>
-{% endif %}
-
-    <nav aria-label="Page navigation example">
-  <ul class="pagination justify-content-center">
-    <li class="page-item disabled">
-      <a class="page-link" href="#" tabindex="-1">Previous</a>
-    </li>
-    <li class="page-item"><a class="page-link" href="#">1</a></li>
-    <li class="page-item"><a class="page-link" href="#">2</a></li>
-    <li class="page-item"><a class="page-link" href="#">3</a></li>
-    <li class="page-item">
-      <a class="page-link" href="#">Next</a>
-    </li>
-  </ul>
-</nav>
 {% endblock %}
