@@ -4,7 +4,6 @@ import pathlib
 import dataclasses as dc
 
 
-# TODO: REMOVE FEATURED_POSTS_PATH
 # TODO: ADD KEYS FOR REMOTE UPLOAD
 @dc.dataclass
 class Config:
