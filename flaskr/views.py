@@ -42,7 +42,7 @@ def posts_page(page: int = 1):
     # Using pagination example from https://stackoverflow.com/a/57348599
     return flask.render_template(
         'blog/posts.html', 
-        posts=models.Post.query.paginate(
+        posts=models.Post.query.order_by(desc('date')).paginate(
             page,
             flask.current_app.config['PAGINATE_POSTS_PER_PAGE'],
             error_out=False,

@@ -1,9 +1,15 @@
 {% extends "blog/base_template.html" %}
 {% import "blog/macros.html" as macros %}
+{% set active_page = "posts" %}
+
 <!--Note: `posts` is expected to be a Pagination result-->
 {% block content %}
-<h2>{{ posts.total }} Post{% if posts.total != 1 %}s{% endif %}</h2>
+<h2>Posts</h2>
 <hr/>
+
+{% if posts.total > 0 %}
+<h5>Showing posts {{ (posts.page - 1) * posts.per_page + 1 }} to {{ (posts.page - 1) * posts.per_page + posts.items|length }} of {{ posts.total }} posts</h5>
+{% endif %}
 
 {% for post in posts.items %}
     {{ macros.post_widget(post) }}

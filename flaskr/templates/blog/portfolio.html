@@ -1,55 +1,58 @@
 {% extends "blog/base_template.html" %}
 {% block content %}
+{% set active_page = "portfolio" %}
+
 <h1>Portfolio</h1>
 <hr/>
 <p><em>For my resume, please see my <a href="https://www.linkedin.com/in/stefan-kussmaul/">LinkedIn profile</a></em></p>
 
 <div id="stefan-on-software" class="mb-3">
-    <h5>StefanOnSoftware (this website)</h5>
+    <h5>Stefan on Software (2017-)</h5>
     <ul>
-        <li>I learned the Python Flask framework and HTML/Bootstrap to develop a blogging platform.</li>
-        <li>I also wrote the code for a search engine implementation which is used on this website.</li>
+        <li>I learned the Python Flask framework and HTML/Bootstrap to develop this website.</li>
+        <li>I also wrote <a href="https://github.com/Stefan4472/simple-search-engine">a search engine</a> and a <a href="https://github.com/Stefan4472/site-analytics">web traffic API</a> to go along with it.</li>
         <li><a href="/post/project-overview-stefanonsoftware">Read more</a> or <a href="https://github.com/Stefan4472/Stefans-Blog">see the code</a>.</li>
     </ul>
 </div>
 
-<div id="spaceships" class="mb-3">
-    <h5>Spaceships</h5>
+<div id="bfn-marketplace" class="mb-3">
+    <h5>BFN Marketplace (2020)</h5>
     <ul>
-        <li>I learned Android programming and wrote an arcade game inspired by Space Invader.</li>
-        <li><a href="/post/project-overview-spaceships">Read more</a> or <a href="https://github.com/Stefan4472/Spaceships">see the code</a>.</li>
+        <li>I led a group of students in developing a project staffing software solution for <a href="https://www.maibornwolff.de/en">MaibornWolff</a>, a Munich-based software consultancy.</li>
+        <li>Our product was very well received and brought into internal production at MaibornWolff.</li>
+        <li><a href="/post/bfn-marketplace">Read more</a>.</li>
     </ul>
     <figure class="figure text-center">
-        <img src="{{ url_for('static', filename='spaceships-gif.gif') }}" class="figure-img img-fluid">
+        <img src="{{ url_for('static', filename='bfn-marketplace.png') }}" class="figure-img img-fluid">
     </figure>
 </div>
 
-<div id="c-adventure" class="mb-3">
-    <h5>C++ Adventure</h5>
+<div id="bavarian-election-system" class="mb-3">
+    <h5>Bavarian Election System (2020)</h5>
     <ul>
-        <li>I learned C++ and used the <a href="http://www.libsdl.org/">SDL media library</a> to design and write a two-dimensional Pokemon-style game.</li>
-        <li>I developed AI for non-playing characters, interactive items, a GUI system, and efficient game state serialization.</li>
-        <li><a href="/post/project-overview-c++-adventure">Read more</a> or <a href="https://github.com/Stefan4472/TestC-Game">see the code</a>.</li>
+        <li>Working with another student, I developed an electronic voting system for the Bavarian parliamentary elections.</li>
+        <li>This project gave me much experience in designing and implementing a sophisticated database application.</li>
+        <li><a href="/post/building-an-electronic-election-system">Read more</a> or <a href="https://github.com/Stefan4472/bayerische-landtagswahl">see the code</a>.</li>
     </ul>
     <figure class="figure text-center">
-        <img src="{{ url_for('static', filename='c++-adventure-gif.gif') }}" class="figure-img img-fluid">
+        <img src="{{ url_for('static', filename='election-system.jpg') }}" class="figure-img img-fluid">
     </figure>
 </div>
 
-<div id="spaceships-online" class="mb-3">
-    <h5>Spaceships Online</h5>
+<div id="portfolio-viewer" class="mb-3">
+    <h5>Portfolio Analyzer (2020)</h5>
     <ul>
-        <li>I learned Javascript and NodeJS to write an online multiplayer shooting game.</li>
-        <li>I read articles about game networking and learned enough to implement an authoritative game backend from scratch.</li>
-        <li><a href="/post/project-overview-spaceships-online">Read more</a> or <a href="https://github.com/Stefan4472/SpaceshipsOnline">see the code</a>.</li>
+        <li>I wrote a Python program that can analyze and compare an arbitrary number of user-defined stock portfolios over time.</li>
+        <li>The program scrapes stock data from <a href="https://finance.yahoo.com/">Yahoo! Finance</a>.</li>
+        <li><a href="/post/my-first-attempt-at-investing">Read more</a> or <a href="https://github.com/Stefan4472/portfolio-analyzer">see the code</a>.</li>
     </ul>
     <figure class="figure text-center">
-        <img src="{{ url_for('static', filename='spaceships-online-gif.gif') }}" class="figure-img img-fluid">
+        <img src="{{ url_for('static', filename='portfolio-analyzer.jpg') }}" class="figure-img img-fluid">
     </figure>
 </div>
 
 <div id="duckietown-robot" class="mb-3">
-    <h5>DuckieTown Robot</h5>
+    <h5>DuckieTown Robot (2019)</h5>
     <ul>
         <li>Working with four other students, I led the development of an autonomous-driving robot.</li>
         <li>I wrote all low-level motor control code (Arduino) and much of the driving logic.</li>
@@ -61,20 +64,20 @@
     </figure>
 </div>
 
-<div id="portfolio-viewer" class="mb-3">
-    <h5>Portfolio Analyzer</h5>
+<div id="spaceships-online" class="mb-3">
+    <h5>Spaceships Online (2018)</h5>
     <ul>
-        <li>I wrote a Python program that can analyze and compare an arbitrary number of user-defined stock portfolios over time.</li>
-        <li>The program scrapes stock data from <a href="https://finance.yahoo.com/">Yahoo! Finance</a>.</li>
-        <li><a href="/post/my-first-attempt-at-investing">Read more</a> or <a href="https://github.com/Stefan4472/portfolio-analyzer">see the code</a>.</li>
+        <li>I learned Javascript and NodeJS to write an online multiplayer shooting game.</li>
+        <li>I read articles about game networking and learned enough to implement an authoritative game backend from scratch.</li>
+        <li><a href="/post/project-overview-spaceships-online">Read more</a> or <a href="https://github.com/Stefan4472/SpaceshipsOnline">see the code</a>.</li>
     </ul>
     <figure class="figure text-center">
-        <img src="{{ url_for('static', filename='portfolio-analyzer.jpg') }}" class="figure-img img-fluid">
+        <img src="{{ url_for('static', filename='spaceships-online-gif.gif') }}" class="figure-img img-fluid">
     </figure>
 </div>
 
 <div id="activity-log" class="mb-3">
-    <h5>ActivityLog</h5>
+    <h5>ActivityLog (2018)</h5>
     <ul>
         <li>I developed a productivity app for Android with features for logging and analyzing time spent on different activities.</li>
         <li><a href="https://github.com/Stefan4472/ActivityLog">See the code</a>.</li>
@@ -83,4 +86,28 @@
         <img src="{{ url_for('static', filename='activity-log-screenshot-1.jpg') }}" class="figure-img img-fluid" style="max-width: 12rem; height: auto;">
     </figure>
 </div>
+
+<div id="c-adventure" class="mb-3">
+    <h5>C++ Adventure (2017-2018)</h5>
+    <ul>
+        <li>I learned C++ and used the <a href="http://www.libsdl.org/">SDL media library</a> to design and write a two-dimensional Pokemon-style game.</li>
+        <li>I developed AI for non-playing characters, interactive items, a GUI system, and efficient game state serialization.</li>
+        <li><a href="/post/project-overview-c++-adventure">Read more</a> or <a href="https://github.com/Stefan4472/TestC-Game">see the code</a>.</li>
+    </ul>
+    <figure class="figure text-center">
+        <img src="{{ url_for('static', filename='c++-adventure-gif.gif') }}" class="figure-img img-fluid">
+    </figure>
+</div>
+
+<div id="spaceships" class="mb-3">
+    <h5>Spaceships (2015-2017)</h5>
+    <ul>
+        <li>I learned Android programming and wrote an arcade game inspired by Space Invader.</li>
+        <li><a href="/post/project-overview-spaceships">Read more</a> or <a href="https://github.com/Stefan4472/Spaceships">see the code</a>.</li>
+    </ul>
+    <figure class="figure text-center">
+        <img src="{{ url_for('static', filename='spaceships-gif.gif') }}" class="figure-img img-fluid">
+    </figure>
+</div>
+
 {% endblock %}

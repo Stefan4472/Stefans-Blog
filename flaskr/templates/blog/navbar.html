@@ -14,16 +14,16 @@
 
     <div class="collapse navbar-collapse" id="site-nav">
         <ul class="navbar-nav mr-auto">
-            <li class="nav-item">
+            <li class="nav-item {% if active_page == 'index' %}active{% endif %}">
                 <a class="nav-link" href="{{ url_for('blog.index') }}">Home</a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item {% if active_page == 'posts' %}active{% endif %}">
                 <a class="nav-link" href="{{ url_for('blog.posts_page') }}">Posts</a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item {% if active_page == 'portfolio' %}active{% endif %}">
                 <a class="nav-link" href="{{ url_for('blog.portfolio_page') }}">Portfolio</a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item {% if active_page == 'about' %}active{% endif %}">
                 <a class="nav-link" href="{{ url_for('blog.about_page') }}">About</a>
             </li>
         </ul>
