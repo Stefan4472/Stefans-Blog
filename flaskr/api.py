@@ -26,9 +26,6 @@ def create_post(slug: str):
         title=config['title'],
         byline=config['byline'],
         date=datetime.datetime.strptime(config['date'], "%m/%d/%y").date(),
-        image_url='/static/{}/featured.jpg'.format(slug),
-        banner_url='/static/{}/banner.jpg'.format(slug),
-        thumbnail_url='/static/{}/thumbnail.jpg'.format(slug),
     )
     print(post)
 

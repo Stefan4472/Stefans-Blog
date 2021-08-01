@@ -518,15 +518,11 @@ def add_post_to_database(
     """Adds the provided `PostData` to the database."""
     # Add post to the database.
     # This will fail if there is a problem with the post data
-    # TODO: ACTUALLY, THE URLS SHOULD ALL BE STANDARDIZED AND DON'T NEED TO BE STORED IN THE DATABASE!
     post = models.Post(
         slug=post_data.slug,
         title=post_data.title,
         byline=post_data.byline,
         date=post_data.post_date,
-        image_url=post_static_url + '/' + 'featured.jpg',
-        banner_url=post_static_url + '/' + 'banner.jpg',
-        thumbnail_url=post_static_url + '/' + 'thumbnail.jpg',
     )
 
     for tag_name in post_data.tag_names:

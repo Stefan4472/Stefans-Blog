@@ -1,3 +1,4 @@
+import flask
 from . import db
 
 
@@ -15,12 +16,17 @@ class Post(db.Model):
     title = db.Column(db.String, nullable=False)
     byline = db.Column(db.String, nullable=False)
     date = db.Column(db.DateTime, nullable=False)
-    # TODO: THESE URLS CAN BE STATICALLY DETERMINED FROM OTHER INFO
-    image_url = db.Column(db.String, nullable=False)
-    banner_url = db.Column(db.String, nullable=False)
-    thumbnail_url = db.Column(db.String, nullable=False)
     tags = db.relationship('Tag', secondary=posts_to_tags, backref=db.backref('posts', lazy='dynamic'))
     is_featured = db.Column(db.Boolean, default=False)
+
+    def get_image_url(self) -> str:
+        return flask.url_for('static', filename=self.slug + '/featured.jpg')
+
+    def get_banner_url(self) -> str:
+        return flask.url_for('static', filename=self.slug + '/banner.jpg')
+
+    def get_thumbnail_url(self) -> str:
+        return flask.url_for('static', filename=self.slug + '/thumbnail.jpg')
 
     def __repr__(self):
         return 'Post(title="{}", slug="{}", date={}, tags={})'.format(
