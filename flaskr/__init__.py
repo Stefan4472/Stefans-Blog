@@ -2,6 +2,7 @@ import flask
 import pathlib
 from .database import db
 from . import views
+from . import api
 from . import config as cfg
 from . import manage_blog
 from . import manifest as mn
@@ -22,9 +23,9 @@ def create_app():
     # Init SQL Alchemy
     db.init_app(app)
 
-    # Register blueprint
-    # Note: we import `blog` here to avoid a circular import on `models`
-    app.register_blueprint(views.BLUEPRINT)
+    # Register blueprints
+    app.register_blueprint(views.VIEWS_BLUEPRINT)
+    app.register_blueprint(api.API_BLUEPRINT)
     app.add_url_rule('/', endpoint='index')
 
     # Init search engine and manifest

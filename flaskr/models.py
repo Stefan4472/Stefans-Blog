@@ -23,7 +23,12 @@ class Post(db.Model):
     is_featured = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
-        return 'Post(slug={}, tags={})'.format(self.slug, self.tags)
+        return 'Post(title="{}", slug="{}", date={}, tags={})'.format(
+            self.title,
+            self.slug,
+            self.date,
+            self.tags,
+        )
 
 
 class Tag(db.Model):

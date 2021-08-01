@@ -9,7 +9,7 @@ from . import models
 
 
 # Blueprint under which all views will be assigned
-BLUEPRINT = flask.Blueprint('blog', __name__)
+VIEWS_BLUEPRINT = flask.Blueprint('blog', __name__)
 
 
 def logged_visit(f: typing.Callable):
@@ -21,7 +21,7 @@ def logged_visit(f: typing.Callable):
     return decorated_function
 
 
-@BLUEPRINT.route('/')
+@VIEWS_BLUEPRINT.route('/')
 @logged_visit
 def index():
     """Site index. Displays featured and recent posts."""
@@ -34,14 +34,14 @@ def index():
     )
 
 
-@BLUEPRINT.route('/posts', defaults={'page': 1})
-@BLUEPRINT.route('/posts/<int:page>', methods=['GET'])
+@VIEWS_BLUEPRINT.route('/posts', defaults={'page': 1})
+@VIEWS_BLUEPRINT.route('/posts/<int:page>', methods=['GET'])
 @logged_visit
 def posts_page(page: int = 1):
     """The "posts" page, which displays all posts on the site (paginated)."""
     # Using pagination example from https://stackoverflow.com/a/57348599
     return flask.render_template(
-        'blog/posts.html', 
+        'blog/posts.html',
         posts=models.Post.query.order_by(desc('date')).paginate(
             page,
             flask.current_app.config['PAGINATE_POSTS_PER_PAGE'],
@@ -50,7 +50,7 @@ def posts_page(page: int = 1):
     )
 
 
-@BLUEPRINT.route('/post/<slug>')
+@VIEWS_BLUEPRINT.route('/post/<slug>')
 @logged_visit
 def post_view(slug):
     """Shows the page for the post with the specified slug."""
@@ -78,7 +78,7 @@ def post_view(slug):
     )
 
 
-@BLUEPRINT.route('/tag/<slug>')
+@VIEWS_BLUEPRINT.route('/tag/<slug>')
 @logged_visit
 def tag_view(slug):
     """
@@ -97,7 +97,7 @@ def tag_view(slug):
     )
 
 
-@BLUEPRINT.route('/search')
+@VIEWS_BLUEPRINT.route('/search')
 @logged_visit
 def search_page():
     """
@@ -121,28 +121,28 @@ def search_page():
     )
 
 
-@BLUEPRINT.route('/portfolio')
+@VIEWS_BLUEPRINT.route('/portfolio')
 @logged_visit
 def portfolio_page():
     """Show the "Portfolio" page."""
     return flask.render_template('blog/portfolio.html')
 
 
-@BLUEPRINT.route('/about')
+@VIEWS_BLUEPRINT.route('/about')
 @logged_visit
 def about_page():
     """Show the "About" page."""
     return flask.render_template('blog/about.html')
 
 
-@BLUEPRINT.route('/changelog')
+@VIEWS_BLUEPRINT.route('/changelog')
 @logged_visit
 def changelog_page():
     """Show the "Changelog" page."""
     return flask.render_template('blog/changelog.html')
 
 
-@BLUEPRINT.errorhandler(404)
+@VIEWS_BLUEPRINT.errorhandler(404)
 @logged_visit
 def error_page(error):
     """Show the 404 error page."""
