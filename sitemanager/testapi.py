@@ -1,7 +1,7 @@
 import requests
 
 
-args = {
+meta = {
     "title": "How do Computer Graphics Work?",
     "byline": "If you're interested in game programming... or regular programming... or just computers in general, you should understand how computer graphics work. In this article we'll explain exactly that.",
     "tags": [
@@ -17,16 +17,28 @@ args = {
 }
 
 SLUG = 'TEST_POST'
-res = requests.post('http://localhost:5000/api/v1/posts/{}'.format(SLUG), json=args)
+print('Deleting...')
+res = requests.delete('http://localhost:5000/api/v1/posts/{}'.format(SLUG))
 print(res)
 
+print('Creating...')
+res = requests.post('http://localhost:5000/api/v1/posts/{}'.format(SLUG))
+print(res)
+
+print('Setting meta...')
+res = requests.post('http://localhost:5000/api/v1/posts/{}/meta'.format(SLUG), json=meta)
+print(res)
+
+print('Uploading HTML...')
 article_files = {'file': open('data/post.html', 'rb')}
 res = requests.post('http://localhost:5000/api/v1/posts/{}/body'.format(SLUG), files=article_files)
 print(res)
 
+print('Uploading images')
 images = {
     'im1': open('data/gamla-stockholm.jpg', 'rb'),
     'im2': open('data/featured.jpg', 'rb'),
 }
-res = requests.post('http://localhost:5000/api/v1/posts/{}/images'.format(SLUG), files=images)
-print(res)
+for img in images.values():
+    res = requests.post('http://localhost:5000/api/v1/posts/{}/images'.format(SLUG), files={'file': img})
+    print(res)
