@@ -18,6 +18,22 @@ from . import util
 API_BLUEPRINT = flask.Blueprint('api', __name__, url_prefix='/api/v1/')
 
 
+@API_BLUEPRINT.route('/posts', methods=['GET'])
+def get_posts():
+    """Return a manifest. TODO: THIS ISN'T EXACTLY WHAT YOU'D EXPECT FOR THIS ENDPOINT. USE /POSTS?MANIFEST=TRUE?"""
+    manifest = {}
+    # TODO: SEND THE HASH OF THE POST .HTML AS WELL
+    for post in models.Post.query.all():
+        manifest[post.slug] = {
+            'hash': post.hash,
+        }
+        # TODO: COULD BE EXTENDED TO 'FILES'
+        manifest[post.slug]['images'] = {
+            image.filename: {'hash': image.hash} for image in post.images
+        }
+    return flask.jsonify({'posts': manifest})
+
+
 @API_BLUEPRINT.route('/posts/<string:slug>', methods=['POST'])
 def create_post(slug: str):
     """
@@ -92,10 +108,18 @@ def upload_html(slug: str):
         return Response(status=404)
 
     file = request.files['file']
-    # Save HTML file as 'post.html'
-    file_path = post.get_path() / 'post.html'
-    with open(file_path, 'wb+') as writef:
-        file.save(writef)
+    raw = file.read()
+    md5 = hashlib.md5(raw).hexdigest()
+    file.close()
+
+    if md5 != post.hash:
+        # Save HTML file as 'post.html'
+        file_path = post.get_path() / 'post.html'
+        with open(file_path, 'wb+') as writef:
+            writef.write(raw)
+        # Update hash
+        post.hash = md5
+        db.session.commit()
     return Response(status=200)
 
 

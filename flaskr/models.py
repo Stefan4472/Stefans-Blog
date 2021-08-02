@@ -19,6 +19,8 @@ class Post(db.Model):
     title = db.Column(db.String, nullable=False, default='')
     byline = db.Column(db.String, nullable=False, default='')
     date = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now().date())
+    # MD5 hash of the post's HTML
+    hash = db.Column(db.String, nullable=False, default='')
     # Many to Many on Tags
     tags = db.relationship('Tag', secondary=posts_to_tags, backref=db.backref('posts', lazy='dynamic'))
     # 1 to Many on Images
