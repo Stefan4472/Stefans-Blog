@@ -76,7 +76,6 @@ def set_meta(slug: str):
         post.byline = config['byline']
     if 'date' in config:
         post.date = datetime.datetime.strptime(config['date'], "%m/%d/%y").date()
-    # TODO: CHECK THAT IMAGE IS IN DB AND HAS CORRECT SIZE
     if 'featured' in config:
         featured_filename = config['featured']
         if featured_filename != post.featured_filename:
