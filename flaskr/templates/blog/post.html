@@ -14,7 +14,7 @@
 <p><em>Posted on {{ post.date.strftime('%B %d, %Y') }}</em></p>
 <hr>
 <div id="post-content">  <!-- TODO: PUT ALL CONTENT IN A CARD, WITH 1px BORDER? -->
-  {{ post_html|safe }}
+  {{ post.load_html()|safe }}
 </div>
 
 <!--
@@ -39,6 +39,7 @@ ALSO: SHOULD IT INCLUDE THE THUMBNAILS FOR NEXT&PREVIOUS POSTS?-->
 <div class="row">
   <div class="col-6">
     {% if prev_post %}
+{#        TODO: Some kind of rendering function. This will also mean we don't need to send `next_post` and `prev_post` as template args#}
     <p class="float-left">Previous Post: <a href="{{ url_for('blog.post_view', slug=prev_post.slug) }}">{{ prev_post.title }}</a></p>
     {% endif %}
   </div>

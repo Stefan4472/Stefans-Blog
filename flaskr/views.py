@@ -1,9 +1,6 @@
-import os
-import functools
-import typing
 import flask
 import werkzeug.exceptions
-from sqlalchemy import asc, desc
+from sqlalchemy import desc
 from . import site_logger
 from . import models
 
@@ -12,18 +9,8 @@ from . import models
 VIEWS_BLUEPRINT = flask.Blueprint('blog', __name__)
 
 
-# TODO: MOVE TO SITE_LOGGER.PY
-def logged_visit(f: typing.Callable):
-    """Decorator that logs the url being accessed. Simply calls `log_visit()`."""
-    @functools.wraps(f)
-    def decorated_function(*args, **kwargs):
-        site_logger.log_visit()
-        return f(*args, **kwargs)
-    return decorated_function
-
-
 @VIEWS_BLUEPRINT.route('/')
-@logged_visit
+@site_logger.logged_visit
 def index():
     """Site index. Displays featured and recent posts."""
     recent_posts = models.Post.query\
@@ -43,7 +30,7 @@ def index():
 
 @VIEWS_BLUEPRINT.route('/posts', defaults={'page': 1})
 @VIEWS_BLUEPRINT.route('/posts/<int:page>', methods=['GET'])
-@logged_visit
+@site_logger.logged_visit
 def posts_page(page: int = 1):
     """The "posts" page, which displays all posts on the site (paginated)."""
     # Using pagination example from https://stackoverflow.com/a/57348599
@@ -62,7 +49,7 @@ def posts_page(page: int = 1):
 
 
 @VIEWS_BLUEPRINT.route('/post/<slug>')
-@logged_visit
+@site_logger.logged_visit
 def post_view(slug):
     """Shows the page for the post with the specified slug."""
     # Retrieve post
@@ -71,27 +58,16 @@ def post_view(slug):
     if not post:
         werkzeug.exceptions.abort(404)
 
-    # TODO: THIS LOGIC CAN GO INTO THE `POST` CLASS AS A FUNCTION
-    # Retrieve the HTML file containing the post's contents and render as template.
-    html_path = os.path.join(flask.current_app.static_folder, slug, 'post.html')
-    with open(html_path, encoding='utf-8', errors='strict') as post_file:
-        post_html = flask.render_template_string(post_file.read())
-
-    prev_post = models.Post.query.filter(models.Post.date < post.date).order_by(desc('date')).first()
-    next_post = models.Post.query.filter(models.Post.date > post.date).order_by(asc('date')).first()
-
     return flask.render_template(
         'blog/post.html', 
         post=post, 
-        post_html=post_html,
-        banner_url=post.banner_url,
-        prev_post=prev_post,
-        next_post=next_post,
+        prev_post=post.get_prev(),
+        next_post=post.get_next(),
     )
 
 
 @VIEWS_BLUEPRINT.route('/tag/<slug>')
-@logged_visit
+@site_logger.logged_visit
 def tag_view(slug):
     """
     Display all posts that have the given tag.
@@ -110,7 +86,7 @@ def tag_view(slug):
 
 
 @VIEWS_BLUEPRINT.route('/search')
-@logged_visit
+@site_logger.logged_visit
 def search_page():
     """
     Displays search results for a particular query, which should be
@@ -134,28 +110,28 @@ def search_page():
 
 
 @VIEWS_BLUEPRINT.route('/portfolio')
-@logged_visit
+@site_logger.logged_visit
 def portfolio_page():
     """Show the "Portfolio" page."""
     return flask.render_template('blog/portfolio.html')
 
 
 @VIEWS_BLUEPRINT.route('/about')
-@logged_visit
+@site_logger.logged_visit
 def about_page():
     """Show the "About" page."""
     return flask.render_template('blog/about.html')
 
 
 @VIEWS_BLUEPRINT.route('/changelog')
-@logged_visit
+@site_logger.logged_visit
 def changelog_page():
     """Show the "Changelog" page."""
     return flask.render_template('blog/changelog.html')
 
 
 @VIEWS_BLUEPRINT.errorhandler(404)
-@logged_visit
+@site_logger.logged_visit
 def error_page(error):
     """Show the 404 error page."""
     return flask.render_template('blog/404.html'), 404

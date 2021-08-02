@@ -1,13 +1,11 @@
-import pathlib
 import hashlib
 import datetime
 import flask
 import shutil
-from flask import Blueprint, current_app, request, Response
+from flask import request, Response
 from PIL import Image
 import werkzeug.exceptions
 import werkzeug.utils
-from sqlalchemy import asc, desc
 from flaskr.database import db
 from . import models
 from . import util
@@ -23,12 +21,10 @@ API_BLUEPRINT = flask.Blueprint('api', __name__, url_prefix='/api/v1/')
 def get_posts():
     """Return a manifest. TODO: THIS ISN'T EXACTLY WHAT YOU'D EXPECT FOR THIS ENDPOINT. USE /POSTS?MANIFEST=TRUE?"""
     manifest = {}
-    # TODO: SEND THE HASH OF THE POST .HTML AS WELL
     for post in models.Post.query.all():
         manifest[post.slug] = {
             'hash': post.hash,
         }
-        # TODO: COULD BE EXTENDED TO 'FILES'
         manifest[post.slug]['images'] = {
             image.filename: {'hash': image.hash} for image in post.images
         }

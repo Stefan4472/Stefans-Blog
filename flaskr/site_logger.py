@@ -1,5 +1,7 @@
 import datetime
 import requests
+import functools
+import typing
 from flask import request, current_app
 
 
@@ -28,3 +30,12 @@ def log_visit():
             requests.post(current_app.config['TRAFFIC_API'], params=params)
         except requests.exceptions.ConnectionError as e:
             pass
+
+
+def logged_visit(f: typing.Callable):
+    """Decorator that logs the url being accessed. Simply calls `log_visit()`."""
+    @functools.wraps(f)
+    def decorated_function(*args, **kwargs):
+        log_visit()
+        return f(*args, **kwargs)
+    return decorated_function

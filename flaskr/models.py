@@ -1,6 +1,7 @@
 import flask
 import datetime
 import pathlib
+from sqlalchemy import asc, desc
 from . import db
 
 
@@ -51,6 +52,24 @@ class Post(db.Model):
             if self.images[i].filename == filename:
                 return i
         return -1
+
+    def load_html(self) -> str:
+        """Retrieve the HTML file containing the post's contents and render as template."""
+        html_path = self.get_path() / 'post.html'
+        with open(html_path, encoding='utf-8', errors='strict') as f:
+            return flask.render_template_string(f.read())
+
+    def get_prev(self) -> 'Post':
+        return Post.query\
+            .filter(Post.date < self.date)\
+            .order_by(desc('date'))\
+            .first()
+
+    def get_next(self) -> 'Post':
+        return Post.query\
+            .filter(Post.date > self.date)\
+            .order_by(asc('date'))\
+            .first()
 
     def __repr__(self):
         return 'Post(title="{}", slug="{}", date={}, tags={})'.format(
