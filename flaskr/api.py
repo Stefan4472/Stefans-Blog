@@ -110,10 +110,50 @@ def upload_image(slug: str):
     # TODO: safe_filename = werkzeug.utils.secure_filename(file.filename)
     file_path = post.get_path() / file.filename
 
-    img = file.read()
-    md5 = hashlib.md5(img).hexdigest()
+    # Read image, hash, and save to post directory
+    raw_img = file.read()
+    md5 = hashlib.md5(raw_img).hexdigest()
     file.close()
 
-    with open(file_path, 'wb+') as writef:
-        writef.write(img)
+    found_index = post.find_image(file.filename)
+    if found_index == -1:
+        # No image found with same filename
+        print('Adding')
+        # Add to database
+        post.images.append(models.PostImage(
+            filename=file.filename,
+            hash=md5,
+        ))
+        # Save
+        with open(file_path, 'wb+') as writef:
+            writef.write(raw_img)
+    elif post.images[found_index].hash != md5:
+        # Image with same filename but different hash
+        print('Replacing')
+        post.images[found_index].hash = md5
+        # Overwrite
+        with open(file_path, 'wb+') as writef:
+            writef.write(raw_img)
+    else:
+        print('Ignoring')
+    db.session.commit()
+    return Response(status=200)
+
+
+@API_BLUEPRINT.route('/posts/<string:slug>/images/<string:filename>', methods=['DELETE'])
+def delete_image(slug: str, filename: str):
+    post = models.Post.query.filter_by(slug=slug).first()
+    if not post:
+        return Response(status=404)
+    found_index = post.find_image(filename)
+    if found_index == -1:
+        return Response(status=404)
+    else:
+        image = post.images[found_index]
+        # Remove from DB
+        # post.images = post.images[:found_index] + post.images[found_index+1:]
+        models.PostImage.query.filter_by(post_id=post.id, filename=image.filename).delete()
+        # Delete file
+        (post.get_path() / image.filename).unlink()
+        db.session.commit()
     return Response(status=200)

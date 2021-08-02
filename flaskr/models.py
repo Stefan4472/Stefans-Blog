@@ -19,7 +19,10 @@ class Post(db.Model):
     title = db.Column(db.String, nullable=False, default='')
     byline = db.Column(db.String, nullable=False, default='')
     date = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now().date())
+    # Many to Many on Tags
     tags = db.relationship('Tag', secondary=posts_to_tags, backref=db.backref('posts', lazy='dynamic'))
+    # 1 to Many on Images
+    images = db.relationship('PostImage', cascade='all, delete')
     is_featured = db.Column(db.Boolean, default=False)
 
     def get_path(self) -> pathlib.Path:
@@ -34,6 +37,13 @@ class Post(db.Model):
 
     def get_thumbnail_url(self) -> str:
         return flask.url_for('static', filename=self.slug + '/thumbnail.jpg')
+
+    def find_image(self, filename: str) -> int:
+        """Return index of image in this Post with the given filename."""
+        for i in range(len(self.images)):
+            if self.images[i].filename == filename:
+                return i
+        return -1
 
     def __repr__(self):
         return 'Post(title="{}", slug="{}", date={}, tags={})'.format(
@@ -53,3 +63,19 @@ class Tag(db.Model):
 
     def __repr__(self):
         return 'Tag(slug={}, color={})'.format(self.slug, self.color)
+
+
+class PostImage(db.Model):
+    __tablename__ = 'images'
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String, nullable=False)
+    hash = db.Column(db.String, nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
+    __unique_constraint__ = db.UniqueConstraint('id', 'filename')
+
+    def __repr__(self):
+        return 'PostImage(filename="{}", hash="{}", post_id={})'.format(
+            self.filename,
+            self.hash,
+            self.post_id,
+        )

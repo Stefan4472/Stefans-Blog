@@ -17,9 +17,9 @@ meta = {
 }
 
 SLUG = 'TEST_POST'
-print('Deleting...')
-res = requests.delete('http://localhost:5000/api/v1/posts/{}'.format(SLUG))
-print(res)
+# print('Deleting...')
+# res = requests.delete('http://localhost:5000/api/v1/posts/{}'.format(SLUG))
+# print(res)
 
 print('Creating...')
 res = requests.post('http://localhost:5000/api/v1/posts/{}'.format(SLUG))
@@ -36,9 +36,14 @@ print(res)
 
 print('Uploading images')
 images = {
-    'im1': open('data/gamla-stockholm.jpg', 'rb'),
-    'im2': open('data/featured.jpg', 'rb'),
+    'gamla-stockholm.jpg': open('data/gamla-stockholm.jpg', 'rb'),
+    'featured.jpg': open('data/featured.jpg', 'rb'),
 }
 for img in images.values():
     res = requests.post('http://localhost:5000/api/v1/posts/{}/images'.format(SLUG), files={'file': img})
+    print(res)
+
+print('Deleting images')
+for filename in images:
+    res = requests.delete('http://localhost:5000/api/v1/posts/{}/images/{}'.format(SLUG, filename))
     print(res)
