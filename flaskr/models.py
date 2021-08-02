@@ -19,11 +19,15 @@ class Post(db.Model):
     title = db.Column(db.String, nullable=False, default='')
     byline = db.Column(db.String, nullable=False, default='')
     date = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now().date())
+    # Image filenames
+    featured_filename = db.Column(db.String, nullable=False, default='')
+    banner_filename = db.Column(db.String, nullable=False, default='')
+    thumbnail_filename = db.Column(db.String, nullable=False, default='')
     # MD5 hash of the post's HTML
     hash = db.Column(db.String, nullable=False, default='')
-    # Many to Many on Tags
+    # Tags (Many to Many)
     tags = db.relationship('Tag', secondary=posts_to_tags, backref=db.backref('posts', lazy='dynamic'))
-    # 1 to Many on Images
+    # Images (One to Many)
     images = db.relationship('PostImage', cascade='all, delete')
     is_featured = db.Column(db.Boolean, default=False)
 
@@ -31,14 +35,14 @@ class Post(db.Model):
         """Return Path object to static folder."""
         return pathlib.Path(flask.current_app.static_folder) / self.slug
 
-    def get_image_url(self) -> str:
-        return flask.url_for('static', filename=self.slug + '/featured.jpg')
+    def get_featured_url(self) -> str:
+        return flask.url_for('static', filename=self.slug + '/' + self.featured_filename)
 
     def get_banner_url(self) -> str:
-        return flask.url_for('static', filename=self.slug + '/banner.jpg')
+        return flask.url_for('static', filename=self.slug + '/' + self.banner_filename)
 
     def get_thumbnail_url(self) -> str:
-        return flask.url_for('static', filename=self.slug + '/thumbnail.jpg')
+        return flask.url_for('static', filename=self.slug + '/' + self.thumbnail_filename)
 
     def find_image(self, filename: str) -> int:
         """Return index of image in this Post with the given filename."""

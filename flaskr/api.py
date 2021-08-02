@@ -4,6 +4,7 @@ import datetime
 import flask
 import shutil
 from flask import Blueprint, current_app, request, Response
+from PIL import Image
 import werkzeug.exceptions
 import werkzeug.utils
 from sqlalchemy import asc, desc
@@ -63,24 +64,64 @@ def delete_post(slug: str):
 
 @API_BLUEPRINT.route('/posts/<string:slug>/meta', methods=['POST'])
 def set_meta(slug: str):
-    config = request.get_json()
     post = models.Post.query.filter_by(slug=slug).first()
     if not post:
         return Response(status=404)
 
+    config = request.get_json()
+    print(config)
     if 'title' in config:
         post.title = config['title']
     if 'byline' in config:
         post.byline = config['byline']
     if 'date' in config:
         post.date = datetime.datetime.strptime(config['date'], "%m/%d/%y").date()
-    # TODO: COPY / RENAME IMAGE FILES
-    # if 'image' in config:
-    #     post.image = config['image']
-    # if 'thumbnail' in config:
-    #     post.thumbnail = config['thumbnail']
-    # if 'banner' in config:
-    #     post.banner = config['banner']
+    # TODO: CHECK THAT IMAGE IS IN DB AND HAS CORRECT SIZE
+    if 'featured' in config:
+        featured_filename = config['featured']
+        if featured_filename != post.featured_filename:
+            find_index = post.find_image(featured_filename)
+            if find_index == -1:
+                print('Not found!')
+            else:
+                image = post.images[find_index]
+                image_path = post.get_path() / image.filename
+                img = Image.open(image_path)
+                print(img.width, img.height)
+                if (img.width, img.height) != (1000, 540):
+                    # TODO: WHAT STATUS CODE FOR ERROR?
+                    return Response(status=400)
+            post.featured_filename = config['featured']
+    if 'thumbnail' in config:
+        thumbnail_filename = config['thumbnail']
+        if thumbnail_filename != post.thumbnail_filename:
+            find_index = post.find_image(thumbnail_filename)
+            if find_index == -1:
+                print('Not found!')
+            else:
+                image = post.images[find_index]
+                image_path = post.get_path() / image.filename
+                img = Image.open(image_path)
+                print(img.width, img.height)
+                if (img.width, img.height) != (400, 400):
+                    # TODO: WHAT STATUS CODE FOR ERROR?
+                    return Response(status=400)
+            post.thumbnail_filename = config['thumbnail']
+    if 'banner' in config:
+        banner_filename = config['banner']
+        if banner_filename != post.banner_filename:
+            find_index = post.find_image(banner_filename)
+            if find_index == -1:
+                print('Not found!')
+            else:
+                image = post.images[find_index]
+                image_path = post.get_path() / image.filename
+                img = Image.open(image_path)
+                print(img.width, img.height)
+                if (img.width, img.height) != (1000, 175):
+                    # TODO: WHAT STATUS CODE FOR ERROR?
+                    return Response(status=400)
+            post.banner_filename = config['banner']
     if 'tags' in config:
         # Add tags
         for tag_name in config['tags']:
