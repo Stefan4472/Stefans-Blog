@@ -12,6 +12,7 @@ from . import models
 VIEWS_BLUEPRINT = flask.Blueprint('blog', __name__)
 
 
+# TODO: MOVE TO SITE_LOGGER.PY
 def logged_visit(f: typing.Callable):
     """Decorator that logs the url being accessed. Simply calls `log_visit()`."""
     @functools.wraps(f)
@@ -25,8 +26,14 @@ def logged_visit(f: typing.Callable):
 @logged_visit
 def index():
     """Site index. Displays featured and recent posts."""
-    recent_posts = models.Post.query.order_by(desc('date')).limit(5).all()
-    featured_posts = models.Post.query.filter(models.Post.is_featured).all()
+    recent_posts = models.Post.query\
+        .filter_by(is_published=True)\
+        .order_by(desc('date'))\
+        .limit(5)\
+        .all()
+    featured_posts = models.Post.query\
+        .filter_by(is_featured=True, is_published=True)\
+        .all()
     return flask.render_template(
         'blog/index.html',
         featured_posts=featured_posts,
@@ -40,13 +47,17 @@ def index():
 def posts_page(page: int = 1):
     """The "posts" page, which displays all posts on the site (paginated)."""
     # Using pagination example from https://stackoverflow.com/a/57348599
-    return flask.render_template(
-        'blog/posts.html',
-        posts=models.Post.query.order_by(desc('date')).paginate(
+    posts = models.Post.query\
+        .filter_by(is_published=True)\
+        .order_by(desc('date'))\
+        .paginate(
             page,
             flask.current_app.config['PAGINATE_POSTS_PER_PAGE'],
             error_out=False,
-        ),
+        )
+    return flask.render_template(
+        'blog/posts.html',
+        posts=posts,
     )
 
 
@@ -55,11 +66,12 @@ def posts_page(page: int = 1):
 def post_view(slug):
     """Shows the page for the post with the specified slug."""
     # Retrieve post
-    post = models.Post.query.filter_by(slug=slug).first()
+    post = models.Post.query.filter_by(slug=slug, is_published=True).first()
     # Throw 404 if there is no post with the given slug in the database.
     if not post:
         werkzeug.exceptions.abort(404)
 
+    # TODO: THIS LOGIC CAN GO INTO THE `POST` CLASS AS A FUNCTION
     # Retrieve the HTML file containing the post's contents and render as template.
     html_path = os.path.join(flask.current_app.static_folder, slug, 'post.html')
     with open(html_path, encoding='utf-8', errors='strict') as post_file:
@@ -93,7 +105,7 @@ def tag_view(slug):
     return flask.render_template(
         'blog/tag_view.html',
         tag=tag,
-        posts=tag.posts.all(),
+        posts=tag.posts.filter(models.Post.is_published).all(),
     )
 
 
@@ -110,7 +122,7 @@ def search_page():
     # Perform search and fetch results
     if query:
         posts = [
-            models.Post.query.filter_by(slug=result.slug).first()
+            models.Post.query.filter_by(slug=result.slug, is_published=True).first()
             for result in flask.current_app.search_engine.search(query)
         ]
 

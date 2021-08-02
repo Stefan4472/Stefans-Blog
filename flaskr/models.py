@@ -30,6 +30,7 @@ class Post(db.Model):
     # Images (One to Many)
     images = db.relationship('PostImage', cascade='all, delete')
     is_featured = db.Column(db.Boolean, default=False)
+    is_published = db.Column(db.Boolean, default=False)
 
     def get_path(self) -> pathlib.Path:
         """Return Path object to static folder."""

@@ -221,3 +221,23 @@ def delete_image(slug: str, filename: str):
         (post.get_path() / image.filename).unlink()
         db.session.commit()
     return Response(status=200)
+
+
+@API_BLUEPRINT.route('/posts/<string:slug>/publish', methods=['POST'])
+def publish_post(slug: str):
+    post = models.Post.query.filter_by(slug=slug).first()
+    if not post:
+        return Response(status=404)
+    post.is_published = True
+    db.session.commit()
+    return Response(status=200)
+
+
+@API_BLUEPRINT.route('/posts/<string:slug>/publish', methods=['DELETE'])
+def unpublish_post(slug: str):
+    post = models.Post.query.filter_by(slug=slug).first()
+    if not post:
+        return Response(status=404)
+    post.is_published = False
+    db.session.commit()
+    return Response(status=200)
