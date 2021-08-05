@@ -2,7 +2,7 @@ import hashlib
 import datetime
 import flask
 import shutil
-from flask import request, Response
+from flask import request, Response, current_app
 from PIL import Image
 import werkzeug.exceptions
 import werkzeug.utils
@@ -148,6 +148,11 @@ def upload_html(slug: str):
     md5 = hashlib.md5(raw).hexdigest()
     file.close()
 
+    # TODO: MODIFICATIONS NEEDED TO SEARCH_ENGINE
+    # Add Markdown file to the search engine's index
+    # current_app.search_engine.index_file(str(md_path), post_data.slug)
+    # current_app.search_engine.commit()
+
     if md5 != post.hash:
         # Save HTML file as 'post.html'
         file_path = post.get_path() / 'post.html'
@@ -219,6 +224,7 @@ def delete_image(slug: str, filename: str):
     return Response(status=200)
 
 
+# TODO: RATHER THAN DOING IT THIS WAY, WE SHOULD HAVE A `FEATURED` ENDPOINT AND A `PUBLISHED` ENDPOINT?
 @API_BLUEPRINT.route('/posts/<string:slug>/publish', methods=['POST'])
 def publish_post(slug: str):
     post = models.Post.query.filter_by(slug=slug).first()
