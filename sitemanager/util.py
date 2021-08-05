@@ -1,4 +1,6 @@
 import re
+import pathlib
+import hashlib
 
 
 KEY_TITLE = 'title'
@@ -37,6 +39,12 @@ def get_static_url(rel_path_from_static: str) -> str:
     return '{{{{ url_for(\'static\', filename=\'{}\') }}}}'.format(
         rel_path_from_static
     )
+
+
+def calc_hash(filepath: pathlib.Path) -> str:
+    # Calculate hash of a file
+    with open(filepath, 'rb') as f:
+        return hashlib.md5(f.read()).hexdigest()
 
 
 # def get_post_images(

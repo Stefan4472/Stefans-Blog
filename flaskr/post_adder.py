@@ -71,8 +71,8 @@ def add_post(
     post_diff = current_app.manifest.calc_addpost_diff(post_data.slug, files_to_add)
     
     print('Identified {} files to write and {} files to delete'.format(
-        len(post_diff.write_files),
-        len(post_diff.del_files),
+        len(post_diff.write_images),
+        len(post_diff.delete_images),
     ))
 
     current_app.manifest.apply_addpost_diff(

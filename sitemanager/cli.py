@@ -45,7 +45,12 @@ def upload_post(
         md_path,
         config.slug,
     )
-    print(post_img_paths)
+
+    # Write out html (TODO: Find a way to not require this)
+    # html_path = path / 'rendered-post.html'
+    # with open(html_path) as writef:
+    #     writef.write(html)
+
     manager.upload_post(host, config, html, post_img_paths)
 
 

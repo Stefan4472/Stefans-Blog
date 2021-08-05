@@ -1,6 +1,7 @@
 import requests
 import pathlib
 import dataclasses as dc
+from manifest import Manifest, SiteDiff
 # Makes API requests
 # TODO: FIND A GENERALIZED WAY TO SET BASE URL AND SLUG IN ONE PLACE
 # TODO: EXCEPTIONS
@@ -21,11 +22,11 @@ class ManagerService:
         res = requests.delete('{}/api/v1/posts/{}'.format(self.base_url, slug))
         print(res)
 
-    def upload_html(self, slug: str, path: pathlib.Path):
+    def upload_html(self, slug: str, html: str):
         print('Uploading HTML...')
         res = requests.post(
             '{}/api/v1/posts/{}/body'.format(self.base_url, slug),
-            files={'file': open(path, 'rb')},
+            files={'file': ('post.html', html)},
         )
         print(res)
 
@@ -62,8 +63,23 @@ class ManagerService:
             res = requests.post('{}/api/v1/posts/{}/unpublish'.format(self.base_url, slug))
         print(res.json())
 
-    def get_manifest(self) -> dict:
-        print('Getting manifest...')
+    def get_manifest(self) -> Manifest:
         res = requests.get('{}/api/v1/posts'.format(self.base_url))
-        print(res)
-        return res.json()
+        return Manifest(res.json())
+
+    # TODO: SHOULD PROBABLY BE SOMEWHERE ELSE
+    def apply_diff(self, diff: SiteDiff):
+        for create_slug in diff.create_posts:
+            self.create_post(create_slug)
+        for delete_slug in diff.delete_posts:
+            self.delete_post(delete_slug)
+        for post_diff in diff.post_diffs:
+            if post_diff.write_html:
+                print('Uploading HTML')
+                self.upload_html(post_diff.slug, post_diff.write_html)
+            for upload in post_diff.write_images:
+                print('Uploading {}'.format(upload))
+                self.upload_image(post_diff.slug, upload)
+            for delete in post_diff.delete_images:
+                print('Deleting {}'.format(delete))
+                self.delete_image(post_diff.slug, delete)

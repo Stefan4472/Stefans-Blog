@@ -75,7 +75,7 @@ def render_file(
 
                 '''.format(img_url)
 
-        images.append(pathlib.Path(img_path))
+        images.append((filepath.parent / img_path).resolve())
         html_snippets.append(rendered_html)
         last_match_index = end
 
