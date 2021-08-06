@@ -3,6 +3,7 @@ import datetime
 import flask
 import shutil
 from flask import request, Response, current_app
+from flask_login import login_required
 from PIL import Image
 import werkzeug.exceptions
 import werkzeug.utils
@@ -18,6 +19,7 @@ API_BLUEPRINT = flask.Blueprint('api', __name__, url_prefix='/api/v1/')
 
 
 @API_BLUEPRINT.route('/posts', methods=['GET'])
+@login_required
 def get_posts():
     """Return a manifest. TODO: THIS ISN'T EXACTLY WHAT YOU'D EXPECT FOR THIS ENDPOINT. USE /POSTS?MANIFEST=TRUE?"""
     manifest = {}
@@ -32,6 +34,7 @@ def get_posts():
 
 
 @API_BLUEPRINT.route('/posts/<string:slug>', methods=['POST'])
+@login_required
 def create_post(slug: str):
     """
     Creates the base object for a post. Simply takes the slug.
@@ -47,6 +50,7 @@ def create_post(slug: str):
 
 
 @API_BLUEPRINT.route('/posts/<string:slug>', methods=['DELETE'])
+@login_required
 def delete_post(slug: str):
     post = models.Post.query.filter_by(slug=slug).first()
     if not post:
@@ -59,6 +63,7 @@ def delete_post(slug: str):
 
 
 @API_BLUEPRINT.route('/posts/<string:slug>/meta', methods=['POST'])
+@login_required
 def set_meta(slug: str):
     post = models.Post.query.filter_by(slug=slug).first()
     if not post:
@@ -138,6 +143,7 @@ def set_meta(slug: str):
 
 
 @API_BLUEPRINT.route('/posts/<string:slug>/body', methods=['POST'])
+@login_required
 def upload_html(slug: str):
     post = models.Post.query.filter_by(slug=slug).first()
     if not post:
@@ -165,6 +171,7 @@ def upload_html(slug: str):
 
 
 @API_BLUEPRINT.route('/posts/<string:slug>/images', methods=['POST'])
+@login_required
 def upload_image(slug: str):
     """Upload a single image to the specified post."""
     post = models.Post.query.filter_by(slug=slug).first()
@@ -206,6 +213,7 @@ def upload_image(slug: str):
 
 
 @API_BLUEPRINT.route('/posts/<string:slug>/images/<string:filename>', methods=['DELETE'])
+@login_required
 def delete_image(slug: str, filename: str):
     post = models.Post.query.filter_by(slug=slug).first()
     if not post:
@@ -226,6 +234,7 @@ def delete_image(slug: str, filename: str):
 
 # TODO: RATHER THAN DOING IT THIS WAY, WE SHOULD HAVE A `FEATURED` ENDPOINT AND A `PUBLISHED` ENDPOINT?
 @API_BLUEPRINT.route('/posts/<string:slug>/publish', methods=['POST'])
+@login_required
 def publish_post(slug: str):
     post = models.Post.query.filter_by(slug=slug).first()
     if not post:
@@ -236,6 +245,7 @@ def publish_post(slug: str):
 
 
 @API_BLUEPRINT.route('/posts/<string:slug>/publish', methods=['DELETE'])
+@login_required
 def unpublish_post(slug: str):
     post = models.Post.query.filter_by(slug=slug).first()
     if not post:

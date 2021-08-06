@@ -3,6 +3,7 @@ import pathlib
 from .database import db
 from . import views
 from . import api
+from . import auth
 from . import config as cfg
 from . import manage_blog
 from . import manifest as mn
@@ -12,6 +13,7 @@ from simplesearch.searchengine import SearchEngine
 def create_app():
     """Create and configure the Flask app."""
     app = flask.Flask(__name__)
+    auth.login_manager.init_app(app)
 
     # Create the instance folder if it doesn't already exist
     instance_path = pathlib.Path(app.instance_path)

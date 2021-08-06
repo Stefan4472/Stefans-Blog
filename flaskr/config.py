@@ -4,13 +4,14 @@ import pathlib
 import dataclasses as dc
 
 
-# TODO: ADD KEYS FOR REMOTE UPLOAD
 @dc.dataclass
 class Config:
     DATABASE_PATH: pathlib.Path
     LOG_PATH: pathlib.Path
     SEARCH_INDEX_PATH: pathlib.Path
     MANIFEST_PATH: pathlib.Path
+    # Our secret key (required for external API access)
+    SECRET_KEY: str
     # Settings for site-analytics API
     TRAFFIC_API: typing.Optional[str] = None
     TRAFFIC_KEY: typing.Optional[str] = None
@@ -32,6 +33,7 @@ class Config:
             Config.get_env_path('LOG_PATH') or instance_path / 'sitelog.txt',
             Config.get_env_path('SEARCH_INDEX_PATH') or instance_path / 'index.json',
             Config.get_env_path('MANIFEST_PATH') or instance_path / 'manifest.json',
+            Config.get_env_path('SECRET_KEY') or '',
             TRAFFIC_API=os.environ.get('TRAFFIC_API') or '',
             TRAFFIC_KEY=os.environ.get('TRAFFIC_KEY') or '',
             SQLALCHEMY_DATABASE_URI='sqlite:///' + str(db_path),

@@ -2,24 +2,28 @@ import requests
 import pathlib
 import dataclasses as dc
 from manifest import Manifest, SiteDiff
-# Makes API requests
-# TODO: FIND A GENERALIZED WAY TO SET BASE URL AND SLUG IN ONE PLACE
 # TODO: EXCEPTIONS
 
 
 @dc.dataclass
 class ManagerService:
     base_url: str
-    # api_key: str
+    api_key: str
 
     def create_post(self, slug: str):
         print('Creating...')
-        res = requests.post('{}/api/v1/posts/{}'.format(self.base_url, slug))
+        res = requests.post(
+            '{}/api/v1/posts/{}'.format(self.base_url, slug),
+            headers={'Authorization': self.api_key},
+        )
         print(res)
 
     def delete_post(self, slug: str):
         print('Deleting...')
-        res = requests.delete('{}/api/v1/posts/{}'.format(self.base_url, slug))
+        res = requests.delete(
+            '{}/api/v1/posts/{}'.format(self.base_url, slug),
+            headers={'Authorization': self.api_key},
+        )
         print(res)
 
     def upload_html(self, slug: str, html: str):
@@ -27,6 +31,7 @@ class ManagerService:
         res = requests.post(
             '{}/api/v1/posts/{}/body'.format(self.base_url, slug),
             files={'file': ('post.html', html)},
+            headers={'Authorization': self.api_key},
         )
         print(res)
 
@@ -36,35 +41,56 @@ class ManagerService:
             res = requests.post(
                 '{}/api/v1/posts/{}/images'.format(self.base_url, slug),
                 files={'file': f},
+                headers={'Authorization': self.api_key},
             )
             print(res)
 
     def delete_image(self, slug: str, filename: str):
         print('Deleting image')
-        res = requests.delete('{}/api/v1/posts/{}/images/{}'.format(
+        url = '{}/api/v1/posts/{}/images/{}'.format(
             self.base_url,
             slug,
             filename,
-        ))
+        )
+        res = requests.delete(
+            url,
+            headers={'Authorization': self.api_key},
+        )
         print(res)
 
     # TODO: META DATACLASS
+    # TODO: RENAME TO `SET_CONFIG`. WHERE IS THIS USED?
     def set_meta(self, slug: str, meta: dict):
         print('Setting meta...')
-        res = requests.post('{}/api/v1/posts/{}/meta'.format(self.base_url, slug), json=meta)
+        res = requests.post(
+            '{}/api/v1/posts/{}/meta'.format(self.base_url, slug),
+            json=meta,
+            headers={'Authorization': self.api_key},
+        )
         print(res)
 
     def set_published(self, slug: str, is_published: bool = True):
         print('Publishing...')
         if is_published:
             # TODO: PRETTY SURE IS_PUBLISHED SHOULD BE A URL PARAMETER SOMEWHERE. MAYBE A `STATE` ENDPOINT?
-            res = requests.post('{}/api/v1/posts/{}/publish'.format(self.base_url, slug))
+            res = requests.post(
+                '{}/api/v1/posts/{}/publish'.format(self.base_url, slug),
+                headers={'Authorization': self.api_key},
+            )
         else:
-            res = requests.post('{}/api/v1/posts/{}/unpublish'.format(self.base_url, slug))
+            res = requests.post(
+                '{}/api/v1/posts/{}/unpublish'.format(self.base_url, slug),
+                headers={'Authorization': self.api_key},
+            )
         print(res.json())
 
     def get_manifest(self) -> Manifest:
-        res = requests.get('{}/api/v1/posts'.format(self.base_url))
+        res = requests.get(
+            '{}/api/v1/posts'.format(self.base_url),
+            headers={'Authorization': self.api_key},
+        )
+        if res.status_code == 401:
+            raise ValueError('Couldn\'t access API: invalid authentication credentials')
         return Manifest(res.json())
 
     # TODO: SHOULD PROBABLY BE SOMEWHERE ELSE

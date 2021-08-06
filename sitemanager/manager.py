@@ -10,12 +10,13 @@ from manifest import Manifest
 
 def upload_post(
         host: str,
+        key: str,
         config: PostConfig,
         html: str,
         images: typing.List[pathlib.Path],
         # update: bool = False,
 ):
-    service = ManagerService(host)
+    service = ManagerService(host, key)
     manifest = service.get_manifest()
     print(manifest.posts)
     diff = manifest.calc_post_diff(config.slug, html, images)
@@ -24,6 +25,10 @@ def upload_post(
     # TODO: WHERE TO HANDLE `PUBLISH` AND `FEATURED`?
 
 
-def delete_post(host: str, slug: str):
-    service = ManagerService(host)
+def delete_post(
+        host: str,
+        key: str,
+        slug: str,
+):
+    service = ManagerService(host, key)
     service.delete_post(slug)

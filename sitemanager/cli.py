@@ -21,12 +21,14 @@ def cli():
 @cli.command()
 @click.argument('path', type=click.Path(exists=True, dir_okay=True, file_okay=False))
 @click.option('--host', type=str, default='http://127.0.0.1:5000')
+@click.option('--key', type=str, required=True)
 @click.option('--allow_update', type=bool, default=True)
-@click.option('--publish', type=bool, default=False)
+@click.option('--publish', type=bool, default=True)
 @click.option('--featured', type=bool, default=False)
 def upload_post(
         path: str,
         host: str,
+        key: str,
         allow_update: bool,
         publish: bool,
         featured: bool,
@@ -51,15 +53,20 @@ def upload_post(
     # with open(html_path) as writef:
     #     writef.write(html)
 
-    manager.upload_post(host, config, html, post_img_paths)
+    manager.upload_post(host, key, config, html, post_img_paths)
 
 
 # Delete post
 @cli.command()
 @click.argument('slug', type=str)
 @click.option('--host', type=str, default='http://127.0.0.1:5000')
-def delete_post(slug: str, host: str):
-    manager.delete_post(host, slug)
+@click.option('--key', type=str, required=True)
+def delete_post(
+        slug: str,
+        host: str,
+        key: str,
+):
+    manager.delete_post(host, key, slug)
 
 
 # Sync a to b
