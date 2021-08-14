@@ -51,27 +51,21 @@ class PostConfig:
             cfg_json[util.KEY_SLUG] if util.KEY_SLUG in cfg_json else util.generate_slug(cfg_json[util.KEY_TITLE]),
             cfg_json[util.KEY_TITLE],
             cfg_json[util.KEY_BYLINE],
-            datetime.datetime.strptime(cfg_json[util.KEY_DATE], "%m/%d/%y").date(),
+            datetime.datetime.strptime(cfg_json[util.KEY_DATE], util.DATE_FORMAT).date(),
             cfg_json[util.KEY_TAGS] if util.KEY_TAGS in cfg_json else [],
-            pathlib.Path(cfg_json[util.KEY_FEATURED]),
-            pathlib.Path(cfg_json[util.KEY_THUMBNAIL]),
-            pathlib.Path(cfg_json[util.KEY_BANNER]),
+            pathlib.Path((filepath.parent / cfg_json[util.KEY_FEATURED]).resolve()),
+            pathlib.Path((filepath.parent / cfg_json[util.KEY_THUMBNAIL]).resolve()),
+            pathlib.Path((filepath.parent / cfg_json[util.KEY_BANNER]).resolve()),
         )
 
-
-# @dc.dataclass
-# class PostData:
-#     """Container for all of the data needed to create a post."""
-#     title: str
-#     byline: str
-#     slug: str
-#     post_date: datetime.date
-#     featured_img: pathlib.Path
-#     thumbnail_img: pathlib.Path
-#     banner_img: pathlib.Path
-#     # List of tags
-#     tag_names: typing.List[str] = dc.field(default_factory=list)
-#     # Generated post HTML
-#     html: str = ''
-#     # All images that need to be uploaded with the post
-#     image_paths: typing.List[pathlib.Path] = dc.field(default_factory=list)
+    def to_json(self) -> dict:
+        return {
+            'slug': self.slug,
+            'title': self.title,
+            'byline': self.byline,
+            'date': self.date.strftime(util.DATE_FORMAT),
+            'tags': self.tags,
+            'image': self.featured_img.name,
+            'banner': self.banner_img.name,
+            'thumbnail': self.thumbnail_img.name,
+        }

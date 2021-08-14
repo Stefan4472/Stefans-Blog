@@ -77,8 +77,8 @@ def set_meta(slug: str):
         post.byline = config['byline']
     if 'date' in config:
         post.date = datetime.datetime.strptime(config['date'], "%m/%d/%y").date()
-    if 'featured' in config:
-        featured_filename = config['featured']
+    if 'image' in config:
+        featured_filename = config['image']
         if featured_filename != post.featured_filename:
             find_index = post.find_image(featured_filename)
             if find_index == -1:
@@ -91,7 +91,7 @@ def set_meta(slug: str):
                 if (img.width, img.height) != (1000, 540):
                     # TODO: WHAT STATUS CODE FOR ERROR?
                     return Response(status=400)
-            post.featured_filename = config['featured']
+            post.featured_filename = config['image']
     if 'thumbnail' in config:
         thumbnail_filename = config['thumbnail']
         if thumbnail_filename != post.thumbnail_filename:
@@ -236,6 +236,7 @@ def delete_image(slug: str, filename: str):
 @API_BLUEPRINT.route('/posts/<string:slug>/publish', methods=['POST'])
 @login_required
 def publish_post(slug: str):
+    # TODO: MAKE SURE ALL FIELDS ARE CONFIGURED
     post = models.Post.query.filter_by(slug=slug).first()
     if not post:
         return Response(status=404)

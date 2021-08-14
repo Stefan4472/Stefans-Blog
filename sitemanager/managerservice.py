@@ -2,7 +2,8 @@ import requests
 import pathlib
 import dataclasses as dc
 from manifest import Manifest, SiteDiff
-# TODO: EXCEPTIONS
+from postconfig import PostConfig
+# TODO: HANDLE EXCEPTIONS
 
 
 @dc.dataclass
@@ -58,13 +59,11 @@ class ManagerService:
         )
         print(res)
 
-    # TODO: META DATACLASS
-    # TODO: RENAME TO `SET_CONFIG`. WHERE IS THIS USED?
-    def set_meta(self, slug: str, meta: dict):
+    def set_config(self, slug: str, config: PostConfig):
         print('Setting meta...')
         res = requests.post(
             '{}/api/v1/posts/{}/meta'.format(self.base_url, slug),
-            json=meta,
+            json=config.to_json(),
             headers={'Authorization': self.api_key},
         )
         print(res)
@@ -82,7 +81,10 @@ class ManagerService:
                 '{}/api/v1/posts/{}/unpublish'.format(self.base_url, slug),
                 headers={'Authorization': self.api_key},
             )
-        print(res.json())
+        print(res)
+
+    def set_featured(self, slug: str, is_featured: bool = True):
+        return  # TODO
 
     def get_manifest(self) -> Manifest:
         res = requests.get(

@@ -12,6 +12,8 @@ KEY_FEATURED = 'image'
 KEY_BANNER = 'banner'
 KEY_THUMBNAIL = 'thumbnail'
 
+# Expected data format for JSON
+DATE_FORMAT = "%m/%d/%y"
 
 # Prescribed featured-image size
 FEATURED_IMG_SIZE = (1000, 540)

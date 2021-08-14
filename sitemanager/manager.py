@@ -2,33 +2,49 @@ import pathlib
 import typing
 import hashlib
 import util
-from post import PostConfig
-from manager_service import ManagerService
+from postconfig import PostConfig
+from managerservice import ManagerService
 from manifest import Manifest
 # TODO: EXCEPTIONS
 
 
+# TODO: THE DIFFING STUFF. WOULD NEED TO ALSO INCLUDE CONFIGS
 def upload_post(
-        host: str,
-        key: str,
         config: PostConfig,
         html: str,
         images: typing.List[pathlib.Path],
-        # update: bool = False,
+        allow_update: bool,
+        publish: bool,
+        feature: bool,
+        host: str,
+        key: str,
 ):
     service = ManagerService(host, key)
     manifest = service.get_manifest()
-    print(manifest.posts)
-    diff = manifest.calc_post_diff(config.slug, html, images)
-    print(diff)
-    service.apply_diff(diff)
-    # TODO: WHERE TO HANDLE `PUBLISH` AND `FEATURED`?
+
+    # No post with given slug exists: create new
+    if config.slug not in manifest.posts:
+        service.create_post(config.slug)
+    # Throw error if a post with given slug exists but `update` is not set to True
+    elif not allow_update:
+        raise ValueError('Post with the specified slug already exists but update=False')
+
+    service.upload_html(config.slug, html)
+    service.upload_image(config.slug, config.featured_img)
+    service.upload_image(config.slug, config.banner_img)
+    service.upload_image(config.slug, config.thumbnail_img)
+    for image in images:
+        service.upload_image(config.slug, image)
+    # TODO: ADD `PUBLISH` AND `FEATURED` to config
+    service.set_config(config.slug, config)
+    service.set_published(config.slug, publish)
+    service.set_featured(config.slug, feature)
 
 
 def delete_post(
+        slug: str,
         host: str,
         key: str,
-        slug: str,
 ):
     service = ManagerService(host, key)
     service.delete_post(slug)
