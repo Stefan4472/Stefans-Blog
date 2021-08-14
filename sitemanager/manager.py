@@ -27,12 +27,18 @@ def upload_post(
     elif not allow_update:
         raise ValueError('Post with the specified slug already exists but update=False')
 
+    print('Uploading HTML...')
     service.upload_html(config.slug, html)
+    print('Uploading featured image {}...'.format(config.featured_img))
     service.upload_image(config.slug, config.featured_img)
+    print('Uploading banner image {}...'.format(config.banner_img))
     service.upload_image(config.slug, config.banner_img)
+    print('Uploading thumbnail image {}...'.format(config.thumbnail_img))
     service.upload_image(config.slug, config.thumbnail_img)
     for image in images:
+        print('Uploading image {}...'.format(image))
         service.upload_image(config.slug, image)
+    print('Setting config...')
     service.set_config(config.slug, config)
 
 

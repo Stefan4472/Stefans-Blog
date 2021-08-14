@@ -68,9 +68,7 @@ def set_config(slug: str):
     post = models.Post.query.filter_by(slug=slug).first()
     if not post:
         return Response(status=404)
-
     config = request.get_json()
-    print(config)
     if 'title' in config:
         post.title = config['title']
     if 'byline' in config:
@@ -82,45 +80,45 @@ def set_config(slug: str):
         if featured_filename != post.featured_filename:
             find_index = post.find_image(featured_filename)
             if find_index == -1:
-                print('Not found!')
+                msg = 'Specified image "{}" not found on server'.format(featured_filename)
+                return Response(response=msg, status=400)
             else:
                 image = post.images[find_index]
                 image_path = post.get_path() / image.filename
                 img = Image.open(image_path)
-                print(img.width, img.height)
                 if (img.width, img.height) != (1000, 540):
-                    # TODO: WHAT STATUS CODE FOR ERROR?
-                    return Response(status=400)
+                    msg = 'Specified image "{}" has the wrong dimensions'.format(featured_filename)
+                    return Response(response=msg, status=400)
             post.featured_filename = config['image']
     if 'thumbnail' in config:
         thumbnail_filename = config['thumbnail']
         if thumbnail_filename != post.thumbnail_filename:
             find_index = post.find_image(thumbnail_filename)
             if find_index == -1:
-                print('Not found!')
+                msg = 'Specified image "{}" not found on server'.format(thumbnail_filename)
+                return Response(response=msg, status=400)
             else:
                 image = post.images[find_index]
                 image_path = post.get_path() / image.filename
                 img = Image.open(image_path)
-                print(img.width, img.height)
                 if (img.width, img.height) != (400, 400):
-                    # TODO: WHAT STATUS CODE FOR ERROR?
-                    return Response(status=400)
+                    msg = 'Specified image "{}" has the wrong dimensions'.format(thumbnail_filename)
+                    return Response(response=msg, status=400)
             post.thumbnail_filename = config['thumbnail']
     if 'banner' in config:
         banner_filename = config['banner']
         if banner_filename != post.banner_filename:
             find_index = post.find_image(banner_filename)
             if find_index == -1:
-                print('Not found!')
+                msg = 'Specified image "{}" not found on server'.format(banner_filename)
+                return Response(response=msg, status=400)
             else:
                 image = post.images[find_index]
                 image_path = post.get_path() / image.filename
                 img = Image.open(image_path)
-                print(img.width, img.height)
                 if (img.width, img.height) != (1000, 175):
-                    # TODO: WHAT STATUS CODE FOR ERROR?
-                    return Response(status=400)
+                    msg = 'Specified image "{}" has the wrong dimensions'.format(banner_filename)
+                    return Response(response=msg, status=400)
             post.banner_filename = config['banner']
     if 'tags' in config:
         # Add tags
@@ -192,9 +190,8 @@ def upload_image(slug: str):
     file.close()
 
     found_index = post.find_image(file.filename)
+    # No image found with same filename
     if found_index == -1:
-        # No image found with same filename
-        print('Adding')
         # Add to database
         post.images.append(models.PostImage(
             filename=file.filename,
@@ -203,15 +200,15 @@ def upload_image(slug: str):
         # Save
         with open(file_path, 'wb+') as writef:
             writef.write(raw_img)
+    # Image found with same filename but different hash (replace)
     elif post.images[found_index].hash != md5:
-        # Image with same filename but different hash
-        print('Replacing')
         post.images[found_index].hash = md5
         # Overwrite
         with open(file_path, 'wb+') as writef:
             writef.write(raw_img)
+    # Image found with same filename and same hash: do nothing
     else:
-        print('Ignoring')
+        pass
     db.session.commit()
     return Response(status=200)
 

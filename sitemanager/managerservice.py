@@ -1,9 +1,9 @@
 import requests
 import pathlib
+import flask
 import dataclasses as dc
 from manifest import Manifest, SiteDiff
 from postconfig import PostConfig
-# TODO: HANDLE EXCEPTIONS
 
 
 @dc.dataclass
@@ -16,12 +16,14 @@ class ManagerService:
             '{}/api/v1/posts/{}'.format(self.base_url, slug),
             headers={'Authorization': self.api_key},
         )
+        self._check_response(res)
 
     def delete_post(self, slug: str):
         res = requests.delete(
             '{}/api/v1/posts/{}'.format(self.base_url, slug),
             headers={'Authorization': self.api_key},
         )
+        self._check_response(res)
 
     def upload_html(self, slug: str, html: str):
         res = requests.post(
@@ -29,6 +31,7 @@ class ManagerService:
             files={'file': ('post.html', html)},
             headers={'Authorization': self.api_key},
         )
+        self._check_response(res)
 
     def upload_image(self, slug: str, path: pathlib.Path):
         with open(path, 'rb') as f:
@@ -37,6 +40,7 @@ class ManagerService:
                 files={'file': f},
                 headers={'Authorization': self.api_key},
             )
+            self._check_response(res)
 
     def delete_image(self, slug: str, filename: str):
         url = '{}/api/v1/posts/{}/images/{}'.format(
@@ -48,6 +52,7 @@ class ManagerService:
             url,
             headers={'Authorization': self.api_key},
         )
+        self._check_response(res)
 
     def set_config(self, slug: str, config: PostConfig):
         res = requests.post(
@@ -55,14 +60,14 @@ class ManagerService:
             json=config.to_json(),
             headers={'Authorization': self.api_key},
         )
+        self._check_response(res)
 
     def get_manifest(self) -> Manifest:
         res = requests.get(
             '{}/api/v1/posts'.format(self.base_url),
             headers={'Authorization': self.api_key},
         )
-        if res.status_code == 401:
-            raise ValueError('Couldn\'t access API: invalid authentication credentials')
+        self._check_response(res)
         return Manifest(res.json())
 
     # TODO: SHOULD PROBABLY BE SOMEWHERE ELSE
@@ -81,3 +86,10 @@ class ManagerService:
             for delete in post_diff.delete_images:
                 print('Deleting {}'.format(delete))
                 self.delete_image(post_diff.slug, delete)
+
+    @staticmethod
+    def _check_response(res: flask.Response):
+        if res.status_code == 400:
+            raise ValueError(res.text)
+        elif res.status_code == 401:
+            raise ValueError('Couldn\'t access API: invalid authentication credentials')
