@@ -1,4 +1,24 @@
-/*TODO: SLIGHTLY BOOST SIZE OF "P" AND "H3" ELEMENTS IN ARTICLE*/
+body {
+  font-family: Roboto, sans-serif;
+  line-height: 1.6;
+  /*letter-spacing: 0.01em;*/
+}
+
+.tag {
+  font-size: 1.3rem;
+}
+
+h3 {
+  margin-top: 2rem;
+  font-weight: bold;
+}
+
+h4 {
+  font-size: 1.7rem;
+  margin-top: 2rem;
+  font-weight: bold;
+}
+
 .link-override {
   text-decoration: none; 
   color: white;

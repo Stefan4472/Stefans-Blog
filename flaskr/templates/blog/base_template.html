@@ -31,10 +31,10 @@
 </head>
 <body>
     {% include "blog/banner.html" %}
-    <div class="container">
-        {% include "blog/navbar.html" %}
+    {% include "blog/navbar.html" %}
+    <div class="container" class="main-content">
         {% block content %}{% endblock %}
-        {% include "blog/footer.html" %}
     </div>
+    {% include "blog/footer.html" %}
 </body>
 </html>
