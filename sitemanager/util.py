@@ -8,9 +8,11 @@ KEY_BYLINE = 'byline'
 KEY_SLUG = 'slug'
 KEY_DATE = 'date'
 KEY_TAGS = 'tags'
-KEY_FEATURED = 'image'
+KEY_IMAGE = 'image'
 KEY_BANNER = 'banner'
 KEY_THUMBNAIL = 'thumbnail'
+KEY_PUBLISH = 'publish'
+KEY_FEATURE = 'feature'
 
 # Expected data format for JSON
 DATE_FORMAT = "%m/%d/%y"

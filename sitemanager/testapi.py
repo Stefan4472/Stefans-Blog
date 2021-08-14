@@ -48,7 +48,7 @@ SLUG = 'TEST_POST'
 #     print(res)
 
 # print('Setting meta...')
-# res = requests.post('http://localhost:5000/api/v1/posts/{}/meta'.format(SLUG), json=meta)
+# res = requests.post('http://localhost:5000/api/v1/posts/{}/config'.format(SLUG), json=meta)
 # print(res)
 
 print('Publishing...')

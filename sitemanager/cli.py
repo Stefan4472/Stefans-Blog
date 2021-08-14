@@ -17,14 +17,14 @@ def cli():
 @click.option('--key', type=str, required=True, help='Your API key')
 @click.option('--allow_update', type=bool, default=False, help='Whether to allow updating an already-existing post. If this is set to False, and a post with the given slug already exists, an Exception will be thrown')
 @click.option('--publish', type=bool, default=True, help='Whether to publish the post once upload is finished')
-@click.option('--featured', type=bool, default=False, help='Whether to mark the post as "featured" once upload is finished')
+@click.option('--feature', type=bool, default=False, help='Whether to mark the post as "featured" once upload is finished')
 def upload_post(
         path: str,
         host: str,
         key: str,
         allow_update: bool,
         publish: bool,
-        featured: bool,
+        feature: bool,
 ):
     # Get paths to the Markdown and config files
     path = pathlib.Path(path)
@@ -33,6 +33,8 @@ def upload_post(
 
     # Read the config file
     config = PostConfig.from_file(config_path)
+    config.publish = publish
+    config.feature = feature
 
     # Render Markdown file, getting the HTML and sourced images
     html, post_img_paths = markdown.render_file(
@@ -46,8 +48,6 @@ def upload_post(
         html,
         post_img_paths,
         allow_update,
-        publish,
-        featured,
         host,
         key,
     )

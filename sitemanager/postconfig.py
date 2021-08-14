@@ -16,6 +16,9 @@ class PostConfig:
     featured_img: pathlib.Path
     thumbnail_img: pathlib.Path
     banner_img: pathlib.Path
+    # Note: these two value are not read from JSON
+    publish: typing.Optional[bool] = None
+    feature: typing.Optional[bool] = None
 
     # TODO: PROBABLY SPLIT THIS OUT INTO ITS OWN FILE
     @staticmethod
@@ -38,8 +41,8 @@ class PostConfig:
             raise ValueError('Missing byline ("{}")'.format(util.KEY_BYLINE))
         if util.KEY_DATE not in cfg_json:
             raise ValueError('Missing date ("{}")'.format(util.KEY_DATE))
-        if util.KEY_FEATURED not in cfg_json:
-            raise ValueError('Missing featured ("{}")'.format(util.KEY_FEATURED))
+        if util.KEY_IMAGE not in cfg_json:
+            raise ValueError('Missing featured ("{}")'.format(util.KEY_IMAGE))
         if util.KEY_BANNER not in cfg_json:
             raise ValueError('Missing banner ("{}")'.format(util.KEY_BANNER))
         if util.KEY_THUMBNAIL not in cfg_json:
@@ -53,13 +56,15 @@ class PostConfig:
             cfg_json[util.KEY_BYLINE],
             datetime.datetime.strptime(cfg_json[util.KEY_DATE], util.DATE_FORMAT).date(),
             cfg_json[util.KEY_TAGS] if util.KEY_TAGS in cfg_json else [],
-            pathlib.Path((filepath.parent / cfg_json[util.KEY_FEATURED]).resolve()),
+            pathlib.Path((filepath.parent / cfg_json[util.KEY_IMAGE]).resolve()),
             pathlib.Path((filepath.parent / cfg_json[util.KEY_THUMBNAIL]).resolve()),
             pathlib.Path((filepath.parent / cfg_json[util.KEY_BANNER]).resolve()),
+            publish=cfg_json[util.KEY_PUBLISH] if util.KEY_PUBLISH in cfg_json else None,
+            feature=cfg_json[util.KEY_FEATURE] if util.KEY_FEATURE in cfg_json else None,
         )
 
     def to_json(self) -> dict:
-        return {
+        _json = {
             'slug': self.slug,
             'title': self.title,
             'byline': self.byline,
@@ -69,3 +74,8 @@ class PostConfig:
             'banner': self.banner_img.name,
             'thumbnail': self.thumbnail_img.name,
         }
+        if self.publish is not None:
+            _json['publish'] = self.publish
+        if self.feature is not None:
+            _json['feature'] = self.feature
+        return _json

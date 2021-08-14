@@ -14,8 +14,6 @@ def upload_post(
         html: str,
         images: typing.List[pathlib.Path],
         allow_update: bool,
-        publish: bool,
-        feature: bool,
         host: str,
         key: str,
 ):
@@ -35,10 +33,7 @@ def upload_post(
     service.upload_image(config.slug, config.thumbnail_img)
     for image in images:
         service.upload_image(config.slug, image)
-    # TODO: ADD `PUBLISH` AND `FEATURED` to config
     service.set_config(config.slug, config)
-    service.set_published(config.slug, publish)
-    service.set_featured(config.slug, feature)
 
 
 def delete_post(

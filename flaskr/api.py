@@ -11,7 +11,7 @@ from flaskr.database import db
 from . import models
 from . import util
 # TODO: FIGURE OUT EXACT FLOW AND REQUEST TYPES (E.G. PUT VS POST)
-# TODO: SETUP ACTUAL TESTING FRAMEWORK
+# TODO: SETUP TESTING FRAMEWORK
 
 
 # Blueprint under which all views will be assigned
@@ -62,9 +62,9 @@ def delete_post(slug: str):
     return Response(status=200)
 
 
-@API_BLUEPRINT.route('/posts/<string:slug>/meta', methods=['POST'])
+@API_BLUEPRINT.route('/posts/<string:slug>/config', methods=['POST'])
 @login_required
-def set_meta(slug: str):
+def set_config(slug: str):
     post = models.Post.query.filter_by(slug=slug).first()
     if not post:
         return Response(status=404)
@@ -138,6 +138,10 @@ def set_meta(slug: str):
                 db.session.add(tag)
             # Register the post under this tag
             tag.posts.append(post)
+    if 'publish' in config:
+        post.is_published = config['publish']
+    if 'featured' in config:
+        post.is_featured = config['featured']
     db.session.commit()
     return Response(status=200)
 
@@ -229,28 +233,4 @@ def delete_image(slug: str, filename: str):
         # Delete file
         (post.get_path() / image.filename).unlink()
         db.session.commit()
-    return Response(status=200)
-
-
-# TODO: RATHER THAN DOING IT THIS WAY, WE SHOULD HAVE A `FEATURED` ENDPOINT AND A `PUBLISHED` ENDPOINT?
-@API_BLUEPRINT.route('/posts/<string:slug>/publish', methods=['POST'])
-@login_required
-def publish_post(slug: str):
-    # TODO: MAKE SURE ALL FIELDS ARE CONFIGURED
-    post = models.Post.query.filter_by(slug=slug).first()
-    if not post:
-        return Response(status=404)
-    post.is_published = True
-    db.session.commit()
-    return Response(status=200)
-
-
-@API_BLUEPRINT.route('/posts/<string:slug>/publish', methods=['DELETE'])
-@login_required
-def unpublish_post(slug: str):
-    post = models.Post.query.filter_by(slug=slug).first()
-    if not post:
-        return Response(status=404)
-    post.is_published = False
-    db.session.commit()
     return Response(status=200)
