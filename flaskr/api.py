@@ -10,7 +10,25 @@ import werkzeug.utils
 from flaskr.database import db
 from . import models
 from . import util
-# TODO: FIGURE OUT EXACT FLOW AND REQUEST TYPES (E.G. PUT VS POST)
+'''
+Note: this API is not fully RESTful due to the challenge of preserving image filenames 
+(changing the image name will break the HTML that expects those images to have specific
+filenames). I plan to implement in-site drafting, at which point that problem will go 
+away.
+
+Post creation process:
+- Create post
+- Upload HTML
+- Upload images
+- Set config (including publish=True)
+
+Eventual REST API:
+- POST /post -> CREATE, with all config
+- PUT /post -> EDIT, with all config
+- PATCH /post -> EDIT, without full config
+- /files: endpoints for managing files (image AND HTML)
+'''
+# TODO: Should have a set of Tag endpoints too
 # TODO: SETUP TESTING FRAMEWORK
 
 
@@ -64,11 +82,14 @@ def get_posts():
 @login_required
 def create_post(slug: str):
     """
-    Creates the base object for a post. Simply takes the slug.
+    Creates an empty post with the specified slug.
 
-    THIS CALL ONLY CREATES A DB ENTRY WITH ALL DEFAULT VALUES.
-    MODIFY VIA METADATA ENDPOINT.
+    Returns 400 if a post with the given slug already exists.
     """
+    post = models.Post.query.filter_by(slug=slug).first()
+    if post:
+        msg = 'A post with the given slug already exists'
+        return Response(response=msg, status=400)
     post = models.Post(slug=slug)
     db.session.add(post)
     db.session.commit()
@@ -174,10 +195,12 @@ def set_config(slug: str):
 @API_BLUEPRINT.route('/posts/<string:slug>/body', methods=['POST'])
 @login_required
 def upload_html(slug: str):
+    """Upload the HTML body of the post."""
     post = models.Post.query.filter_by(slug=slug).first()
     if not post:
         return Response(status=404)
 
+    # Calculate hash
     file = request.files['file']
     raw = file.read()
     md5 = hashlib.md5(raw).hexdigest()
@@ -188,8 +211,8 @@ def upload_html(slug: str):
     # current_app.search_engine.index_file(str(md_path), post_data.slug)
     # current_app.search_engine.commit()
 
+    # Save as 'post.html' if hash is different from current post hash
     if md5 != post.hash:
-        # Save HTML file as 'post.html'
         file_path = post.get_path() / 'post.html'
         with open(file_path, 'wb+') as writef:
             writef.write(raw)

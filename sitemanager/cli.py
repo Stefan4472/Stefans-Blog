@@ -1,10 +1,9 @@
 import typing
-
 import click
 import pathlib
 import manager
 import markdown
-from postconfig import PostConfig
+from postconfig import read_config_file, write_config_file
 # CLI interface
 
 
@@ -84,7 +83,7 @@ def _upload_post(
     config_path = path / 'post-meta.json'
 
     # Read the config file
-    config = PostConfig.from_file(config_path)
+    config = read_config_file(config_path)
     config.publish = publish
     config.feature = feature
 
@@ -103,6 +102,9 @@ def _upload_post(
         host,
         key,
     )
+
+    # Write out config (may have been modified)
+    write_config_file(config, config_path)
 
 
 @cli.command()

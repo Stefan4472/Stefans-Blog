@@ -4,7 +4,7 @@ import hashlib
 import util
 from postconfig import PostConfig
 from managerservice import ManagerService
-from manifest import Manifest
+# from manifest import Manifest
 # TODO: EXCEPTIONS
 
 

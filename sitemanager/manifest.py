@@ -13,6 +13,7 @@ class PostDiff:
     write_images: typing.List[pathlib.Path] = dc.field(default_factory=list)
     delete_images: typing.List[str] = dc.field(default_factory=list)
 
+
 @dc.dataclass
 class SiteDiff:
     """Diff for the whole site."""
@@ -21,6 +22,7 @@ class SiteDiff:
     post_diffs: typing.List[PostDiff] = dc.field(default_factory=list)
 
 
+# TODO(?)
 class Manifest:
     def __init__(self, _json: typing.Dict):
         self.posts: typing.Dict = _json['posts']
