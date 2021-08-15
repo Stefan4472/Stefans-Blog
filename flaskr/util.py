@@ -12,7 +12,13 @@ KEY_TAGS = 'tags'
 KEY_IMAGE = 'image'
 KEY_BANNER = 'banner'
 KEY_THUMBNAIL = 'thumbnail'
+KEY_HASH = 'hash'
+KEY_IMAGES = 'images'
+KEY_FEATURED = 'is_featured'
+KEY_PUBLISHED = 'is_published'
 
+# Expected data format for JSON
+DATE_FORMAT = "%m/%d/%y"
 
 # Prescribed featured-image size
 FEATURED_IMG_SIZE = (1000, 540)

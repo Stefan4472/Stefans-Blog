@@ -51,10 +51,16 @@ SLUG = 'TEST_POST'
 # res = requests.post('http://localhost:5000/api/v1/posts/{}/config'.format(SLUG), json=meta)
 # print(res)
 
-print('Publishing...')
-res = requests.post('http://localhost:5000/api/v1/posts/{}/publish'.format(SLUG))
-print(res.json())
+# print('Publishing...')
+# res = requests.post('http://localhost:5000/api/v1/posts/{}/publish'.format(SLUG))
+# print(res.json())
 
 print('Getting manifest...')
-res = requests.get('http://localhost:5000/api/v1/posts')
+res = requests.get(
+    'http://localhost:5000/api/v1/posts',
+    headers={'Authorization': 'x123456'},
+    params={'published': True}
+)
 print(res)
+print(res.text)
+print(res.json())

@@ -21,14 +21,41 @@ API_BLUEPRINT = flask.Blueprint('api', __name__, url_prefix='/api/v1/')
 @API_BLUEPRINT.route('/posts', methods=['GET'])
 @login_required
 def get_posts():
-    """Return a manifest. TODO: THIS ISN'T EXACTLY WHAT YOU'D EXPECT FOR THIS ENDPOINT. USE /POSTS?MANIFEST=TRUE?"""
+    """
+    Get posts.
+
+    Query parameters:
+    (bool) `featured`: return only posts where is_featured = ?
+    (bool) `published`: return only posts where is_published = ?
+    """
+    # Create query dynamically
+    query = models.Post.query
+    if 'featured' in request.args:
+        # Convert string value to boolean value
+        as_bool = (request.args['featured'].lower() == 'true')
+        query = query.filter(models.Post.is_featured == as_bool)
+    if 'published' in request.args:
+        as_bool = (request.args['published'].lower() == 'true')
+        query = query.filter(models.Post.is_published == as_bool)
+
+    # Build JSON response
     manifest = {}
-    for post in models.Post.query.all():
+    for post in query.all():
         manifest[post.slug] = {
-            'hash': post.hash,
-        }
-        manifest[post.slug]['images'] = {
-            image.filename: {'hash': image.hash} for image in post.images
+            util.KEY_SLUG: post.slug,
+            util.KEY_TITLE: post.title,
+            util.KEY_BYLINE: post.byline,
+            util.KEY_DATE: post.date.strftime(util.DATE_FORMAT),
+            util.KEY_IMAGE: post.featured_filename,
+            util.KEY_BANNER: post.banner_filename,
+            util.KEY_THUMBNAIL: post.thumbnail_filename,
+            util.KEY_HASH: post.hash,
+            util.KEY_TAGS: [tag.slug for tag in post.tags],
+            util.KEY_IMAGES: {
+                image.filename: {'hash': image.hash} for image in post.images
+            },
+            util.KEY_FEATURED: post.is_featured,
+            util.KEY_PUBLISHED: post.is_published,
         }
     return flask.jsonify({'posts': manifest})
 

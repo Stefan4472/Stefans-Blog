@@ -13,6 +13,7 @@ posts_to_tags = db.Table('posts_to_tags',
 
 
 # TODO: WHY AREN'T THE DEFAULTS WORKING?
+# TODO: `SLUG` SHOULD REALLY BE THE PRIMARY_KEY
 class Post(db.Model):
     __tablename__ = 'post'
     id = db.Column(db.Integer, primary_key=True)
