@@ -12,9 +12,9 @@
         </span>
     {% endfor %}
 </div>
-<p class="mt-1"><em>Posted on {{ post.date.strftime('%B %d, %Y') }}</em></p>
+<p class="mt-2 post-date">Posted on {{ post.date.strftime('%B %d, %Y') }}</p>
 <hr>
-<div id="post-content">  <!-- TODO: PUT ALL CONTENT IN A CARD, WITH 1px BORDER? -->
+<div id="post-content" class="post-content">
   {{ post.load_html()|safe }}
 </div>
 
