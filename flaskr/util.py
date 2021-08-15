@@ -1,7 +1,5 @@
 import re
 import randomcolor
-from flaskr.database import db
-import flaskr.models as models
 
 
 KEY_TITLE = 'title'

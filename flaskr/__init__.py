@@ -5,8 +5,7 @@ from . import views
 from . import api
 from . import auth
 from . import config as cfg
-from . import manage_blog
-from . import manifest as mn
+from . import cli
 from simplesearch.searchengine import SearchEngine
 
 
@@ -32,14 +31,8 @@ def create_app():
 
     # Init search engine and manifest
     app.search_engine = SearchEngine(app.config['SEARCH_INDEX_PATH'])
-    app.manifest = mn.Manifest(app.config['MANIFEST_PATH'])
 
     # Register click commands
-    app.cli.add_command(manage_blog.reset_site_command)
-    app.cli.add_command(manage_blog.add_post_command)
-    app.cli.add_command(manage_blog.add_posts_command)
-    app.cli.add_command(manage_blog.push_to_remote_command)
-    app.cli.add_command(manage_blog.print_featured_posts_command)
-    app.cli.add_command(manage_blog.feature_post_command)
+    app.cli.add_command(cli.reset_site)
 
     return app
