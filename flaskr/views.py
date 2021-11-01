@@ -7,10 +7,10 @@ from flaskr.models.tag import Tag
 
 
 # Blueprint under which all views will be assigned
-VIEWS_BLUEPRINT = flask.Blueprint('blog', __name__)
+BLUEPRINT = flask.Blueprint('blog', __name__)
 
 
-@VIEWS_BLUEPRINT.route('/')
+@BLUEPRINT.route('/')
 @site_logger.logged_visit
 def index():
     """Site index. Displays featured and recent posts."""
@@ -29,8 +29,8 @@ def index():
     )
 
 
-@VIEWS_BLUEPRINT.route('/posts', defaults={'page': 1})
-@VIEWS_BLUEPRINT.route('/posts/<int:page>', methods=['GET'])
+@BLUEPRINT.route('/posts', defaults={'page': 1})
+@BLUEPRINT.route('/posts/<int:page>', methods=['GET'])
 @site_logger.logged_visit
 def posts_page(page: int = 1):
     """The "posts" page, which displays all posts on the site (paginated)."""
@@ -49,7 +49,7 @@ def posts_page(page: int = 1):
     )
 
 
-@VIEWS_BLUEPRINT.route('/post/<slug>')
+@BLUEPRINT.route('/post/<slug>')
 @site_logger.logged_visit
 def post_view(slug):
     """Shows the page for the post with the specified slug."""
@@ -67,7 +67,7 @@ def post_view(slug):
     )
 
 
-@VIEWS_BLUEPRINT.route('/tag/<slug>')
+@BLUEPRINT.route('/tag/<slug>')
 @site_logger.logged_visit
 def tag_view(slug):
     """
@@ -86,7 +86,7 @@ def tag_view(slug):
     )
 
 
-@VIEWS_BLUEPRINT.route('/search')
+@BLUEPRINT.route('/search')
 @site_logger.logged_visit
 def search_page():
     """
@@ -110,28 +110,28 @@ def search_page():
     )
 
 
-@VIEWS_BLUEPRINT.route('/portfolio')
+@BLUEPRINT.route('/portfolio')
 @site_logger.logged_visit
 def portfolio_page():
     """Show the "Portfolio" page."""
     return flask.render_template('blog/portfolio.html')
 
 
-@VIEWS_BLUEPRINT.route('/about')
+@BLUEPRINT.route('/about')
 @site_logger.logged_visit
 def about_page():
     """Show the "About" page."""
     return flask.render_template('blog/about.html')
 
 
-@VIEWS_BLUEPRINT.route('/changelog')
+@BLUEPRINT.route('/changelog')
 @site_logger.logged_visit
 def changelog_page():
     """Show the "Changelog" page."""
     return flask.render_template('blog/changelog.html')
 
 
-@VIEWS_BLUEPRINT.errorhandler(404)
+@BLUEPRINT.errorhandler(404)
 @site_logger.logged_visit
 def error_page(error):
     """Show the 404 error page."""

@@ -8,7 +8,6 @@ from PIL import Image
 import werkzeug.exceptions
 import werkzeug.utils
 from flaskr.database import db
-
 from flaskr.models.post import Post
 from flaskr.models.post_image import PostImage
 from flaskr.models.tag import Tag
@@ -36,10 +35,10 @@ Eventual REST API:
 
 
 # Blueprint under which all views will be assigned
-API_BLUEPRINT = flask.Blueprint('api', __name__, url_prefix='/api/v1/')
+BLUEPRINT = flask.Blueprint('posts', __name__, url_prefix='/api/v1/posts')
 
 
-@API_BLUEPRINT.route('/posts', methods=['GET'])
+@BLUEPRINT.route('/', methods=['GET'])
 @login_required
 def get_posts():
     """
@@ -81,7 +80,7 @@ def get_posts():
     return flask.jsonify({'posts': manifest})
 
 
-@API_BLUEPRINT.route('/posts/<string:slug>', methods=['POST'])
+@BLUEPRINT.route('/<string:slug>', methods=['POST'])
 @login_required
 def create_post(slug: str):
     """
@@ -100,7 +99,7 @@ def create_post(slug: str):
     return Response(status=200)
 
 
-@API_BLUEPRINT.route('/posts/<string:slug>', methods=['DELETE'])
+@BLUEPRINT.route('/<string:slug>', methods=['DELETE'])
 @login_required
 def delete_post(slug: str):
     post = Post.query.filter_by(slug=slug).first()
@@ -113,7 +112,7 @@ def delete_post(slug: str):
     return Response(status=200)
 
 
-@API_BLUEPRINT.route('/posts/<string:slug>/config', methods=['POST'])
+@BLUEPRINT.route('/<string:slug>/config', methods=['POST'])
 @login_required
 def set_config(slug: str):
     post = Post.query.filter_by(slug=slug).first()
@@ -195,7 +194,7 @@ def set_config(slug: str):
     return Response(status=200)
 
 
-@API_BLUEPRINT.route('/posts/<string:slug>/body', methods=['POST'])
+@BLUEPRINT.route('/<string:slug>/body', methods=['POST'])
 @login_required
 def upload_html(slug: str):
     """Upload the HTML body of the post."""
@@ -225,7 +224,7 @@ def upload_html(slug: str):
     return Response(status=200)
 
 
-@API_BLUEPRINT.route('/posts/<string:slug>/images', methods=['POST'])
+@BLUEPRINT.route('/<string:slug>/images', methods=['POST'])
 @login_required
 def upload_image(slug: str):
     """Upload a single image to the specified post."""
@@ -266,7 +265,7 @@ def upload_image(slug: str):
     return Response(status=200)
 
 
-@API_BLUEPRINT.route('/posts/<string:slug>/images/<string:filename>', methods=['DELETE'])
+@BLUEPRINT.route('/<string:slug>/images/<string:filename>', methods=['DELETE'])
 @login_required
 def delete_image(slug: str, filename: str):
     post = Post.query.filter_by(slug=slug).first()

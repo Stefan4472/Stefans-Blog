@@ -1,6 +1,7 @@
 import requests
 import pathlib
 import flask
+import typing
 import dataclasses as dc
 from manifest import Manifest, SiteDiff
 from postconfig import PostConfig
@@ -69,6 +70,22 @@ class ManagerService:
         )
         self._check_response(res)
         return Manifest(res.json())
+
+    def get_featured(self) -> typing.List[str]:
+        res = requests.get(
+            '{}/api/v1/featured'.format(self.base_url),
+            headers={'Authorization': self.api_key},
+        )
+        self._check_response(res)
+        return res.json()
+
+    def set_featured(self, slug: str, is_featured: bool):
+        res = requests.post(
+            '{}/api/v1/posts/{}/config'.format(self.base_url, slug),
+            headers={'Authorization': self.api_key},
+            json={'featured': is_featured},
+        )
+        self._check_response(res)
 
     # TODO: SHOULD PROBABLY BE SOMEWHERE ELSE
     def apply_diff(self, diff: SiteDiff):

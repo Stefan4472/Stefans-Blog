@@ -49,3 +49,21 @@ def delete_post(
 ):
     service = ManagerService(host, key)
     service.delete_post(slug)
+
+
+def get_featured(
+        host: str,
+        key: str,
+) -> typing.List[str]:
+    service = ManagerService(host, key)
+    return service.get_featured()
+
+
+def set_featured(
+        slug: str,
+        is_featured: bool,
+        host: str,
+        key: str,
+) -> typing.List[str]:
+    service = ManagerService(host, key)
+    return service.set_featured(slug, is_featured)

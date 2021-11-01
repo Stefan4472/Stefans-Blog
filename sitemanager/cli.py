@@ -121,6 +121,34 @@ def delete_post(
     click.echo('Done')
 
 
+@cli.command()
+@click.option('--host', type=str, default='http://127.0.0.1:5000', help='Base URL of the site instance')
+@click.option('--key', type=str, required=True, help='Your API key')
+def get_featured(
+        host: str,
+        key: str,
+):
+    """List the featured posts."""
+    manager.get_featured(host, key)
+    click.echo('Done')
+
+
+@cli.command()
+@click.argument('slug', type=str)
+@click.option('--featured', type=bool, required=True)
+@click.option('--host', type=str, default='http://127.0.0.1:5000', help='Base URL of the site instance')
+@click.option('--key', type=str, required=True, help='Your API key')
+def set_featured(
+        slug: str,
+        featured: bool,
+        host: str,
+        key: str,
+):
+    """List the featured posts."""
+    manager.set_featured(slug, featured, host, key)
+    click.echo('Done')
+
+
 # Sync a to b
 @cli.command()
 def sync():
