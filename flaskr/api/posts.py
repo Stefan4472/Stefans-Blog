@@ -8,8 +8,11 @@ from PIL import Image
 import werkzeug.exceptions
 import werkzeug.utils
 from flaskr.database import db
-from . import models
-from . import util
+
+from flaskr.models.post import Post
+from flaskr.models.post_image import PostImage
+from flaskr.models.tag import Tag
+from flaskr import util
 '''
 Note: this API is not fully RESTful due to the challenge of preserving image filenames 
 (changing the image name will break the HTML that expects those images to have specific
@@ -47,14 +50,14 @@ def get_posts():
     (bool) `published`: return only posts where is_published = ?
     """
     # Create query dynamically
-    query = models.Post.query
+    query = Post.query
     if 'featured' in request.args:
         # Convert string value to boolean value
         as_bool = (request.args['featured'].lower() == 'true')
-        query = query.filter(models.Post.is_featured == as_bool)
+        query = query.filter(Post.is_featured == as_bool)
     if 'published' in request.args:
         as_bool = (request.args['published'].lower() == 'true')
-        query = query.filter(models.Post.is_published == as_bool)
+        query = query.filter(Post.is_published == as_bool)
 
     # Build JSON response
     manifest = {}
@@ -86,11 +89,11 @@ def create_post(slug: str):
 
     Returns 400 if a post with the given slug already exists.
     """
-    post = models.Post.query.filter_by(slug=slug).first()
+    post = Post.query.filter_by(slug=slug).first()
     if post:
         msg = 'A post with the given slug already exists'
         return Response(response=msg, status=400)
-    post = models.Post(slug=slug)
+    post = Post(slug=slug)
     db.session.add(post)
     db.session.commit()
     post.get_path().mkdir(exist_ok=True)
@@ -100,12 +103,12 @@ def create_post(slug: str):
 @API_BLUEPRINT.route('/posts/<string:slug>', methods=['DELETE'])
 @login_required
 def delete_post(slug: str):
-    post = models.Post.query.filter_by(slug=slug).first()
+    post = Post.query.filter_by(slug=slug).first()
     if not post:
         return Response(status=404)
     # Delete files, then delete record from DB
     shutil.rmtree(post.get_path())
-    models.Post.query.filter_by(slug=slug).delete()
+    Post.query.filter_by(slug=slug).delete()
     db.session.commit()
     return Response(status=200)
 
@@ -113,7 +116,7 @@ def delete_post(slug: str):
 @API_BLUEPRINT.route('/posts/<string:slug>/config', methods=['POST'])
 @login_required
 def set_config(slug: str):
-    post = models.Post.query.filter_by(slug=slug).first()
+    post = Post.query.filter_by(slug=slug).first()
     if not post:
         return Response(status=404)
     config = request.get_json()
@@ -173,10 +176,10 @@ def set_config(slug: str):
         for tag_name in config['tags']:
             tag_slug = util.generate_slug(tag_name)
             # Lookup tag in the database
-            tag = models.Tag.query.filter_by(slug=tag_slug).first()
+            tag = Tag.query.filter_by(slug=tag_slug).first()
             # Create tag if doesn't exist already
             if not tag:
-                tag = models.Tag(
+                tag = Tag(
                     slug=tag_slug,
                     name=tag_name,
                     color=util.generate_random_color(),
@@ -196,7 +199,7 @@ def set_config(slug: str):
 @login_required
 def upload_html(slug: str):
     """Upload the HTML body of the post."""
-    post = models.Post.query.filter_by(slug=slug).first()
+    post = Post.query.filter_by(slug=slug).first()
     if not post:
         return Response(status=404)
 
@@ -226,7 +229,7 @@ def upload_html(slug: str):
 @login_required
 def upload_image(slug: str):
     """Upload a single image to the specified post."""
-    post = models.Post.query.filter_by(slug=slug).first()
+    post = Post.query.filter_by(slug=slug).first()
     if not post:
         return Response(status=404)
 
@@ -243,7 +246,7 @@ def upload_image(slug: str):
     # No image found with same filename
     if found_index == -1:
         # Add to database
-        post.images.append(models.PostImage(
+        post.images.append(PostImage(
             filename=file.filename,
             hash=md5,
         ))
@@ -266,7 +269,7 @@ def upload_image(slug: str):
 @API_BLUEPRINT.route('/posts/<string:slug>/images/<string:filename>', methods=['DELETE'])
 @login_required
 def delete_image(slug: str, filename: str):
-    post = models.Post.query.filter_by(slug=slug).first()
+    post = Post.query.filter_by(slug=slug).first()
     if not post:
         return Response(status=404)
     found_index = post.find_image(filename)
@@ -276,7 +279,7 @@ def delete_image(slug: str, filename: str):
         image = post.images[found_index]
         # Remove from DB
         # post.images = post.images[:found_index] + post.images[found_index+1:]
-        models.PostImage.query.filter_by(post_id=post.id, filename=image.filename).delete()
+        PostImage.query.filter_by(post_id=post.id, filename=image.filename).delete()
         # Delete file
         (post.get_path() / image.filename).unlink()
         db.session.commit()
