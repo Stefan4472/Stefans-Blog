@@ -3,7 +3,7 @@ import typing
 import hashlib
 import util
 from postconfig import PostConfig
-from managerservice import ManagerService
+from manager_service import ManagerService
 # from manifest import Manifest
 # TODO: EXCEPTIONS
 
