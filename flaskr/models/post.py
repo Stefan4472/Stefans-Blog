@@ -6,7 +6,6 @@ from flaskr import db
 import flaskr.models.relations as relations
 
 
-
 # TODO: WHY AREN'T THE DEFAULTS WORKING?
 # TODO: `SLUG` SHOULD REALLY BE THE PRIMARY_KEY
 class Post(db.Model):

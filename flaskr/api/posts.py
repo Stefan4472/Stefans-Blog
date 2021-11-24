@@ -12,6 +12,7 @@ from flaskr.models.post import Post
 from flaskr.models.post_image import PostImage
 from flaskr.models.tag import Tag
 from flaskr import util
+from flaskr import markdown
 '''
 Note: this API is not fully RESTful due to the challenge of preserving image filenames 
 (changing the image name will break the HTML that expects those images to have specific
@@ -196,8 +197,8 @@ def set_config(slug: str):
 
 @BLUEPRINT.route('/<string:slug>/body', methods=['POST'])
 @login_required
-def upload_html(slug: str):
-    """Upload the HTML body of the post."""
+def upload_markdown(slug: str):
+    """Upload the Markdown body of the post."""
     post = Post.query.filter_by(slug=slug).first()
     if not post:
         return Response(status=404)
@@ -208,19 +209,29 @@ def upload_html(slug: str):
     md5 = hashlib.md5(raw).hexdigest()
     file.close()
 
+    try:
+        # TODO: DECODING IN THE FUNCTION ITSELF
+        html = markdown.render_string(
+            raw.decode('utf-8', errors='strict'),
+            slug,
+        )
+        print(html)
+    except UnicodeError as e:
+        return Response(status=400, response=str(e))
     # TODO: MODIFICATIONS NEEDED TO SEARCH_ENGINE
     # Add Markdown file to the search engine's index
     # current_app.search_engine.index_file(str(md_path), post_data.slug)
     # current_app.search_engine.commit()
 
     # Save as 'post.html' if hash is different from current post hash
-    if md5 != post.hash:
-        file_path = post.get_path() / 'post.html'
-        with open(file_path, 'wb+') as writef:
-            writef.write(raw)
-        # Update hash
-        post.hash = md5
-        db.session.commit()
+    # if md5 != post.hash:
+    file_path = post.get_path() / 'post.html'
+    with open(file_path, 'w+', encoding='utf-8') as out:
+        out.write(html)
+    # Update hash
+    post.hash = md5
+    db.session.commit()
+
     return Response(status=200)
 
 

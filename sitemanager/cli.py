@@ -2,7 +2,7 @@ import typing
 import click
 import pathlib
 import manager
-import markdown
+import markdown as md
 from postconfig import read_config_file, write_config_file
 # CLI interface
 
@@ -87,17 +87,18 @@ def _upload_post(
     config.publish = publish
     config.feature = feature
 
-    # Render Markdown file, getting the HTML and sourced images
-    html, post_img_paths = markdown.render_file(
-        md_path,
-        config.slug,
-    )
+    with open(md_path, encoding='utf-8', errors='strict') as f:
+        markdown = f.read()
+
+    # Retrieve the list of images referenced in the Markdown and
+    # resolve their absolute paths.
+    img_paths = [(md_path.parent / local_path).resolve() for local_path in md.find_images(markdown)]
 
     # Upload
     manager.upload_post(
         config,
-        html,
-        post_img_paths,
+        markdown,
+        img_paths,
         allow_update,
         host,
         key,

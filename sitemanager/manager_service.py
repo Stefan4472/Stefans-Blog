@@ -26,10 +26,10 @@ class ManagerService:
         )
         self._check_response(res)
 
-    def upload_html(self, slug: str, html: str):
+    def upload_markdown(self, slug: str, markdown: str):
         res = requests.post(
             '{}/api/v1/posts/{}/body'.format(self.base_url, slug),
-            files={'file': ('post.html', html)},
+            files={'file': ('post.md', markdown)},
             headers={'Authorization': self.api_key},
         )
         self._check_response(res)

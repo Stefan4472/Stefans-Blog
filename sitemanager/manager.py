@@ -11,7 +11,7 @@ from manager_service import ManagerService
 # TODO: THE DIFFING STUFF. WOULD NEED TO ALSO INCLUDE CONFIGS
 def upload_post(
         config: PostConfig,
-        html: str,
+        markdown: str,
         images: typing.List[pathlib.Path],
         allow_update: bool,
         host: str,
@@ -22,13 +22,14 @@ def upload_post(
 
     # No post with given slug exists: create new
     if config.slug not in manifest.posts:
+        print('Creating post...')
         service.create_post(config.slug)
     # Throw error if a post with given slug exists but `update` is not set to True
     elif not allow_update:
         raise ValueError('Post with the specified slug already exists but update=False')
 
     print('Uploading HTML...')
-    service.upload_html(config.slug, html)
+    service.upload_markdown(config.slug, markdown)
     print('Uploading featured image {}...'.format(config.featured_img))
     service.upload_image(config.slug, config.featured_img)
     print('Uploading banner image {}...'.format(config.banner_img))
