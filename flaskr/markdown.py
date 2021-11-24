@@ -22,14 +22,10 @@ def render_string(
     Returns the HTML as a string, and a list of all image sources
     found in the document.
 
-    NOTE: THIS CODE IS CURRENTLY JUST A COPY FROM THE `SITEMANAGER` PACKAGE.
-    THE SITEMANAGER VERSION WILL SOON BE REMOVED.
-
     TODO: EXPLAIN HOW TO ADD A CAPTION
     TODO: THIS WHOLE FUNCTION SHOULD BE CLEANED UP
     -> create "Markdown Processer" class
     """
-    print(type(post_markdown))
     # Regex used to match custom "[figure]" lines.
     # Match 1: image path
     # Match 2: optional image caption

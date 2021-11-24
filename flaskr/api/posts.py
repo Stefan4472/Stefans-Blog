@@ -210,18 +210,12 @@ def upload_markdown(slug: str):
     file.close()
 
     try:
-        # TODO: DECODING IN THE FUNCTION ITSELF
         html = markdown.render_string(
             raw.decode('utf-8', errors='strict'),
             slug,
         )
-        print(html)
     except UnicodeError as e:
         return Response(status=400, response=str(e))
-    # TODO: MODIFICATIONS NEEDED TO SEARCH_ENGINE
-    # Add Markdown file to the search engine's index
-    # current_app.search_engine.index_file(str(md_path), post_data.slug)
-    # current_app.search_engine.commit()
 
     # Save as 'post.html' if hash is different from current post hash
     # if md5 != post.hash:
@@ -231,6 +225,10 @@ def upload_markdown(slug: str):
     # Update hash
     post.hash = md5
     db.session.commit()
+
+    # Add Markdown file to the search engine's index
+    current_app.search_engine.index_file(file_path, slug)
+    current_app.search_engine.commit()
 
     return Response(status=200)
 
