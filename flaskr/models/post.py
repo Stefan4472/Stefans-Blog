@@ -8,6 +8,7 @@ import flaskr.models.relations as relations
 
 # TODO: WHY AREN'T THE DEFAULTS WORKING?
 # TODO: `SLUG` SHOULD REALLY BE THE PRIMARY_KEY
+# TODO: CURRENTLY, MARKDOWN FILES ARE PUBLICLY ACCESSIBLE VIA THE 'STATIC' ROUTE. THIS SHOULD NOT BE THE CASE
 class Post(db.Model):
     __tablename__ = 'post'
     id = db.Column(db.Integer, primary_key=True)
@@ -28,7 +29,7 @@ class Post(db.Model):
     is_featured = db.Column(db.Boolean, default=False)
     is_published = db.Column(db.Boolean, default=False)
 
-    def get_path(self) -> pathlib.Path:
+    def get_directory(self) -> pathlib.Path:
         """Return Path object to static folder."""
         return pathlib.Path(flask.current_app.static_folder) / self.slug
 
@@ -41,6 +42,12 @@ class Post(db.Model):
     def get_thumbnail_url(self) -> str:
         return flask.url_for('static', filename=self.slug + '/' + self.thumbnail_filename)
 
+    def get_markdown_path(self) -> pathlib.Path:
+        return self.get_directory() / 'post.md'
+
+    def get_html_path(self) -> pathlib.Path:
+        return self.get_directory() / 'post.html'
+
     def find_image(self, filename: str) -> int:
         """Return index of image in this Post with the given filename."""
         for i in range(len(self.images)):
@@ -50,8 +57,7 @@ class Post(db.Model):
 
     def load_html(self) -> str:
         """Retrieve the HTML file containing the post's contents and render as template."""
-        html_path = self.get_path() / 'post.html'
-        with open(html_path, encoding='utf-8', errors='strict') as f:
+        with open(self.get_html_path(), encoding='utf-8', errors='strict') as f:
             return flask.render_template_string(f.read())
 
     def get_prev(self) -> 'Post':

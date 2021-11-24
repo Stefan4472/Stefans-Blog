@@ -96,7 +96,7 @@ def create_post(slug: str):
     post = Post(slug=slug)
     db.session.add(post)
     db.session.commit()
-    post.get_path().mkdir(exist_ok=True)
+    post.get_directory().mkdir(exist_ok=True)
     return Response(status=200)
 
 
@@ -107,7 +107,7 @@ def delete_post(slug: str):
     if not post:
         return Response(status=404)
     # Delete files, then delete record from DB
-    shutil.rmtree(post.get_path())
+    shutil.rmtree(post.get_directory())
     Post.query.filter_by(slug=slug).delete()
     db.session.commit()
     return Response(status=200)
@@ -135,7 +135,7 @@ def set_config(slug: str):
                 return Response(response=msg, status=400)
             else:
                 image = post.images[find_index]
-                image_path = post.get_path() / image.filename
+                image_path = post.get_directory() / image.filename
                 img = Image.open(image_path)
                 if (img.width, img.height) != (1000, 540):
                     msg = 'Specified image "{}" has the wrong dimensions'.format(featured_filename)
@@ -150,7 +150,7 @@ def set_config(slug: str):
                 return Response(response=msg, status=400)
             else:
                 image = post.images[find_index]
-                image_path = post.get_path() / image.filename
+                image_path = post.get_directory() / image.filename
                 img = Image.open(image_path)
                 if (img.width, img.height) != (400, 400):
                     msg = 'Specified image "{}" has the wrong dimensions'.format(thumbnail_filename)
@@ -165,7 +165,7 @@ def set_config(slug: str):
                 return Response(response=msg, status=400)
             else:
                 image = post.images[find_index]
-                image_path = post.get_path() / image.filename
+                image_path = post.get_directory() / image.filename
                 img = Image.open(image_path)
                 if (img.width, img.height) != (1000, 175):
                     msg = 'Specified image "{}" has the wrong dimensions'.format(banner_filename)
@@ -203,31 +203,38 @@ def upload_markdown(slug: str):
     if not post:
         return Response(status=404)
 
-    # Calculate hash
+    # Read uploaded file
     file = request.files['file']
-    raw = file.read()
-    md5 = hashlib.md5(raw).hexdigest()
+    raw_markdown = file.read()
     file.close()
 
+    # Decode to utf-8
     try:
-        html = markdown.render_string(
-            raw.decode('utf-8', errors='strict'),
-            slug,
-        )
+        utf8_markdown = raw_markdown.decode('utf-8', errors='strict')
     except UnicodeError as e:
         return Response(status=400, response=str(e))
 
-    # Save as 'post.html' if hash is different from current post hash
-    # if md5 != post.hash:
-    file_path = post.get_path() / 'post.html'
-    with open(file_path, 'w+', encoding='utf-8') as out:
+    # Render HTML
+    html = markdown.render_string(
+        utf8_markdown,
+        slug,
+    )
+
+    # Write out Markdown
+    with open(post.get_markdown_path(), 'w+', encoding='utf-8') as out:
+        out.write(utf8_markdown)
+
+    # Write out HTML
+    with open(post.get_html_path(), 'w+', encoding='utf-8') as out:
         out.write(html)
+
     # Update hash
-    post.hash = md5
+    post.hash = hashlib.md5(raw_markdown).hexdigest()
     db.session.commit()
 
     # Add Markdown file to the search engine's index
-    current_app.search_engine.index_file(file_path, slug)
+    # TODO: PROVIDE AN `INDEX_STRING()` METHOD
+    current_app.search_engine.index_file(post.get_markdown_path(), slug)
     current_app.search_engine.commit()
 
     return Response(status=200)
@@ -243,7 +250,7 @@ def upload_image(slug: str):
 
     file = request.files['file']
     # TODO: safe_filename = werkzeug.utils.secure_filename(file.filename)
-    file_path = post.get_path() / file.filename
+    file_path = post.get_directory() / file.filename
 
     # Read image, hash, and save to post directory
     raw_img = file.read()
@@ -289,6 +296,6 @@ def delete_image(slug: str, filename: str):
         # post.images = post.images[:found_index] + post.images[found_index+1:]
         PostImage.query.filter_by(post_id=post.id, filename=image.filename).delete()
         # Delete file
-        (post.get_path() / image.filename).unlink()
+        (post.get_directory() / image.filename).unlink()
         db.session.commit()
     return Response(status=200)
