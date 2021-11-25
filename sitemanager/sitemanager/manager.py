@@ -28,7 +28,7 @@ def upload_post(
     elif not allow_update:
         raise ValueError('Post with the specified slug already exists but update=False')
 
-    print('Uploading HTML...')
+    print('Uploading Markdown...')
     service.upload_markdown(config.slug, markdown)
     print('Uploading featured image {}...'.format(config.featured_img))
     service.upload_image(config.slug, config.featured_img)
