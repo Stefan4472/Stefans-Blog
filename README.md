@@ -45,7 +45,6 @@ cd simple-search-engine
 pip install -e .
 ```
 
-
 ## Usage
 
 To run the site, simply run Flask from the `flaskr` directory. The `python-dotenv` will use the `.flaskenv` config file to set environment variables for you.
@@ -59,7 +58,18 @@ To reset the site:
 flask reset_site
 ```
 
+## Custom Markdown Rendering
+
+Posts are written in Markdown, which is rendered to HTML. I've found that I need some extra Markdown functionality--for example, rendering images as `<figure>` elements. To define a figure in your Markdown text, write:
+
+```
+<section type="image" path="colorwheel.png" caption="The RGB color wheel ([source](https://cdn.sparkfun.com/r/600-600/assets/learn_tutorials/7/1/0/TertiaryColorWheel_Chart.png))" alt="Image of the RGB color wheel"></section>
+```
+
+We have to define this as a "section" tag so that it is ignored by the Markdown renderer. The backend will first render the Markdown, and will then go through all `<section>` tags and generate `<figure>` tags out of them. This is a bit hacky but is the best I can do right now without modifying the `markdown2` library source code.
+
 ## Ideas for Improvement
+
 - Allow for "reference links", which add a "?ref=xxxxxx" key to the end of a URL. This way, we can track which clicks came from a specific LinkedIn post, for example.
 - Use AJAX to display the "posts" page (load more posts dynamically), and provide Tag filters.
 - Build a web interface for writing and managing posts
