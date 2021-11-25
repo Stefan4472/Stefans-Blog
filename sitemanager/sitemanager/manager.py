@@ -1,9 +1,9 @@
 import pathlib
 import typing
 import hashlib
-import util
-from postconfig import PostConfig
-from manager_service import ManagerService
+from sitemanager import util
+from sitemanager.postconfig import PostConfig
+from sitemanager.manager_service import ManagerService
 # from manifest import Manifest
 # TODO: EXCEPTIONS
 

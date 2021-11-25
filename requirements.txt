@@ -11,7 +11,6 @@ Flask-Login==0.5.0
 Flask-SQLAlchemy==2.5.1
 greenlet==1.1.0
 idna==2.10
--e git+https://github.com/Stefan4472/Stefans-Blog.git@c1796891a626be87c6adf61c22fafa10c4bcaab6#egg=imagecropper&subdirectory=imagecropper
 importlib-metadata==4.6.0
 itsdangerous==1.1.0
 Jinja2==2.11.3
@@ -25,7 +24,6 @@ pysftp==0.2.9
 python-dotenv==0.17.1
 randomcolor==0.4.4.5
 requests==2.25.1
--e git+https://github.com/Stefan4472/simple-search-engine.git@2447652ed68dc58a5f206f98a1867de841e4bf4c#egg=simplesearch
 six==1.15.0
 SQLAlchemy==1.4.22
 typing-extensions==3.10.0.0

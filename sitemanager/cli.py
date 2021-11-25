@@ -1,9 +1,9 @@
 import typing
 import click
 import pathlib
-import manager
-import markdown as md
-from postconfig import read_config_file, write_config_file
+from sitemanager import manager
+from sitemanager import markdown as md
+from sitemanager.postconfig import read_config_file, write_config_file
 # CLI interface
 
 

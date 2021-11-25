@@ -2,7 +2,7 @@ import typing
 import pathlib
 import hashlib
 import dataclasses as dc
-import util
+from sitemanager import util
 
 
 @dc.dataclass

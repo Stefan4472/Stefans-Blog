@@ -3,8 +3,8 @@ import pathlib
 import flask
 import typing
 import dataclasses as dc
-from manifest import Manifest, SiteDiff
-from postconfig import PostConfig
+from sitemanager.manifest import Manifest, SiteDiff
+from sitemanager.postconfig import PostConfig
 
 
 @dc.dataclass

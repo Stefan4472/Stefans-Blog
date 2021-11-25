@@ -4,9 +4,9 @@ import json
 import typing
 import dataclasses as dc
 import tkinter as tk
-import util
-from imagecropper.imagecropper import ImageCropper
 from tkinter.filedialog import askopenfilename
+from sitemanager import util
+from imagecropper.imagecropper import ImageCropper
 
 
 @dc.dataclass
