@@ -45,7 +45,6 @@ cd simple-search-engine
 pip install -e .
 ```
 
-
 ## Usage
 
 To run the site, simply run Flask from the `flaskr` directory. The `python-dotenv` will use the `.flaskenv` config file to set environment variables for you.
@@ -59,7 +58,25 @@ To reset the site:
 flask reset_site
 ```
 
+## Custom Markdown Rendering
+
+Posts are written in Markdown, which is rendered to HTML. I've found that I need some extra Markdown functionality--for example, rendering images as `<figure>` elements. To make this possible, I modified the `markdown2` library (see [my fork](https://github.com/Stefan4472/python-markdown2)) and added some custom XML tags that get ignored during the initial Markdown-rendering process.
+
+For example, you can now add a figure to your markdown using my custom `x-image` tag:
+```
+<x-image>
+  <path>colorwheel.png</path>
+  <caption>The RGB color wheel ([source](https://cdn.sparkfun.com/r/600-600/assets/learn_tutorials/7/1/0/TertiaryColorWheel_Chart.png))</caption>
+  <alt>Image of the RGB color wheel</alt>
+</x-image>
+```
+
+This isn't a perfect solution, but it's a good current workaround for defining and rendering custom HTML components. In this case, we can define the image along with a caption and `alt` description. The `caption` text will be rendered as regular Markdown.
+
+How it works: the backend will first render the Markdown, leaving the custom `x-image` tag as-is. It will then read the created HTML and convert all `x-image` tags into `<figure>` elements. I plan to extend this to support other custom rendering.
+
 ## Ideas for Improvement
+
 - Allow for "reference links", which add a "?ref=xxxxxx" key to the end of a URL. This way, we can track which clicks came from a specific LinkedIn post, for example.
 - Use AJAX to display the "posts" page (load more posts dynamically), and provide Tag filters.
 - Build a web interface for writing and managing posts

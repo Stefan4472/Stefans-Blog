@@ -212,13 +212,13 @@ def upload_markdown(slug: str):
     try:
         utf8_markdown = raw_markdown.decode('utf-8', errors='strict')
     except UnicodeError as e:
-        return Response(status=400, response=str(e))
+        return Response(status=400, response=f'Error reading Markdown in UTF-8: {e}')
 
     # Render HTML
-    html = markdown.render_string(
-        utf8_markdown,
-        slug,
-    )
+    # try:
+    html = markdown.render_string(utf8_markdown, slug)
+    # except Exception as e:
+    #     return Response(status=400, response=f'Error processing Markdown: {e}')
 
     # Write out Markdown
     with open(post.get_markdown_path(), 'w+', encoding='utf-8') as out:

@@ -1,14 +1,7 @@
+import flask
 import pathlib
-import typing
-import re
 import markdown2
-
-
-def get_static_url(rel_path_from_static: str) -> str:
-    # TODO: FIND A WAY TO REFACTOR THIS OUT (USE FLASK)
-    return '{{{{ url_for(\'static\', filename=\'{}\') }}}}'.format(
-        rel_path_from_static
-    )
+import bs4
 
 
 def render_string(
@@ -18,68 +11,56 @@ def render_string(
     """
     Read the provided Markdown file and render to HTML.
     Images will be rendered as Bootstrap figures.
-
-    Returns the HTML as a string, and a list of all image sources
-    found in the document.
-
-    TODO: EXPLAIN HOW TO ADD A CAPTION
-    TODO: THIS WHOLE FUNCTION SHOULD BE CLEANED UP
-    -> create "Markdown Processer" class
+    Returns the HTML as a string
+    TODO: EXPLAIN HOW CUSTOM FIGURES ARE RENDERED
     """
-    # Regex used to match custom "[figure]" lines.
-    # Match 1: image path
-    # Match 2: optional image caption
-    figure_regex = re.compile(r'\[figure: ([^,\]]+)(?:, ([^\]]+))?]')
-    html_snippets = []
-    last_match_index = -1
+    # Render to HTML
+    html = markdown2.markdown(post_markdown, custom_tags=['x-image'])
+    # Read in the rendered HTML
+    soup = bs4.BeautifulSoup(html, features='html.parser')
 
-    # Iterate through '[figure: ]' instances, which must be handled specially.
-    # Everything else can be rendered using the 'markdown' library.
-    for figure_match in re.finditer(figure_regex, post_markdown):
-        start = figure_match.start()
-        end = figure_match.end()
+    # Process images
+    for image_elem in soup.find_all('x-image'):
+        path_elems = image_elem.findChildren('path', recursive=False)
+        caption_elems = image_elem.findChildren('caption', recursive=False)
+        alt_elems = image_elem.findChildren('alt', recursive=False)
 
-        # Render the Markdown between the end of the last figure match and the start of
-        # this figure match (if it is non-whitespace)
-        if (start != last_match_index + 1) and post_markdown[last_match_index + 1: start].strip():
-            rendered_html = markdown2.markdown(post_markdown[last_match_index + 1: start], extras=['fenced-code-blocks'])
-            html_snippets.append(rendered_html)
+        if len(path_elems) != 1:
+            raise ValueError('"x-image" tag does not have exactly one "path" specified')
+        if len(caption_elems) == 2:
+            raise ValueError('"x-image" tag has more than one "caption" specified')
+        if len(alt_elems) == 2:
+            raise ValueError('"x-image" tag has more than one "alt" specified')
 
-        # Render the figure
-        img_path = figure_match.group(1)
-        img_caption = figure_match.group(2)
+        path = path_elems[0].contents[0]
+        caption = caption_elems[0].contents[0] if caption_elems else None
+        alt = alt_elems[0].contents[0] if alt_elems else ''
 
-        # TODO: CLEAN UP
-        img_url = get_static_url(post_slug + '/' + pathlib.Path(img_path).name)
+        # Form image URL using image filename and post slug
+        img_url = flask.url_for('static', filename=post_slug + '/' + pathlib.Path(path).name)
 
-        # Render with caption
-        # TODO: HANDLE alt, and make this string a constant (?)
-        if img_caption:
-            rendered_html = \
-                '''
-                <figure class="figure text-center">
-                    <img src="{}" class="figure-img img-fluid img-thumbnail rounded" alt="">
-                    <figcaption class="figure-caption">{}</figcaption>
-                </figure>
+        # Render custom <figure> HTML and replace the current `section`
+        # with the new node
+        figure_html = _render_figure(img_url, caption, alt)
+        image_elem.replace_with(bs4.BeautifulSoup(figure_html, features='html.parser'))
+    # Return potentially-modified HTML
+    return str(soup)
 
-                '''.format(img_url, img_caption)
-        # Render without caption
-        else:
-            rendered_html = \
-                '''
-                <figure class="figure text-center">
-                    <img src="{}" class="figure-img img-fluid img-thumbnail rounded" alt="">
-                </figure>
 
-                '''.format(img_url)
-
-        html_snippets.append(rendered_html)
-        last_match_index = end
-
-    # Render the Markdown from the last figure match to the end of the file
-    if last_match_index != len(post_markdown):
-        rendered_html = markdown2.markdown(post_markdown[last_match_index + 1:], extras=['fenced-code-blocks'])
-        html_snippets.append(rendered_html)
-        # print (rendered_html)
-
-    return ''.join(html_snippets)
+def _render_figure(url: str, caption: str = None, alt: str = '') -> str:
+    """Given parameters, return an HTML string of a `figure` element."""
+    if caption:
+        # This is a dumb workaround to render the caption but remove the leading "<p>"
+        caption_html = markdown2.markdown(caption).replace('<p>', '').replace('<\p>', '')
+        return (
+            f'<figure class="figure text-center">'
+            f'    <img src="{url}" class="figure-img img-fluid img-thumbnail rounded" alt="{alt}">'
+            f'    <figcaption class="figure-caption">{caption_html}</figcaption>'
+            f'</figure>'
+        )
+    else:
+        return (
+            f'<figure class="figure text-center">'
+            f'    <img src="{url}" class="figure-img img-fluid img-thumbnail rounded" alt="{alt}">'
+            f'</figure>'
+        )
