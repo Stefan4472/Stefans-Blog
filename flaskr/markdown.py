@@ -15,36 +15,43 @@ def render_string(
     TODO: EXPLAIN HOW CUSTOM FIGURES ARE RENDERED
     """
     # Render to HTML
-    html = markdown2.markdown(post_markdown)
+    html = markdown2.markdown(post_markdown, custom_tags=['x-image'])
     # Read in the rendered HTML
     soup = bs4.BeautifulSoup(html, features='html.parser')
-    # Process images: for each `section` element with `type=='image'`, create
-    # a `<figure>`.
-    for section in soup.find_all('section'):
-        if section.has_attr('type') and section['type'] == 'image':
-            if not section.has_attr('path'):
-                raise ValueError('Custom "section" image tag missing required attribute "path"')
 
-            path = section['path']
-            caption = section['caption'] if section.has_attr('caption') else None
-            alt = section['alt'] if section.has_attr('alt') else None
+    # Process images
+    for image_elem in soup.find_all('x-image'):
+        path_elems = image_elem.findChildren('path', recursive=False)
+        caption_elems = image_elem.findChildren('caption', recursive=False)
+        alt_elems = image_elem.findChildren('alt', recursive=False)
 
-            # Form image URL using image filename and post slug
-            img_url = flask.url_for('static', filename=post_slug + '/' + pathlib.Path(path).name)
+        if len(path_elems) != 1:
+            raise ValueError('"x-image" tag does not have exactly one "path" specified')
+        if len(caption_elems) == 2:
+            raise ValueError('"x-image" tag has more than one "caption" specified')
+        if len(alt_elems) == 2:
+            raise ValueError('"x-image" tag has more than one "alt" specified')
 
-            # Render custom <figure> HTML and replace the current `section`
-            # with the new node
-            figure_html = _render_figure(img_url, caption, alt)
-            section.replace_with(bs4.BeautifulSoup(figure_html))
-    # Return potentially-modified BS4 object
+        path = path_elems[0].contents[0]
+        caption = caption_elems[0].contents[0] if caption_elems else None
+        alt = alt_elems[0].contents[0] if alt_elems else None
+
+        # Form image URL using image filename and post slug
+        img_url = flask.url_for('static', filename=post_slug + '/' + pathlib.Path(path).name)
+
+        # Render custom <figure> HTML and replace the current `section`
+        # with the new node
+        figure_html = _render_figure(img_url, caption, alt)
+        image_elem.replace_with(bs4.BeautifulSoup(figure_html, features='html.parser'))
+    # Return potentially-modified HTML
     return str(soup)
 
 
 def _render_figure(url: str, caption: str = None, alt: str = None) -> str:
     """Given parameters, return an HTML string of a `figure` element."""
-    # This is a dumb workaround to render the caption but remove the leading "<p>"
-    caption_html = markdown2.markdown(caption).replace('<p>', '').replace('<\p>', '')
     if caption:
+        # This is a dumb workaround to render the caption but remove the leading "<p>"
+        caption_html = markdown2.markdown(caption).replace('<p>', '').replace('<\p>', '')
         return (
             f'<figure class="figure text-center">'
             f'    <img src="{url}" class="figure-img img-fluid img-thumbnail rounded" alt="{alt}">'

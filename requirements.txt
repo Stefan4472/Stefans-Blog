@@ -15,7 +15,6 @@ idna==2.10
 importlib-metadata==4.6.0
 itsdangerous==1.1.0
 Jinja2==2.11.3
-markdown2==2.4.0
 MarkupSafe==1.1.1
 paramiko==2.7.2
 Pillow==8.3.2
@@ -32,3 +31,4 @@ typing-extensions==3.10.0.0
 urllib3==1.26.5
 Werkzeug==1.0.1
 zipp==3.4.1
+git+https://github.com/Stefan4472/python-markdown2
