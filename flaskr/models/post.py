@@ -3,6 +3,7 @@ import datetime
 import pathlib
 from sqlalchemy import asc, desc
 from flaskr import db
+from flaskr import markdown
 import flaskr.models.relations as relations
 
 
@@ -45,9 +46,6 @@ class Post(db.Model):
     def get_markdown_path(self) -> pathlib.Path:
         return self.get_directory() / 'post.md'
 
-    def get_html_path(self) -> pathlib.Path:
-        return self.get_directory() / 'post.html'
-
     def find_image(self, filename: str) -> int:
         """Return index of image in this Post with the given filename."""
         for i in range(len(self.images)):
@@ -55,10 +53,12 @@ class Post(db.Model):
                 return i
         return -1
 
-    def load_html(self) -> str:
-        """Retrieve the HTML file containing the post's contents and render as template."""
-        with open(self.get_html_path(), encoding='utf-8', errors='strict') as f:
-            return flask.render_template_string(f.read())
+    def render_html(self) -> str:
+        """Retrieve the Markdown file containing the post's contents and render to HTML."""
+        with open(self.get_markdown_path(), encoding='utf-8', errors='strict') as f:
+            html = markdown.render_string(f.read(), self.slug)
+            # Render as a template to allow expanding `url_for()` calls (for example)
+            return flask.render_template_string(html)
 
     def get_prev(self) -> 'Post':
         return Post.query\

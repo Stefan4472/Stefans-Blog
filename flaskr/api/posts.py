@@ -216,17 +216,13 @@ def upload_markdown(slug: str):
 
     # Render HTML
     try:
-        html = markdown.render_string(utf8_markdown, slug)
+        markdown.render_string(utf8_markdown, slug)
     except Exception as e:
         return Response(status=400, response=f'Error processing Markdown: {e}')
 
     # Write out Markdown
     with open(post.get_markdown_path(), 'w+', encoding='utf-8') as out:
         out.write(utf8_markdown)
-
-    # Write out HTML
-    with open(post.get_html_path(), 'w+', encoding='utf-8') as out:
-        out.write(html)
 
     # Update hash
     post.hash = hashlib.md5(raw_markdown).hexdigest()

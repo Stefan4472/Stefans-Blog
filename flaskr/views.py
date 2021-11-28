@@ -59,6 +59,7 @@ def post_view(slug):
     if not post:
         werkzeug.exceptions.abort(404)
 
+    # Note: the post will be rendered via `render_html()` in the template
     return flask.render_template(
         'blog/post.html', 
         post=post, 
