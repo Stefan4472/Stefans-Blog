@@ -215,10 +215,10 @@ def upload_markdown(slug: str):
         return Response(status=400, response=f'Error reading Markdown in UTF-8: {e}')
 
     # Render HTML
-    # try:
-    html = markdown.render_string(utf8_markdown, slug)
-    # except Exception as e:
-    #     return Response(status=400, response=f'Error processing Markdown: {e}')
+    try:
+        html = markdown.render_string(utf8_markdown, slug)
+    except Exception as e:
+        return Response(status=400, response=f'Error processing Markdown: {e}')
 
     # Write out Markdown
     with open(post.get_markdown_path(), 'w+', encoding='utf-8') as out:

@@ -62,13 +62,22 @@ flask reset_site
 
 Posts are written in Markdown, which is rendered to HTML. I've found that I need some extra Markdown functionality--for example, rendering images as `<figure>` elements. To make this possible, I modified the `markdown2` library (see [my fork](https://github.com/Stefan4472/python-markdown2)) and added some custom XML tags that get ignored during the initial Markdown-rendering process.
 
-For example, you can now add a figure to your markdown using my custom `x-image` tag:
+For example, you can now add a figure to your markdown using the custom `x-image` tag:
 ```
 <x-image>
   <path>colorwheel.png</path>
   <caption>The RGB color wheel ([source](https://cdn.sparkfun.com/r/600-600/assets/learn_tutorials/7/1/0/TertiaryColorWheel_Chart.png))</caption>
   <alt>Image of the RGB color wheel</alt>
 </x-image>
+```
+
+You can add a code block with [pygments](https://pygments.org/) syntax highlighting using the custom `<x-code>` tag:
+```
+# See the pygments languages documentation for a list of possible "language" arguments (https://pygments.org/languages/). Leave blank for no styling
+<x-code language="python">
+if __name__ == '__main__':
+    print('Hello world')
+</x-code>
 ```
 
 This isn't a perfect solution, but it's a good current workaround for defining and rendering custom HTML components. In this case, we can define the image along with a caption and `alt` description. The `caption` text will be rendered as regular Markdown.

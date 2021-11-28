@@ -2,6 +2,10 @@ import flask
 import pathlib
 import markdown2
 import bs4
+import pygments
+from pygments.lexers import get_lexer_by_name
+from pygments.formatters import HtmlFormatter
+# TODO: MIGHT MAKE SENSE TO PULL THIS OUT INTO ITS OWN "CUSTOM" LIBRARY THAT CAN BE USED HERE AND IN `sitemanager`
 
 
 def render_string(
@@ -9,45 +13,58 @@ def render_string(
         post_slug: str,
 ) -> str:
     """
-    Read the provided Markdown file and render to HTML.
-    Images will be rendered as Bootstrap figures.
+    Read the provided Markdown file and render to HTML, including custom tags.
+
     Returns the HTML as a string
-    TODO: EXPLAIN HOW CUSTOM FIGURES ARE RENDERED
     """
     # Render to HTML
-    html = markdown2.markdown(post_markdown, custom_tags=['x-image'])
-    # Read in the rendered HTML
+    html = markdown2.markdown(post_markdown, custom_tags=['x-image', 'x-code'])
+    # Read in the rendered HTML to process custom tags
     soup = bs4.BeautifulSoup(html, features='html.parser')
-
     # Process images
     for image_elem in soup.find_all('x-image'):
-        path_elems = image_elem.findChildren('path', recursive=False)
-        caption_elems = image_elem.findChildren('caption', recursive=False)
-        alt_elems = image_elem.findChildren('alt', recursive=False)
-
-        if len(path_elems) != 1:
-            raise ValueError('"x-image" tag does not have exactly one "path" specified')
-        if len(caption_elems) == 2:
-            raise ValueError('"x-image" tag has more than one "caption" specified')
-        if len(alt_elems) == 2:
-            raise ValueError('"x-image" tag has more than one "alt" specified')
-
-        path = path_elems[0].contents[0]
-        caption = caption_elems[0].contents[0] if caption_elems else None
-        alt = alt_elems[0].contents[0] if alt_elems else ''
-
-        # Form image URL using image filename and post slug
-        img_url = flask.url_for('static', filename=post_slug + '/' + pathlib.Path(path).name)
-
-        # Render custom <figure> HTML and replace the current `section`
-        # with the new node
-        figure_html = _render_figure(img_url, caption, alt)
-        image_elem.replace_with(bs4.BeautifulSoup(figure_html, features='html.parser'))
+        image_elem.replace_with(_render_image(image_elem, post_slug))
+    # Process code blocks
+    for code_elem in soup.find_all('x-code'):
+        code_elem.replace_with(_render_code(code_elem))
     # Return potentially-modified HTML
     return str(soup)
 
 
-def _render_figure(url: str, caption: str = None, alt: str = '') -> str:
+def _render_image(
+        image_elem: bs4.element.Tag,
+        post_slug: str,
+) -> bs4.BeautifulSoup:
+    """
+    Render custom <x-image> tag into a BeautifulSoup object.
+
+    `image_elem`: the tag as it exists in the current BS4 tree
+    `post_slug`: the post's slug, used to build the image URL
+    """
+    path_elems = image_elem.findChildren('path', recursive=False)
+    caption_elems = image_elem.findChildren('caption', recursive=False)
+    alt_elems = image_elem.findChildren('alt', recursive=False)
+
+    if len(path_elems) != 1:
+        raise ValueError('"x-image" tag does not have exactly one "path" specified')
+    if len(caption_elems) == 2:
+        raise ValueError('"x-image" tag has more than one "caption" specified')
+    if len(alt_elems) == 2:
+        raise ValueError('"x-image" tag has more than one "alt" specified')
+
+    path = path_elems[0].contents[0]
+    caption = caption_elems[0].contents[0] if caption_elems else None
+    alt = alt_elems[0].contents[0] if alt_elems else ''
+
+    # Form image URL using image filename and post slug
+    img_url = flask.url_for('static', filename=post_slug + '/' + pathlib.Path(path).name)
+
+    # Render custom <figure> HTML
+    figure_html = _create_figure_html(img_url, caption, alt)
+    return bs4.BeautifulSoup(figure_html, features='html.parser')
+
+
+def _create_figure_html(url: str, caption: str = None, alt: str = '') -> str:
     """Given parameters, return an HTML string of a `figure` element."""
     if caption:
         # This is a dumb workaround to render the caption but remove the leading "<p>"
@@ -64,3 +81,18 @@ def _render_figure(url: str, caption: str = None, alt: str = '') -> str:
             f'    <img src="{url}" class="figure-img img-fluid img-thumbnail rounded" alt="{alt}">'
             f'</figure>'
         )
+
+
+def _render_code(code_elem: bs4.element.Tag) -> bs4.BeautifulSoup:
+    language = code_elem['language'] if code_elem.has_attr('language') else None
+    contents = code_elem.contents[0]
+    try:
+        # Use `TextLexer` as default if no language specified
+        lexer = get_lexer_by_name(language if language else 'text')
+    except pygments.util.ClassNotFound:
+        raise ValueError(f'Invalid "language" parameter in <x-code> element {language}')
+    # TODO: COULD PROVIDE A GLOBAL SETTING FOR THE 'STYLE' TO USE (see https://pygments.org/styles/)
+    # https://pygments.org/docs/formatters/#HtmlFormatter
+    formatter = HtmlFormatter(noclasses=True)
+    code_html = pygments.highlight(contents.strip(), lexer, formatter)
+    return bs4.BeautifulSoup(code_html, features='html.parser')
