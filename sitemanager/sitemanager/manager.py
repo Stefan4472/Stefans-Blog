@@ -14,6 +14,7 @@ def upload_post(
         markdown: str,
         images: typing.List[pathlib.Path],
         allow_update: bool,
+        upload_images: bool,
         host: str,
         key: str,
 ):
@@ -30,16 +31,26 @@ def upload_post(
 
     print('Uploading Markdown...')
     service.upload_markdown(config.slug, markdown)
-    print('Uploading featured image {}...'.format(config.featured_img))
-    service.upload_image(config.slug, config.featured_img)
-    print('Uploading banner image {}...'.format(config.banner_img))
-    service.upload_image(config.slug, config.banner_img)
-    print('Uploading thumbnail image {}...'.format(config.thumbnail_img))
-    service.upload_image(config.slug, config.thumbnail_img)
-    for image in images:
-        print('Uploading image {}...'.format(image))
-        service.upload_image(config.slug, image)
+    if upload_images:
+        print('Uploading featured image {}...'.format(config.featured_img))
+        service.upload_image(config.slug, config.featured_img)
+        print('Uploading banner image {}...'.format(config.banner_img))
+        service.upload_image(config.slug, config.banner_img)
+        print('Uploading thumbnail image {}...'.format(config.thumbnail_img))
+        service.upload_image(config.slug, config.thumbnail_img)
+        for image in images:
+            print('Uploading image {}...'.format(image))
+            service.upload_image(config.slug, image)
     print('Setting config...')
+    service.set_config(config.slug, config)
+
+
+def set_config(
+        config: PostConfig,
+        host: str,
+        key: str,
+):
+    service = ManagerService(host, key)
     service.set_config(config.slug, config)
 
 

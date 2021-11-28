@@ -19,13 +19,15 @@ def cli():
 @click.option('--allow_update', type=bool, default=False, help='Whether to allow updating an already-existing post. If this is set to False, and a post with the given slug already exists, an Exception will be thrown')
 @click.option('--publish', type=bool, default=True, help='Whether to publish the post once upload is finished')
 @click.option('--feature', type=bool, help='Whether to mark the post as "featured" once upload is finished')
+@click.option('--upload_images', type=bool, default=True, help='Whether to upload the images referenced in the post')
 def upload_post(
         path: str,
         host: str,
         key: str,
         allow_update: bool,
         publish: bool,
-        feature: typing.Optional[bool],
+        feature: bool,
+        upload_images: bool,
 ):
     _upload_post(
         path,
@@ -34,7 +36,25 @@ def upload_post(
         allow_update,
         publish,
         feature,
+        upload_images,
     )
+    click.echo('Done')
+
+
+@cli.command()
+@click.argument('path', type=click.Path(exists=True, dir_okay=True, file_okay=False))
+@click.option('--host', type=str, default='http://127.0.0.1:5000', help='Base URL of the site instance')
+@click.option('--key', type=str, required=True, help='Your API key')
+def set_config(
+        path: str,
+        host: str,
+        key: str,
+):
+    """Upload the `post-meta.json` config data for the specified post."""
+    path = pathlib.Path(path)
+    config_path = path / 'post-meta.json'
+    config = read_config_file(config_path)
+    manager.set_config(config, host, key)
     click.echo('Done')
 
 
@@ -65,6 +85,7 @@ def upload_posts(
                 allow_update,
                 publish,
                 None,
+                True,
             )
     click.echo('Done')
 
@@ -76,6 +97,7 @@ def _upload_post(
         allow_update: bool,
         publish: bool,
         feature: typing.Optional[bool],
+        upload_images: bool,
 ):
     # Get paths to the Markdown and config files
     path = pathlib.Path(path)
@@ -100,6 +122,7 @@ def _upload_post(
         markdown,
         img_paths,
         allow_update,
+        upload_images,
         host,
         key,
     )
