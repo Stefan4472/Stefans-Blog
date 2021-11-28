@@ -10,4 +10,7 @@ def find_images(post_markdown: str) -> typing.List[str]:
     relative to the original Markdown file's location).
     """
     soup = bs4.BeautifulSoup(post_markdown, features='html.parser')
-    return [section['path'] for section in soup.find_all('section') if section['type'] == 'image']
+    paths = []
+    for image_elem in soup.find_all('x-image'):
+        paths.append(image_elem.findChildren('path', recursive=False)[0].contents[0])
+    return paths

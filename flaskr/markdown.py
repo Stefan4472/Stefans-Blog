@@ -34,7 +34,7 @@ def render_string(
 
         path = path_elems[0].contents[0]
         caption = caption_elems[0].contents[0] if caption_elems else None
-        alt = alt_elems[0].contents[0] if alt_elems else None
+        alt = alt_elems[0].contents[0] if alt_elems else ''
 
         # Form image URL using image filename and post slug
         img_url = flask.url_for('static', filename=post_slug + '/' + pathlib.Path(path).name)
@@ -47,7 +47,7 @@ def render_string(
     return str(soup)
 
 
-def _render_figure(url: str, caption: str = None, alt: str = None) -> str:
+def _render_figure(url: str, caption: str = None, alt: str = '') -> str:
     """Given parameters, return an HTML string of a `figure` element."""
     if caption:
         # This is a dumb workaround to render the caption but remove the leading "<p>"
