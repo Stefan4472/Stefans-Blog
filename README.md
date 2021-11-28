@@ -60,13 +60,20 @@ flask reset_site
 
 ## Custom Markdown Rendering
 
-Posts are written in Markdown, which is rendered to HTML. I've found that I need some extra Markdown functionality--for example, rendering images as `<figure>` elements. To define a figure in your Markdown text, write:
+Posts are written in Markdown, which is rendered to HTML. I've found that I need some extra Markdown functionality--for example, rendering images as `<figure>` elements. To make this possible, I modified the `markdown2` library (see [my fork](https://github.com/Stefan4472/python-markdown2)) and added some custom XML tags that get ignored during the initial Markdown-rendering process.
 
+For example, you can now add a figure to your markdown using my custom `x-image` tag:
 ```
-<section type="image" path="colorwheel.png" caption="The RGB color wheel ([source](https://cdn.sparkfun.com/r/600-600/assets/learn_tutorials/7/1/0/TertiaryColorWheel_Chart.png))" alt="Image of the RGB color wheel"></section>
+<x-image>
+  <path>colorwheel.png</path>
+  <caption>The RGB color wheel ([source](https://cdn.sparkfun.com/r/600-600/assets/learn_tutorials/7/1/0/TertiaryColorWheel_Chart.png))</caption>
+  <alt>Image of the RGB color wheel</alt>
+</x-image>
 ```
 
-We have to define this as a "section" tag so that it is ignored by the Markdown renderer. The backend will first render the Markdown, and will then go through all `<section>` tags and generate `<figure>` tags out of them. This is a bit hacky but is the best I can do right now without modifying the `markdown2` library source code.
+This isn't a perfect solution, but it's a good current workaround for defining and rendering custom HTML components. In this case, we can define the image along with a caption and `alt` description. The `caption` text will be rendered as regular Markdown.
+
+How it works: the backend will first render the Markdown, leaving the custom `x-image` tag as-is. It will then read the created HTML and convert all `x-image` tags into `<figure>` elements. I plan to extend this to support other custom rendering.
 
 ## Ideas for Improvement
 
