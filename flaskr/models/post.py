@@ -1,10 +1,15 @@
 import flask
 import datetime
 import pathlib
+import re
 from sqlalchemy import asc, desc
 from flaskr import db
 from flaskr import markdown
 import flaskr.models.relations as relations
+
+
+# Regex used to match a HEX color for the `title_color` field
+COLOR_REGEX = re.compile('^#[0-9a-fA-F]{6}$')
 
 
 # TODO: WHY AREN'T THE DEFAULTS WORKING?
@@ -29,6 +34,10 @@ class Post(db.Model):
     images = db.relationship('PostImage', cascade='all, delete')
     is_featured = db.Column(db.Boolean, default=False)
     is_published = db.Column(db.Boolean, default=False)
+    # TODO: ADD `CHECK` CONSTRAINT TO ENSURE VALID HEX COLOR.
+    #   This is unfortunately difficult to do without a full database migration...
+    #   leaving for another day.
+    title_color = db.Column(db.String(length=7), server_default='#FFFFFF')
 
     def get_directory(self) -> pathlib.Path:
         """Return Path object to static folder."""

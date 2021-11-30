@@ -13,6 +13,7 @@ KEY_BANNER = 'banner'
 KEY_THUMBNAIL = 'thumbnail'
 KEY_PUBLISH = 'publish'
 KEY_FEATURE = 'feature'
+KEY_TITLE_COLOR = 'title_color'
 
 # Expected data format for JSON
 DATE_FORMAT = "%m/%d/%y"
@@ -36,13 +37,6 @@ def generate_slug(string: str) -> str:
     string = string.replace(' ', '-').lower()
     # Remove any non letters, numbers, and non-dashes
     return re.sub(r'[^a-zA-Z0-9\-\+]+', '', string)
-
-
-def get_static_url(rel_path_from_static: str) -> str:
-    # TODO: FIND A WAY TO REFACTOR THIS OUT
-    return '{{{{ url_for(\'static\', filename=\'{}\') }}}}'.format(
-        rel_path_from_static
-    )
 
 
 def calc_hash(filepath: pathlib.Path) -> str:

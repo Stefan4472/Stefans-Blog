@@ -22,22 +22,25 @@ class PostConfig:
     # Note: these two value are not read from JSON
     publish: typing.Optional[bool] = None
     feature: typing.Optional[bool] = None
+    title_color: typing.Optional[str] = None
 
     def to_json(self) -> dict:
         _json = {
-            'slug': self.slug,
-            'title': self.title,
-            'byline': self.byline,
-            'date': self.date.strftime(util.DATE_FORMAT),
-            'tags': self.tags,
-            'image': self.featured_img.name,
-            'banner': self.banner_img.name,
-            'thumbnail': self.thumbnail_img.name,
+            util.KEY_SLUG: self.slug,
+            util.KEY_TITLE: self.title,
+            util.KEY_BYLINE: self.byline,
+            util.KEY_DATE: self.date.strftime(util.DATE_FORMAT),
+            util.KEY_TAGS: self.tags,
+            util.KEY_IMAGE: self.featured_img.name,
+            util.KEY_BANNER: self.banner_img.name,
+            util.KEY_THUMBNAIL: self.thumbnail_img.name,
         }
         if self.publish is not None:
-            _json['publish'] = self.publish
+            _json[util.KEY_PUBLISH] = self.publish
         if self.feature is not None:
-            _json['feature'] = self.feature
+            _json[util.KEY_FEATURE] = self.feature
+        if self.title_color is not None:
+            _json[util.KEY_TITLE_COLOR] = self.title_color
         return _json
 
 
@@ -94,6 +97,7 @@ def read_config_file(
         pathlib.Path((filepath.parent / cfg_json[util.KEY_BANNER]).resolve()),
         publish=cfg_json[util.KEY_PUBLISH] if util.KEY_PUBLISH in cfg_json else None,
         feature=cfg_json[util.KEY_FEATURE] if util.KEY_FEATURE in cfg_json else None,
+        title_color=cfg_json[util.KEY_TITLE_COLOR] if util.KEY_TITLE_COLOR in cfg_json else None,
     )
 
 

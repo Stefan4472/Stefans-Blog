@@ -8,7 +8,7 @@ from PIL import Image
 import werkzeug.exceptions
 import werkzeug.utils
 from flaskr.database import db
-from flaskr.models.post import Post
+from flaskr.models.post import Post, COLOR_REGEX
 from flaskr.models.post_image import PostImage
 from flaskr.models.tag import Tag
 from flaskr import util
@@ -191,6 +191,11 @@ def set_config(slug: str):
         post.is_published = config['publish']
     if 'featured' in config:
         post.is_featured = config['featured']
+    if 'title_color' in config:
+        if not COLOR_REGEX.match(config['title_color']):
+            msg = '"title_color" is not a valid hex color string ("#------")'
+            return Response(status=400, response=msg)
+        post.title_color = config['title_color']
     db.session.commit()
     return Response(status=200)
 

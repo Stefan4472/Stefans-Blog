@@ -1,7 +1,7 @@
 <!-- The banner is a jumbotron with an image background -->
 <div id="page-banner" class="jumbotron" style="margin-bottom: 0; text-align: center; color: white; background-image: url({{ url_for('static', filename='site-banner.jpg') }}); background-size: cover;">
-    <h1 class="display-4"><a href="/" class="link-override">Stefan on Software</a></h1>
-    <p class="lead"><a href="/" class="link-override">(and other things)</a></p>
+    <h1 class="display-4" ><a href="/" class="link-override" {%  if post %}style="color: {{ post.title_color }};"{% endif %}>Stefan on Software</a></h1>
+    <p class="lead"><a href="/" class="link-override" {%  if post %}style="color: {{ post.title_color }};"{% endif %}>(and other things)</a></p>
 </div>
 
 <!-- Responsive banner script. Currently only used for posts -->
