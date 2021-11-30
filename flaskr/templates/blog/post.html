@@ -1,7 +1,7 @@
 {% extends "blog/base_template.html" %}
 {% block content %}
 <div style="max-width: 800px; margin: auto">
-<h1 style="color: {{ post.title_color }};">{{ post.title }}</h1>
+<h1>{{ post.title }}</h1>
 <div class="d-inline">
     {% for tag in post.tags %}
         <span class="badge badge-primary tag" style="background-color: {{ tag.color }};">
