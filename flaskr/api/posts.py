@@ -193,7 +193,8 @@ def set_config(slug: str):
         post.is_featured = config['featured']
     if 'title_color' in config:
         if not COLOR_REGEX.match(config['title_color']):
-            return Response(status=400, response='"title_color" is not a hex string ("0x------")')
+            msg = '"title_color" is not a valid hex color string ("#------")'
+            return Response(status=400, response=msg)
         post.title_color = config['title_color']
     db.session.commit()
     return Response(status=200)
