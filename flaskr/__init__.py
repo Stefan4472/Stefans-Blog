@@ -23,6 +23,9 @@ def create_app():
 
     # Init SQL Alchemy
     db.init_app(app)
+    from sqlalchemy.schema import CreateTable
+    # from flaskr.models.post import Post
+    # print(CreateTable(Post.__table__))
 
     # Register blueprints
     app.register_blueprint(views.BLUEPRINT)

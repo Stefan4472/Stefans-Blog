@@ -2,6 +2,7 @@ import flask
 import datetime
 import pathlib
 from sqlalchemy import asc, desc
+from sqlalchemy import CheckConstraint
 from flaskr import db
 from flaskr import markdown
 import flaskr.models.relations as relations
@@ -29,6 +30,10 @@ class Post(db.Model):
     images = db.relationship('PostImage', cascade='all, delete')
     is_featured = db.Column(db.Boolean, default=False)
     is_published = db.Column(db.Boolean, default=False)
+    # TODO: ADD `CHECK` CONSTRAINT TO ENSURE VALID HEX COLOR.
+    #   This is unfortunately difficult to do without a full database migration...
+    #   leaving for another day.
+    title_color = db.Column(db.String(length=8), server_default='0xFFFFFF')
 
     def get_directory(self) -> pathlib.Path:
         """Return Path object to static folder."""
