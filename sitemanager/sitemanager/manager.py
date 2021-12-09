@@ -79,3 +79,12 @@ def set_featured(
 ) -> typing.List[str]:
     service = ManagerService(host, key)
     return service.set_featured(slug, is_featured)
+
+
+def upload_image(
+        path: pathlib.Path,
+        host: str,
+        key: str,
+):
+    service = ManagerService(host, key)
+    return service.upload_image_new(path)

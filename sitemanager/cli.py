@@ -173,11 +173,24 @@ def set_featured(
     click.echo('Done')
 
 
-# Sync a to b
 @cli.command()
-def sync():
-    # TODO
-    return
+@click.argument('path', type=click.Path(exists=True, dir_okay=False, file_okay=True))
+@click.option('--host', type=str, default='http://127.0.0.1:5000', help='Base URL of the site instance')
+@click.option('--key', type=str, required=True, help='Your API key')
+def upload_image(
+        host: str,
+        key: str,
+        path: pathlib.Path,
+):
+    """Upload the image at PATH to the site."""
+    manager.upload_image(path, host, key)
+
+
+# Sync a to b
+# @cli.command()
+# def sync():
+#     # TODO
+#     return
 
 
 if __name__ == '__main__':

@@ -104,9 +104,22 @@ class ManagerService:
                 print('Deleting {}'.format(delete))
                 self.delete_image(post_diff.slug, delete)
 
+    def upload_image_new(self, path: pathlib.Path):
+        with open(path, 'rb') as f:
+            res = requests.post(
+                f'{self.base_url}/api/v1/images',
+                files={'file': f},
+                headers={'Authorization': self.api_key},
+            )
+            print(res)
+            print(res.text)
+            self._check_response(res)
+
     @staticmethod
     def _check_response(res: flask.Response):
         if res.status_code == 400:
             raise ValueError(res.text)
         elif res.status_code == 401:
             raise ValueError('Couldn\'t access API: invalid authentication credentials')
+        elif res.status_code != 200:
+            raise ValueError('Error: {}'.format(str(res)))
