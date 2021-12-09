@@ -33,10 +33,12 @@ def upload_image():
     filehash = hashlib.md5(raw_img).hexdigest()
     file.close()
 
-    # Check if an image with the given hash has already been uploaded
+    # Check if an image with the given hash has already been uploaded.
+    # If so, return the filename of the already existing copy.
     query = Image.query.filter_by(hash=filehash)
     if query.first():
-        return Response(status=400, response='Duplicate image')
+        print(query.first().filename)
+        return flask.jsonify(query.first().filename)
 
     try:
         image = PilImage.open(io.BytesIO(raw_img))

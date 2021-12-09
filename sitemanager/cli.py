@@ -1,7 +1,6 @@
 import typing
 import click
 import pathlib
-from renderer import  markdown as md2
 from sitemanager import manager
 from sitemanager.postconfig import read_config_file, write_config_file
 # CLI interface
@@ -112,17 +111,13 @@ def _upload_post(
     with open(md_path, encoding='utf-8', errors='strict') as f:
         markdown = f.read()
 
-    # Retrieve the list of images referenced in the Markdown and
-    # resolve their absolute paths.
-    img_paths = [(md_path.parent / local_path).resolve() for local_path in md2.find_images(markdown)]
-
     # Upload
     manager.upload_post(
         config,
         markdown,
-        img_paths,
         allow_update,
         upload_images,
+        path,
         host,
         key,
     )

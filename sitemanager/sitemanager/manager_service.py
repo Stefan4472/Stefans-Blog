@@ -34,7 +34,7 @@ class ManagerService:
         )
         self._check_response(res)
 
-    def upload_image(self, slug: str, path: pathlib.Path):
+    def upload_image(self, slug: str, path: pathlib.Path) -> str:
         with open(path, 'rb') as f:
             res = requests.post(
                 '{}/api/v1/posts/{}/images'.format(self.base_url, slug),
@@ -42,6 +42,7 @@ class ManagerService:
                 headers={'Authorization': self.api_key},
             )
             self._check_response(res)
+            return res.text
 
     def delete_image(self, slug: str, filename: str):
         url = '{}/api/v1/posts/{}/images/{}'.format(
@@ -111,9 +112,8 @@ class ManagerService:
                 files={'file': f},
                 headers={'Authorization': self.api_key},
             )
-            print(res)
-            print(res.text)
             self._check_response(res)
+            return res.text.strip()
 
     def delete_image_new(self, filename: str):
         res = requests.delete(

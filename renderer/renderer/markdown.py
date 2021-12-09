@@ -136,3 +136,21 @@ def find_images(post_markdown: str) -> typing.List[str]:
     for image_elem in soup.find_all('x-image'):
         paths.append(image_elem.findChildren('path', recursive=False)[0].contents[0])
     return paths
+
+
+def replace_image(post_markdown: str, old_path: str, new_path: str) -> str:
+    """
+    Replace all instances of `old_path` in an <x-image> with `new_path`.
+
+    This is pretty inefficient because it will re-parse the text each time.
+    But it's good enough for now.
+    """
+    soup = bs4.BeautifulSoup(post_markdown, features='html.parser')
+    for image_elem in soup.find_all('x-image'):
+        print(image_elem)
+        path_tag = image_elem.findChildren('path', recursive=False)[0]
+        print(path_tag.contents)
+        print(new_path)
+        if path_tag.contents[0] == old_path:
+            path_tag.string.replace_with(new_path)
+    return str(soup)
