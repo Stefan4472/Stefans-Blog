@@ -48,7 +48,6 @@ def upload_post(
             # Update Markdown in-memomry to use the new filename
             markdown = md.replace_image(markdown, filename, new_filename)
     print('Uploading Markdown...')
-    print(markdown)
     service.upload_markdown(config.slug, markdown)
     print('Setting config...')
     service.set_config(config.slug, config)

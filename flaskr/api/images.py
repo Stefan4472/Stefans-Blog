@@ -25,7 +25,7 @@ def upload_image():
     if len(request.files) == 0:
         return Response(status=400, response='No file uploaded')
     elif len(request.files) > 1:
-        return Response(status=400, response='More than one file uplaoded')
+        return Response(status=400, response='More than one file uploaded')
 
     # Read image and calculate hash
     file = list(request.files.values())[0]
@@ -76,6 +76,10 @@ def delete_image(filename: str):
     record = Image.query.filter_by(filename=filename).first()
     if not record:
         return Response(status=404)
+
+    if record.images_new:
+        msg = "Can't delete because image is referenced in at least one post"
+        return Response(status=400, response=msg)
 
     # Delete file and remove from database
     try:

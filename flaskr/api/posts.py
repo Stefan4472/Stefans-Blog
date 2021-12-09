@@ -4,12 +4,13 @@ import flask
 import shutil
 from flask import request, Response, current_app
 from flask_login import login_required
-from PIL import Image
+from PIL import Image as PilImage
 import werkzeug.exceptions
 import werkzeug.utils
 from flaskr.database import db
 from flaskr.models.post import Post, COLOR_REGEX
 from flaskr.models.post_image import PostImage
+from flaskr.models.image import Image
 from flaskr.models.tag import Tag
 from flaskr import util
 from renderer import markdown as md2
@@ -136,7 +137,7 @@ def set_config(slug: str):
             else:
                 image = post.images[find_index]
                 image_path = post.get_directory() / image.filename
-                img = Image.open(image_path)
+                img = PilImage.open(image_path)
                 if (img.width, img.height) != (1000, 540):
                     msg = 'Specified image "{}" has the wrong dimensions'.format(featured_filename)
                     return Response(response=msg, status=400)
@@ -151,7 +152,7 @@ def set_config(slug: str):
             else:
                 image = post.images[find_index]
                 image_path = post.get_directory() / image.filename
-                img = Image.open(image_path)
+                img = PilImage.open(image_path)
                 if (img.width, img.height) != (400, 400):
                     msg = 'Specified image "{}" has the wrong dimensions'.format(thumbnail_filename)
                     return Response(response=msg, status=400)
@@ -166,7 +167,7 @@ def set_config(slug: str):
             else:
                 image = post.images[find_index]
                 image_path = post.get_directory() / image.filename
-                img = Image.open(image_path)
+                img = PilImage.open(image_path)
                 if (img.width, img.height) != (1000, 175):
                     msg = 'Specified image "{}" has the wrong dimensions'.format(banner_filename)
                     return Response(response=msg, status=400)
@@ -208,36 +209,52 @@ def upload_markdown(slug: str):
     if not post:
         return Response(status=404)
 
+    if len(request.files) == 0:
+        return Response(status=400, response='No file uploaded')
+    elif len(request.files) > 1:
+        return Response(status=400, response='More than one file uploaded')
+
     # Read uploaded file
-    file = request.files['file']
+    file = list(request.files.values())[0]
     raw_markdown = file.read()
     file.close()
 
     # Decode to utf-8
     try:
-        utf8_markdown = raw_markdown.decode('utf-8', errors='strict')
+        markdown_utf8 = raw_markdown.decode('utf-8', errors='strict')
     except UnicodeError as e:
         return Response(status=400, response=f'Error reading Markdown in UTF-8: {e}')
 
-    # Render HTML
+    # Look up referenced images and ensure they exist on server.
+    # Also update `post.images`.
+    # TODO: NEED TO FIX THE URLS (`URL_FOR()`...)
+    post.images_new = []
+    for image_name in md2.find_images(markdown_utf8):
+        found_image = Image.query.filter_by(filename=image_name).first()
+        if found_image:
+            post.images_new.append(found_image)
+        else:
+            message = f'Image file not found on server: {image_name}'
+            return Response(status=400, response=message)
+
+    # Render HTML to check for errors
     try:
-        md2.render_string(utf8_markdown, slug)
+        md2.render_string(markdown_utf8, slug)
     except Exception as e:
         return Response(status=400, response=f'Error processing Markdown: {e}')
 
     # Write out Markdown
     with open(post.get_markdown_path(), 'w+', encoding='utf-8') as out:
-        out.write(utf8_markdown)
+        out.write(markdown_utf8)
 
     # Update hash
     post.hash = hashlib.md5(raw_markdown).hexdigest()
     db.session.commit()
 
-    # Add Markdown file to the search engine's index
+    # Add Markdown file to the search engine index
     # TODO: PROVIDE AN `INDEX_STRING()` METHOD
     current_app.search_engine.index_file(post.get_markdown_path(), slug)
     current_app.search_engine.commit()
-
     return Response(status=200)
 
 

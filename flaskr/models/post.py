@@ -28,8 +28,6 @@ class Post(db.Model):
     thumbnail_filename = db.Column(db.String, nullable=False, default='')
     # MD5 hash of the post's HTML
     hash = db.Column(db.String, nullable=False, default='')
-    # Tags (Many to Many)
-    tags = db.relationship('Tag', secondary=relations.posts_to_tags, backref=db.backref('posts', lazy='dynamic'))
     # Images (One to Many)
     images = db.relationship('PostImage', cascade='all, delete')
     is_featured = db.Column(db.Boolean, default=False)
@@ -38,6 +36,19 @@ class Post(db.Model):
     #   This is unfortunately difficult to do without a full database migration...
     #   leaving for another day.
     title_color = db.Column(db.String(length=7), server_default='#FFFFFF')
+
+    # Tags (Many to Many)
+    tags = db.relationship(
+        'Tag',
+        secondary=relations.posts_to_tags,
+        backref=db.backref('posts', lazy='dynamic'),
+    )
+    # Images (Many to Many)
+    images_new = db.relationship(
+        'Image',
+        secondary=relations.posts_to_images,
+        backref=db.backref('posts', lazy='dynamic'),
+    )
 
     def get_directory(self) -> pathlib.Path:
         """Return Path object to static folder."""

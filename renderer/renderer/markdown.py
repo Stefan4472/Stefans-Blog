@@ -134,7 +134,7 @@ def find_images(post_markdown: str) -> typing.List[str]:
     soup = bs4.BeautifulSoup(post_markdown, features='html.parser')
     paths = []
     for image_elem in soup.find_all('x-image'):
-        paths.append(image_elem.findChildren('path', recursive=False)[0].contents[0])
+        paths.append(image_elem.findChildren('path', recursive=False)[0].contents[0].replace('"', ''))
     return paths
 
 
@@ -147,10 +147,8 @@ def replace_image(post_markdown: str, old_path: str, new_path: str) -> str:
     """
     soup = bs4.BeautifulSoup(post_markdown, features='html.parser')
     for image_elem in soup.find_all('x-image'):
-        print(image_elem)
         path_tag = image_elem.findChildren('path', recursive=False)[0]
-        print(path_tag.contents)
-        print(new_path)
+        # TODO: THIS DELETES THE `URL_FOR` ATTRIBUTE
         if path_tag.contents[0] == old_path:
             path_tag.string.replace_with(new_path)
     return str(soup)
