@@ -1,11 +1,11 @@
 import flask
 import pathlib
+import typing
 import markdown2
 import bs4
 import pygments
 from pygments.lexers import get_lexer_by_name
 from pygments.formatters import HtmlFormatter
-# TODO: MIGHT MAKE SENSE TO PULL THIS OUT INTO ITS OWN "CUSTOM" LIBRARY THAT CAN BE USED HERE AND IN `sitemanager`
 
 
 def render_string(
@@ -96,3 +96,16 @@ def _render_code(code_elem: bs4.element.Tag) -> bs4.BeautifulSoup:
     formatter = HtmlFormatter(noclasses=True)
     code_html = pygments.highlight(contents.strip(), lexer, formatter)
     return bs4.BeautifulSoup(code_html, features='html.parser')
+
+
+def find_images(post_markdown: str) -> typing.List[str]:
+    """
+    Read the provided Markdown string and return a list of found image
+    paths as given in custom "<figure>" tags. These will likely be paths
+    relative to the original Markdown file's location).
+    """
+    soup = bs4.BeautifulSoup(post_markdown, features='html.parser')
+    paths = []
+    for image_elem in soup.find_all('x-image'):
+        paths.append(image_elem.findChildren('path', recursive=False)[0].contents[0])
+    return paths

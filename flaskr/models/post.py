@@ -4,8 +4,8 @@ import pathlib
 import re
 from sqlalchemy import asc, desc
 from flaskr import db
-from flaskr import markdown
 import flaskr.models.relations as relations
+import renderer.markdown as md2
 
 
 # Regex used to match a HEX color for the `title_color` field
@@ -65,7 +65,7 @@ class Post(db.Model):
     def render_html(self) -> str:
         """Retrieve the Markdown file containing the post's contents and render to HTML."""
         with open(self.get_markdown_path(), encoding='utf-8', errors='strict') as f:
-            html = markdown.render_string(f.read(), self.slug)
+            html = md2.render_string(f.read(), self.slug)
             # Render as a template to allow expanding `url_for()` calls (for example)
             return flask.render_template_string(html)
 
