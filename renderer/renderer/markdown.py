@@ -1,4 +1,3 @@
-import flask
 import pathlib
 import typing
 import markdown2
@@ -8,12 +7,23 @@ from pygments.lexers import get_lexer_by_name
 from pygments.formatters import HtmlFormatter
 
 
+def get_static_url(rel_path_from_static: str) -> str:
+    """
+    Create a `url_for()` template function with a relative path from
+    the `static` folder.
+    """
+    # TODO: FIND A WAY TO REFACTOR THIS OUT. Allow user to provide their own formatting function, or some other mechanism for building URLs
+    return '{{{{ url_for(\'static\', filename=\'{}\') }}}}'.format(
+        rel_path_from_static
+    )
+
+
 def render_string(
         post_markdown: str,
         post_slug: str,
 ) -> str:
     """
-    Read the provided Markdown file and render to HTML, including custom tags.
+    Read the provided Markdown text and render to HTML, including custom tags.
 
     Returns the HTML as a string
     """
@@ -57,7 +67,8 @@ def _render_image(
     alt = alt_elems[0].contents[0] if alt_elems else ''
 
     # Form image URL using image filename and post slug
-    img_url = flask.url_for('static', filename=post_slug + '/' + pathlib.Path(path).name)
+    img_url = get_static_url(post_slug + '/' + pathlib.Path(path).name)
+    # img_url = flask.url_for('static', filename=post_slug + '/' + pathlib.Path(path).name)
 
     # Render custom <figure> HTML
     figure_html = _create_figure_html(img_url, caption, alt)
@@ -68,7 +79,7 @@ def _create_figure_html(url: str, caption: str = None, alt: str = '') -> str:
     """Given parameters, return an HTML string of a `figure` element."""
     if caption:
         # This is a dumb workaround to render the caption but remove the leading "<p>"
-        caption_html = markdown2.markdown(caption).replace('<p>', '').replace('<\p>', '')
+        caption_html = markdown2.markdown(caption).replace('<p>', '').replace('<\p>', '').strip()
         return (
             f'<figure class="figure text-center">'
             f'    <img src="{url}" class="figure-img img-fluid img-thumbnail rounded" alt="{alt}">'
