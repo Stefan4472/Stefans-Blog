@@ -27,18 +27,25 @@ def render_string(
 
     Returns the HTML as a string
     """
-    # Render to HTML
-    html = markdown2.markdown(post_markdown, custom_tags=['x-image', 'x-code'])
-    # Read in the rendered HTML to process custom tags
-    soup = bs4.BeautifulSoup(html, features='html.parser')
-    # Process images
-    for image_elem in soup.find_all('x-image'):
-        image_elem.replace_with(_render_image(image_elem, post_slug))
-    # Process code blocks
-    for code_elem in soup.find_all('x-code'):
-        code_elem.replace_with(_render_code(code_elem))
-    # Return potentially-modified HTML
-    return str(soup)
+    # Collect rendered segments in a list, which will be joined at the end.
+    # This is far more efficient than repeated concatenation.
+    segments: typing.List[str] = []
+    soup = bs4.BeautifulSoup(post_markdown, features='html.parser')
+    # Loop over top-level tags
+    for tag in soup.contents:
+        # Ignore blank lines
+        if str(tag).isspace():
+            continue
+        # No tag: render text as Markdown by default
+        elif tag.name == None:
+            segments.append(str(bs4.BeautifulSoup(markdown2.markdown(str(tag).strip()), features='html.parser')).strip())
+        # Found an `<x-image>` tag
+        elif tag.name == 'x-image':
+            segments.append(str(_render_image(tag, post_slug)).strip())
+        # Found an `<x-code>` tag
+        elif tag.name == 'x-code':
+            segments.append(str(_render_code(tag)).strip() + '\n')
+    return '\n'.join(segments)
 
 
 def _render_image(
@@ -79,7 +86,7 @@ def _create_figure_html(url: str, caption: str = None, alt: str = '') -> str:
     """Given parameters, return an HTML string of a `figure` element."""
     if caption:
         # This is a dumb workaround to render the caption but remove the leading "<p>"
-        caption_html = markdown2.markdown(caption).replace('<p>', '').replace('<\p>', '').strip()
+        caption_html = markdown2.markdown(caption).replace(r'<p>', '').replace(r'<\p>', '').strip()
         return (
             f'<figure class="figure text-center">'
             f'    <img src="{url}" class="figure-img img-fluid img-thumbnail rounded" alt="{alt}">'
