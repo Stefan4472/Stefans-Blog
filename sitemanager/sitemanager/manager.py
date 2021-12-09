@@ -88,3 +88,12 @@ def upload_image(
 ):
     service = ManagerService(host, key)
     return service.upload_image_new(path)
+
+
+def delete_image(
+        filename: str,
+        host: str,
+        key: str,
+):
+    service = ManagerService(host, key)
+    return service.delete_image_new(filename)

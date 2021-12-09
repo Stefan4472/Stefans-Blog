@@ -115,6 +115,15 @@ class ManagerService:
             print(res.text)
             self._check_response(res)
 
+    def delete_image_new(self, filename: str):
+        res = requests.delete(
+            f'{self.base_url}/api/v1/images/{filename}',
+            headers={'Authorization': self.api_key},
+        )
+        print(res)
+        print(res.text)
+        self._check_response(res)
+
     @staticmethod
     def _check_response(res: flask.Response):
         if res.status_code == 400:

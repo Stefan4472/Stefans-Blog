@@ -186,6 +186,19 @@ def upload_image(
     manager.upload_image(path, host, key)
 
 
+@cli.command()
+@click.argument('filename')
+@click.option('--host', type=str, default='http://127.0.0.1:5000', help='Base URL of the site instance')
+@click.option('--key', type=str, required=True, help='Your API key')
+def delete_image(
+    filename: str,
+    host: str,
+    key: str,
+):
+    """Delete the image with given filename."""
+    manager.delete_image(filename, host, key)
+
+
 # Sync a to b
 # @cli.command()
 # def sync():

@@ -15,6 +15,7 @@ from flaskr.models.image import Image
 
 
 BLUEPRINT = flask.Blueprint('images', __name__, url_prefix='/api/v1/images')
+# TODO: A `GET` ENDPOINT
 
 
 @BLUEPRINT.route('', methods=['POST'])
@@ -33,9 +34,9 @@ def upload_image():
     file.close()
 
     # Check if an image with the given hash has already been uploaded
-    query = Image.query.filter(Image.hash == filehash)
-    # if query.all():
-    #     return Response(status=400, response='Duplicate image')
+    query = Image.query.filter_by(hash=filehash)
+    if query.first():
+        return Response(status=400, response='Duplicate image')
 
     try:
         image = PilImage.open(io.BytesIO(raw_img))
@@ -64,3 +65,24 @@ def upload_image():
     db.session.add(record)
     db.session.commit()
     return flask.jsonify(record.filename)
+
+
+@BLUEPRINT.route('/<string:filename>', methods=['DELETE'])
+@login_required
+def delete_image(filename: str):
+    """Delete image with specified filename."""
+    record = Image.query.filter_by(filename=filename).first()
+    if not record:
+        return Response(status=404)
+
+    # Delete file and remove from database
+    try:
+        record.get_path().unlink()
+    except FileNotFoundError:
+        # If file isn't found, that means something weird happened,
+        # but we don't really care at this point.
+        pass
+
+    db.session.delete(record)
+    db.session.commit()
+    return Response(status=200)
