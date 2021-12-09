@@ -38,6 +38,11 @@ Install the `sitemanager` package:
 pip install -e ./sitemanager
 ```
 
+Install the `renderer` package:
+```
+pip install -e ./renderer
+```
+
 Install my `simplesearch` package. It's not yet on pip, so you have to get it via Github:
 ```
 git clone https://github.com/Stefan4472/simple-search-engine

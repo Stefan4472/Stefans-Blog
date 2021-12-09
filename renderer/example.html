@@ -1,0 +1,236 @@
+<p>In the <a href="/post/gamedev-computer-graphics">previous post</a> we talked about how images and graphics are stored on a computer. In this post we'll explain how computer animation works, and create one of our own using Java.</p>
+
+<p>First things first: an animation is a sequence of images that are played back so fast your brain blends them into a single, cohesive motion.</p>
+
+<p>Animation is in fact an illusion. Think of the film strips that were used in the early days of cinema, or the flip books you may have seen as a kid. Those are a bunch of images that get shown to you so briefly, it feels like you're watching a video.</p>
+
+<figure class="figure text-center">    <img src="{{ url_for('static', filename='gamedev-animation/vintage-film-reel.jpg') }}" class="figure-img img-fluid img-thumbnail rounded" alt="">    <figcaption class="figure-caption">Photo of a hand-colored reel from a 1989 film called "Little Nemo: Adventures in Slumberland" (<a href="https://upload.wikimedia.org/wikipedia/commons/3/34/Little_Nemo_film_-_hand-colored_filmreel.jpg">source</a>)</p></figcaption></figure>
+
+<p>To trick your viewer into seeing fluid, realistic motion, you need to show 25-30 still images per second, with small changes made between each frame. Each image is called a <em>frame</em>, and we say <em>"Frames per Second"</em> to indicate how many frames are played back per second.</p>
+
+<p><em>Creating</em> animation is hard, because you need to draw each one of those frames manually. You can either draw them digitally yourself (covered in the spritesheets tutorial), or write a program to generate the frames for you. We'll be doing the latter today, with a program that animates a square moving across the screen.</p>
+
+<p>We'll be using Java Swing, which is a library for writing GUIs. We'll be using the simplest setup possible--a single window, called a JFrame, which we'll draw our animations on. (<a href="https://github.com/Stefan4472/Blog-ExampleCode/tree/master/gamedev-from-scratch/2-animation/draw-square/src">See the full code here</a>)</p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">javax.swing.*</span>;
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">java.awt.*</span>;
+
+<span style="color: #408080; font-style: italic">// Creates a JFrame window and draws a Blue square to it</span>
+<span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">DrawSquare</span> <span style="color: #008000; font-weight: bold">extends</span> JFrame {
+
+    <span style="color: #408080; font-style: italic">// custom RGB-color used to draw the square</span>
+    <span style="color: #008000; font-weight: bold">private</span> <span style="color: #008000; font-weight: bold">static</span> <span style="color: #008000; font-weight: bold">final</span> Color BLUE <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> Color(<span style="color: #666666">66</span>, <span style="color: #666666">122</span>, <span style="color: #666666">244</span>);
+    <span style="color: #408080; font-style: italic">// dimensions of window (px)</span>
+    <span style="color: #008000; font-weight: bold">private</span> <span style="color: #008000; font-weight: bold">static</span> <span style="color: #008000; font-weight: bold">final</span> <span style="color: #B00040">int</span> SCREEN_W <span style="color: #666666">=</span> <span style="color: #666666">300</span>, SCREEN_H <span style="color: #666666">=</span> <span style="color: #666666">300</span>;
+
+    <span style="color: #408080; font-style: italic">// constructor initializes the JFrame and sets it to display</span>
+    <span style="color: #008000; font-weight: bold">public</span> <span style="color: #0000FF">DrawSquare</span>() {
+        setSize(<span style="color: #008000; font-weight: bold">new</span> Dimension(SCREEN_W, SCREEN_H));  <span style="color: #408080; font-style: italic">// set size of window to SCREEN_W * SCREEN_H pixels</span>
+        setDefaultCloseOperation(WindowConstants.<span style="color: #7D9029">EXIT_ON_CLOSE</span>);  <span style="color: #408080; font-style: italic">// exit program on window close</span>
+        setTitle(<span style="color: #BA2121">&quot;Animation Example&quot;</span>);  <span style="color: #408080; font-style: italic">// set window title</span>
+        setVisible(<span style="color: #008000; font-weight: bold">true</span>);  <span style="color: #408080; font-style: italic">// show the window</span>
+    }
+
+    <span style="color: #AA22FF">@Override</span> <span style="color: #408080; font-style: italic">// code to draw (paint) the window square to the canvas. Called when the window is displayed.</span>
+    <span style="color: #408080; font-style: italic">// Will not be called again unless the window has to be redrawn.</span>
+    <span style="color: #008000; font-weight: bold">public</span> <span style="color: #B00040">void</span> <span style="color: #0000FF">paint</span>(Graphics g) {
+        g.<span style="color: #7D9029">setColor</span>(BLUE);  <span style="color: #408080; font-style: italic">// set color to be used for drawing calls</span>
+        g.<span style="color: #7D9029">fillRect</span>(<span style="color: #666666">50</span>, <span style="color: #666666">50</span>, <span style="color: #666666">50</span>, <span style="color: #666666">50</span>);  <span style="color: #408080; font-style: italic">// draw square with top-left coordinate at (50, 50) and width/height of 50 px</span>
+    }
+}
+</pre></div>
+
+<p>In this code the DrawSquare class is an extended JFrame, so we're basically just modifying a few features from the standard JFrame window class. We set the size to constants we defined (<code>SCREEN_W</code> and <code>SCREEN_H</code>), do some other GUI setup, and override the <code>paint()</code> method, which specifies how to draw the window.</p>
+
+<p>This is where all our drawing code goes. As you can see, our code simply draws a filled rectangle at coordinates (50, 50) with width and height of 50 pixels.</p>
+
+<p>Now let's add a very simple main class to show the window:</p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Main</span> {
+    <span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">static</span> <span style="color: #B00040">void</span> <span style="color: #0000FF">main</span>(String<span style="color: #666666">[]</span> args) {
+        <span style="color: #008000; font-weight: bold">new</span> DrawSquare();
+    }
+}
+</pre></div>
+
+<p>If we compile the code and run Main, we'll see the following screen:</p>
+
+<figure class="figure text-center">    <img src="{{ url_for('static', filename='gamedev-animation/example-draw-square.jpg') }}" class="figure-img img-fluid img-thumbnail rounded" alt=""></figure>
+
+<p>But animation is all about movement, and our square doesn't move.</p>
+
+<p>How do we create smooth movement? As explained above, we create a bunch of frames, with a tiny change each time.</p>
+
+<p>Let's add code that will trigger the screen to redraw every 33 milliseconds (~30 FPS), and each time the screen redraws, let's draw the square a few pixels to the right. (<a href="https://github.com/Stefan4472/Blog-ExampleCode/tree/master/gamedev-from-scratch/2-animation/draw-moving-square/src">See the full code here</a>)</p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">javax.swing.*</span>;
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">java.awt.*</span>;
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">java.awt.event.ActionEvent</span>;
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">java.awt.event.ActionListener</span>;
+
+<span style="color: #408080; font-style: italic">// Creates a JFrame window and animates a blue square moving across it</span>
+<span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">DrawMovingSquare</span> <span style="color: #008000; font-weight: bold">extends</span> JFrame {
+
+    <span style="color: #408080; font-style: italic">// custom RGB-color used to draw the square</span>
+    <span style="color: #008000; font-weight: bold">private</span> <span style="color: #008000; font-weight: bold">static</span> <span style="color: #008000; font-weight: bold">final</span> Color GREEN <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> Color(<span style="color: #666666">39</span>, <span style="color: #666666">100</span>, <span style="color: #666666">42</span>);
+    <span style="color: #408080; font-style: italic">// dimensions of window (px)</span>
+    <span style="color: #008000; font-weight: bold">private</span> <span style="color: #008000; font-weight: bold">static</span> <span style="color: #008000; font-weight: bold">final</span> <span style="color: #B00040">int</span> SCREEN_W <span style="color: #666666">=</span> <span style="color: #666666">300</span>, SCREEN_H <span style="color: #666666">=</span> <span style="color: #666666">300</span>;
+    <span style="color: #408080; font-style: italic">// number of ms to delay between redrawing the window</span>
+    <span style="color: #008000; font-weight: bold">private</span> <span style="color: #008000; font-weight: bold">static</span> <span style="color: #008000; font-weight: bold">final</span> <span style="color: #B00040">int</span> DELAY <span style="color: #666666">=</span> <span style="color: #666666">33</span>;
+    <span style="color: #408080; font-style: italic">// top-left x-coordinate of square</span>
+    <span style="color: #008000; font-weight: bold">private</span> <span style="color: #B00040">int</span> square_x <span style="color: #666666">=</span> <span style="color: #666666">40</span>;  
+
+    <span style="color: #408080; font-style: italic">// constructor initializes the JFrame and sets it to display</span>
+    <span style="color: #008000; font-weight: bold">public</span> <span style="color: #0000FF">DrawMovingSquare</span>() {
+        setSize(<span style="color: #008000; font-weight: bold">new</span> Dimension(SCREEN_W, SCREEN_H));  <span style="color: #408080; font-style: italic">// set size of window to SCREEN_W x SCREEN_H pixels</span>
+        setDefaultCloseOperation(WindowConstants.<span style="color: #7D9029">EXIT_ON_CLOSE</span>);  <span style="color: #408080; font-style: italic">// exit program on window close</span>
+        setTitle(<span style="color: #BA2121">&quot;Animation Example&quot;</span>);  <span style="color: #408080; font-style: italic">// set screen title</span>
+        setVisible(<span style="color: #008000; font-weight: bold">true</span>);  <span style="color: #408080; font-style: italic">// show the window</span>
+
+        <span style="color: #408080; font-style: italic">// create a timer to redraw the window every DELAY milliseconds. This uses an ActionListener</span>
+        <span style="color: #408080; font-style: italic">// that will call actionPerformed() repeatedly. Inside actionPerformed we update animation logic,</span>
+        <span style="color: #408080; font-style: italic">// then repaint the window. We could put more updating logic in this method if we wanted to.</span>
+        Timer timer <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> Timer(DELAY, <span style="color: #008000; font-weight: bold">new</span> ActionListener() {
+            <span style="color: #008000; font-weight: bold">public</span> <span style="color: #B00040">void</span> <span style="color: #0000FF">actionPerformed</span>(ActionEvent evt) {
+                update();  <span style="color: #408080; font-style: italic">// update position of square</span>
+                repaint();  <span style="color: #408080; font-style: italic">// repaint the screen</span>
+            }
+        });
+        <span style="color: #408080; font-style: italic">// start the timer</span>
+        timer.<span style="color: #7D9029">start</span>();  
+    }
+
+    <span style="color: #408080; font-style: italic">// updates the square&#39;s position between frames, adding 5 to the square&#39;s coordinate each call</span>
+    <span style="color: #008000; font-weight: bold">public</span> <span style="color: #B00040">void</span> <span style="color: #0000FF">update</span>() {
+        square_x <span style="color: #666666">+=</span> <span style="color: #666666">5</span>;
+    }
+
+    <span style="color: #AA22FF">@Override</span> <span style="color: #408080; font-style: italic">// code to draw (paint) the window</span>
+    <span style="color: #008000; font-weight: bold">public</span> <span style="color: #B00040">void</span> <span style="color: #0000FF">paint</span>(Graphics g) {
+        g.<span style="color: #7D9029">setColor</span>(Color.<span style="color: #7D9029">WHITE</span>);  <span style="color: #408080; font-style: italic">// set color to white</span>
+        g.<span style="color: #7D9029">fillRect</span>(<span style="color: #666666">0</span>, <span style="color: #666666">0</span>, SCREEN_W, SCREEN_H); <span style="color: #408080; font-style: italic">// reset the window by drawing over it with white</span>
+        g.<span style="color: #7D9029">setColor</span>(Color.<span style="color: #7D9029">BLUE</span>);  <span style="color: #408080; font-style: italic">// set color to blue</span>
+        g.<span style="color: #7D9029">fillRect</span>(square_x, <span style="color: #666666">50</span>, <span style="color: #666666">50</span>, <span style="color: #666666">50</span>);  <span style="color: #408080; font-style: italic">// draw square with correct coordinate and width/height of 50 px</span>
+    }
+}
+</pre></div>
+
+<p>We use the Timer to trigger regular, repeated calls to <code>update()</code> and <code>paint()</code>. In <code>update()</code>, we add 5 to the square's last coordinate (stored in the <code>square_x</code> variable). In <code>paint()</code>, we fill the entire window with white (as a way to reset the screen from the last frame) and draw the square at its new location. This way, as we run <code>update()</code> and <code>paint()</code> 30 times a second, the square moves fluidly to the right.</p>
+
+<p>We also have to modify <code>main()</code> with the new class name ("DrawMovingSquare").</p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Main</span> {
+    <span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">static</span> <span style="color: #B00040">void</span> <span style="color: #0000FF">main</span>(String<span style="color: #666666">[]</span> args) {
+        <span style="color: #008000; font-weight: bold">new</span> DrawMovingSquare();
+    }
+}
+</pre></div>
+
+<figure class="figure text-center">    <img src="{{ url_for('static', filename='gamedev-animation/example-moving-square.gif') }}" class="figure-img img-fluid img-thumbnail rounded" alt=""></figure>
+
+<p><em>Good to Know: Performing graphics functions takes time. An important optimization in animation and game development is to only redraw parts of the screen that changed since the last frame. In this case, instead of painting over the entire window with white, we could paint over the square's last position to hide it.</em></p>
+
+<p>As interesting as that animation is, there's a problem: the square moves to the right, and doesn't stop, trundling happily off the screen edge into oblivion.</p>
+
+<p>The Graphics object/canvas we draw on is in practice infinite (although in reality it does have memory constraints). This means we can draw the square at any coordinate we please, like <code>(10_000_000, 0)</code>, and the square will exist somewhere on the canvas, but not in a place we can see. <strong><em>Drawing to the wrong coordinates, or coordinates that are off the screen, is a common bug.</em></strong></p>
+
+<p>As our last exercise, let's make the square bounce off the screen edges. We'll need to add code to our <code>update()</code> method to check the current coordinates each frame, and reverse the square's speed when we hit a screen edge.</p>
+
+<p>We'll add <code>int square_w</code> to define the width of the square, and <code>int speed_x</code> to keep track of the square's speed in the x-direction.</p>
+
+<p>We'll also add some code to change the square color each frame. To keep it simple, we'll fluctuate between white and black. We'll use one integer (<code>color_int</code>) that will cycle gradually from 0 to 255. Each frame, we'll add <code>color_change</code> to <code>color_int</code>, and set the drawing color's RGB to <code>(color_int, color_int, color_int)</code>. We'll reverse <code>color_change</code> direction at the bounds (0 and 255). (<a href="https://github.com/Stefan4472/Blog-ExampleCode/tree/master/gamedev-from-scratch/2-animation/draw-changing-square/src">See the full code here</a>)</p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">javax.swing.*</span>;
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">java.awt.*</span>;
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">java.awt.event.ActionEvent</span>;
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">java.awt.event.ActionListener</span>;
+
+<span style="color: #408080; font-style: italic">// Creates a JFrame window and animates a square moving across it, bouncing off the window edges.</span>
+<span style="color: #408080; font-style: italic">// The square&#39;s color changes over time, varying from white to black and back again.</span>
+<span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">DrawChangingSquare</span> <span style="color: #008000; font-weight: bold">extends</span> JFrame {
+
+    <span style="color: #408080; font-style: italic">// dimensions of window (px)</span>
+    <span style="color: #008000; font-weight: bold">private</span> <span style="color: #008000; font-weight: bold">static</span> <span style="color: #008000; font-weight: bold">final</span> <span style="color: #B00040">int</span> SCREEN_W <span style="color: #666666">=</span> <span style="color: #666666">300</span>, SCREEN_H <span style="color: #666666">=</span> <span style="color: #666666">300</span>;
+    <span style="color: #408080; font-style: italic">// number of ms to delay between redrawing the window</span>
+    <span style="color: #008000; font-weight: bold">private</span> <span style="color: #008000; font-weight: bold">static</span> <span style="color: #008000; font-weight: bold">final</span> <span style="color: #B00040">int</span> DELAY <span style="color: #666666">=</span> <span style="color: #666666">33</span>;
+
+    <span style="color: #008000; font-weight: bold">private</span> <span style="color: #B00040">int</span> square_x <span style="color: #666666">=</span> <span style="color: #666666">40</span>;  <span style="color: #408080; font-style: italic">// top-left x-coordinate of square</span>
+    <span style="color: #008000; font-weight: bold">private</span> <span style="color: #B00040">int</span> square_w <span style="color: #666666">=</span> <span style="color: #666666">50</span>;  <span style="color: #408080; font-style: italic">// width of each square edge (px)</span>
+    <span style="color: #008000; font-weight: bold">private</span> <span style="color: #B00040">int</span> speed_x <span style="color: #666666">=</span> <span style="color: #666666">5</span>;  <span style="color: #408080; font-style: italic">// amount to add to square_x each frame</span>
+    <span style="color: #008000; font-weight: bold">private</span> <span style="color: #B00040">int</span> color_int <span style="color: #666666">=</span> <span style="color: #666666">0</span>;  <span style="color: #408080; font-style: italic">// integer to be used in each RGB color channel</span>
+    <span style="color: #008000; font-weight: bold">private</span> <span style="color: #B00040">int</span> color_change <span style="color: #666666">=</span> <span style="color: #666666">5</span>;  <span style="color: #408080; font-style: italic">// amount to add/subtract to color_int each frame (higher = faster change)</span>
+
+    <span style="color: #408080; font-style: italic">// constructor initializes the JFrame and sets it to display</span>
+    <span style="color: #008000; font-weight: bold">public</span> <span style="color: #0000FF">DrawChangingSquare</span>() {
+        setSize(<span style="color: #008000; font-weight: bold">new</span> Dimension(SCREEN_W, SCREEN_H));  <span style="color: #408080; font-style: italic">// set size of window to SCREEN_W x SCREEN_H pixels</span>
+        setDefaultCloseOperation(WindowConstants.<span style="color: #7D9029">EXIT_ON_CLOSE</span>);  <span style="color: #408080; font-style: italic">// exit program on window close</span>
+        setTitle(<span style="color: #BA2121">&quot;Animation Example&quot;</span>);  <span style="color: #408080; font-style: italic">// set screen title</span>
+        setVisible(<span style="color: #008000; font-weight: bold">true</span>);  <span style="color: #408080; font-style: italic">// show the window</span>
+
+        <span style="color: #408080; font-style: italic">// create a timer to redraw the window every DELAY milliseconds. This uses an ActionListener</span>
+        <span style="color: #408080; font-style: italic">// that will call actionPerformed repeatedly. Inside actionPerformed we update animation logic,</span>
+        <span style="color: #408080; font-style: italic">// then repaint the window. More logic could be put into this method if we so wished.</span>
+        Timer timer <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">new</span> Timer(DELAY, <span style="color: #008000; font-weight: bold">new</span> ActionListener() {
+            <span style="color: #008000; font-weight: bold">public</span> <span style="color: #B00040">void</span> <span style="color: #0000FF">actionPerformed</span>(ActionEvent evt) {
+                update();  <span style="color: #408080; font-style: italic">// update position of square</span>
+                repaint();  <span style="color: #408080; font-style: italic">// repaint the screen</span>
+            }
+        });
+        timer.<span style="color: #7D9029">start</span>();
+    }
+
+    <span style="color: #408080; font-style: italic">// updates the square&#39;s position and color each frame to create animation over time</span>
+    <span style="color: #008000; font-weight: bold">public</span> <span style="color: #B00040">void</span> <span style="color: #0000FF">update</span>() {
+        <span style="color: #408080; font-style: italic">// increment x-coordinate</span>
+        square_x <span style="color: #666666">+=</span> speed_x;
+
+        <span style="color: #408080; font-style: italic">// check if we&#39;ve hit the right edge of the canvas</span>
+        <span style="color: #008000; font-weight: bold">if</span> (square_x <span style="color: #666666">+</span> square_w <span style="color: #666666">&gt;</span> SCREEN_W) {
+            square_x <span style="color: #666666">=</span> SCREEN_W <span style="color: #666666">-</span> square_w;  <span style="color: #408080; font-style: italic">// set to edge</span>
+            speed_x <span style="color: #666666">*=</span> <span style="color: #666666">-1</span>;  <span style="color: #408080; font-style: italic">// reverse speed</span>
+        } <span style="color: #008000; font-weight: bold">else</span> <span style="color: #008000; font-weight: bold">if</span> (square_x <span style="color: #666666">&lt;</span> <span style="color: #666666">0</span>) {  <span style="color: #408080; font-style: italic">// check if we&#39;ve hit the left edge of the canvas</span>
+            square_x <span style="color: #666666">=</span> <span style="color: #666666">0</span>;  <span style="color: #408080; font-style: italic">// set to edge</span>
+            speed_x <span style="color: #666666">*=</span> <span style="color: #666666">-1</span>;  <span style="color: #408080; font-style: italic">// reverse speed</span>
+        }
+
+        <span style="color: #408080; font-style: italic">// increment color_int</span>
+        color_int <span style="color: #666666">+=</span> color_change;
+
+        <span style="color: #408080; font-style: italic">// check color bounds (must be from 0-255)</span>
+        <span style="color: #008000; font-weight: bold">if</span> (color_int <span style="color: #666666">&gt;</span> <span style="color: #666666">255</span>) {
+            color_change <span style="color: #666666">*=</span> <span style="color: #666666">-1</span>;  <span style="color: #408080; font-style: italic">// reverse color change direction</span>
+            color_int <span style="color: #666666">=</span> <span style="color: #666666">255</span>;  <span style="color: #408080; font-style: italic">// set to 255 (upper bound)</span>
+        } <span style="color: #008000; font-weight: bold">else</span> <span style="color: #008000; font-weight: bold">if</span> (color_int <span style="color: #666666">&lt;</span> <span style="color: #666666">0</span>) {
+            color_change <span style="color: #666666">*=</span> <span style="color: #666666">-1</span>;  <span style="color: #408080; font-style: italic">// reverse color change direction</span>
+            color_int <span style="color: #666666">=</span> <span style="color: #666666">0</span>;  <span style="color: #408080; font-style: italic">// set to 0 (lower bound)</span>
+        }
+    }
+
+    <span style="color: #AA22FF">@Override</span> <span style="color: #408080; font-style: italic">// code to draw (paint) the window square to the canvas.</span>
+    <span style="color: #008000; font-weight: bold">public</span> <span style="color: #B00040">void</span> <span style="color: #0000FF">paint</span>(Graphics g) {
+        g.<span style="color: #7D9029">setColor</span>(Color.<span style="color: #7D9029">WHITE</span>);  <span style="color: #408080; font-style: italic">// set color to white</span>
+        g.<span style="color: #7D9029">fillRect</span>(<span style="color: #666666">0</span>, <span style="color: #666666">0</span>, SCREEN_W, SCREEN_H); <span style="color: #408080; font-style: italic">// reset the window by drawing over it with white</span>
+        g.<span style="color: #7D9029">setColor</span>(<span style="color: #008000; font-weight: bold">new</span> Color(<span style="color: #666666">255</span>, color_int, color_int));  <span style="color: #408080; font-style: italic">// set color: all three channels are color_int</span>
+        g.<span style="color: #7D9029">fillRect</span>(square_x, <span style="color: #666666">50</span>, square_w, square_w);  <span style="color: #408080; font-style: italic">// draw square with correct coordinate and width/height</span>
+    }
+}
+</pre></div>
+
+<p>Finally, let's update <code>main()</code> again.</p>
+
+<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Main</span> {
+    <span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">static</span> <span style="color: #B00040">void</span> <span style="color: #0000FF">main</span>(String<span style="color: #666666">[]</span> args) {
+        <span style="color: #008000; font-weight: bold">new</span> DrawChangingSquare();
+    }
+}
+</pre></div>
+
+<figure class="figure text-center">    <img src="{{ url_for('static', filename='gamedev-animation/example-changing-square.gif') }}" class="figure-img img-fluid img-thumbnail rounded" alt=""></figure>
+
+<p><em>Also Good to Know: I recommend working with coordinates and speeds in floats. This way, for especially slow or precise motion, you can support sub-pixel speeds.</em></p>
+
+<p>There's a lot more we can do with this frame-by-frame style of animation, and the key is to think logically and progress through examples of increasing difficulty. There are a lot of engines and tools that'll abstract the painful details away, but under the hood there's no escaping the frame-by-frame approach.</p>
+
+<p>Personally, I think it's really cool to get your own examples working from scratch. Understanding how it all works is one of the joys of programming.</p>
+
+<p>In the next part <a href="/post/gamedev-spritesheets">we'll implement and use Spritesheets</a> to display hand-drawn animations.</p>

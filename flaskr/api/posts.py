@@ -12,7 +12,7 @@ from flaskr.models.post import Post, COLOR_REGEX
 from flaskr.models.post_image import PostImage
 from flaskr.models.tag import Tag
 from flaskr import util
-from flaskr import markdown
+from renderer import markdown as md2
 '''
 Note: this API is not fully RESTful due to the challenge of preserving image filenames 
 (changing the image name will break the HTML that expects those images to have specific
@@ -221,7 +221,7 @@ def upload_markdown(slug: str):
 
     # Render HTML
     try:
-        markdown.render_string(utf8_markdown, slug)
+        md2.render_string(utf8_markdown, slug)
     except Exception as e:
         return Response(status=400, response=f'Error processing Markdown: {e}')
 
