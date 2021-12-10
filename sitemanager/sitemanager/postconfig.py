@@ -11,6 +11,7 @@ from imagecropper.imagecropper import ImageCropper
 
 @dc.dataclass
 class PostConfig:
+    """Store post configuration data."""
     slug: str
     title: str
     byline: str

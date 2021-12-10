@@ -15,21 +15,21 @@ class ManagerService:
 
     def create_post(self, slug: str):
         res = requests.post(
-            '{}/api/v1/posts/{}'.format(self.base_url, slug),
+            f'{self.base_url}/api/v1/posts/{slug}',
             headers={'Authorization': self.api_key},
         )
         self._check_response(res)
 
     def delete_post(self, slug: str):
         res = requests.delete(
-            '{}/api/v1/posts/{}'.format(self.base_url, slug),
+            f'{self.base_url}/api/v1/posts/{slug}',
             headers={'Authorization': self.api_key},
         )
         self._check_response(res)
 
     def upload_markdown(self, slug: str, markdown: str):
         res = requests.post(
-            '{}/api/v1/posts/{}/body'.format(self.base_url, slug),
+            f'{self.base_url}/api/v1/posts/{slug}/body',
             files={'file': ('post.md', markdown)},
             headers={'Authorization': self.api_key},
         )
@@ -55,7 +55,7 @@ class ManagerService:
 
     def set_config(self, slug: str, config: PostConfig):
         res = requests.post(
-            '{}/api/v1/posts/{}/config'.format(self.base_url, slug),
+            f'{self.base_url}/api/v1/posts/{slug}/config',
             json=config.to_json(),
             headers={'Authorization': self.api_key},
         )
@@ -63,7 +63,7 @@ class ManagerService:
 
     def get_manifest(self) -> Manifest:
         res = requests.get(
-            '{}/api/v1/posts'.format(self.base_url),
+            f'{self.base_url}/api/v1/posts',
             headers={'Authorization': self.api_key},
         )
         self._check_response(res)
@@ -71,7 +71,7 @@ class ManagerService:
 
     def get_featured(self) -> typing.List[str]:
         res = requests.get(
-            '{}/api/v1/featured'.format(self.base_url),
+            f'{self.base_url}/api/v1/featured',
             headers={'Authorization': self.api_key},
         )
         self._check_response(res)
@@ -79,28 +79,11 @@ class ManagerService:
 
     def set_featured(self, slug: str, is_featured: bool):
         res = requests.post(
-            '{}/api/v1/posts/{}/config'.format(self.base_url, slug),
+            f'{self.base_url}/api/v1/posts/{slug}/config',
             headers={'Authorization': self.api_key},
             json={'featured': is_featured},
         )
         self._check_response(res)
-
-    # # TODO: SHOULD PROBABLY BE SOMEWHERE ELSE -> move to `manager.py`
-    # def apply_diff(self, diff: SiteDiff):
-    #     for create_slug in diff.create_posts:
-    #         self.create_post(create_slug)
-    #     for delete_slug in diff.delete_posts:
-    #         self.delete_post(delete_slug)
-    #     for post_diff in diff.post_diffs:
-    #         if post_diff.write_html:
-    #             print('Uploading HTML')
-    #             self.upload_html(post_diff.slug, post_diff.write_html)
-    #         for upload in post_diff.write_images:
-    #             print('Uploading {}'.format(upload))
-    #             self.upload_image(post_diff.slug, upload)
-    #         for delete in post_diff.delete_images:
-    #             print('Deleting {}'.format(delete))
-    #             self.delete_image(post_diff.slug, delete)
 
     @staticmethod
     def _check_response(res: flask.Response):
