@@ -30,7 +30,7 @@ def example_html():
 
 def test_render(example_markdown, example_html):
     """Test that `render_string()` of the example Markdown yields the example HTML"""
-    actual = md2.render_string(example_markdown, 'gamedev-animation')
+    actual = md2.render_string(example_markdown)
     assert actual.strip() == example_html.strip()
 
 

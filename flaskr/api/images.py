@@ -37,7 +37,6 @@ def upload_image():
     # If so, return the filename of the already existing copy.
     query = Image.query.filter_by(hash=filehash)
     if query.first():
-        print(query.first().filename)
         return flask.jsonify(query.first().filename)
 
     try:
@@ -66,6 +65,7 @@ def upload_image():
 
     db.session.add(record)
     db.session.commit()
+    # TODO: A TO_JSON() METHOD. RETURNS ID, URL, AND OTHER METADATA
     return flask.jsonify(record.filename)
 
 

@@ -5,6 +5,7 @@ import re
 from sqlalchemy import asc, desc
 from flaskr import db
 import flaskr.models.relations as relations
+from flaskr.models.image import Image
 import renderer.markdown as md2
 
 
@@ -68,8 +69,13 @@ class Post(db.Model):
     def render_html(self) -> str:
         """Retrieve the Markdown file containing the post's contents and render to HTML."""
         with open(self.get_markdown_path(), encoding='utf-8', errors='strict') as f:
-            # TODO: CORRECT IMAGE PATHS
-            html = md2.render_string(f.read(), self.slug)
+            markdown = f.read()
+            # Resolve image URLs. TODO: THIS IS REALLY INEFFICIENT. COULD ALSO ITERATE OVER THE POST'S IMAGES
+            for image_name in md2.find_images(markdown):
+                found_image = Image.query.filter_by(filename=image_name).first()
+                markdown = md2.replace_image(markdown, image_name, found_image.get_url())
+            html = md2.render_string(markdown)
+
             # Render as a template to allow expanding `url_for()` calls (for example)
             return flask.render_template_string(html)
 

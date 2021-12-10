@@ -1,6 +1,7 @@
 import pathlib
 import typing
 import hashlib
+import copy
 from sitemanager import util
 from sitemanager.postconfig import PostConfig
 from sitemanager.manager_service import ManagerService
@@ -30,13 +31,14 @@ def upload_post(
     elif not allow_update:
         raise ValueError('Post with the specified slug already exists but update=False')
 
+    new_config = copy.copy(config)
     if upload_images:
         print('Uploading featured image {}...'.format(config.featured_img))
-        config.featured_img = pathlib.Path(service.upload_image(config.featured_img))
+        new_config.featured_img = pathlib.Path(service.upload_image(config.featured_img))
         print('Uploading banner image {}...'.format(config.banner_img))
-        config.banner_img = pathlib.Path(service.upload_image(config.banner_img))
+        new_config.banner_img = pathlib.Path(service.upload_image(config.banner_img))
         print('Uploading thumbnail image {}...'.format(config.thumbnail_img))
-        config.thumbnail_img = pathlib.Path(service.upload_image(config.thumbnail_img))
+        new_config.thumbnail_img = pathlib.Path(service.upload_image(config.thumbnail_img))
 
         # Get the list of image filenames referenced in the Markdown
         for filename in md.find_images(markdown):
@@ -50,7 +52,7 @@ def upload_post(
     print('Uploading Markdown...')
     service.upload_markdown(config.slug, markdown)
     print('Setting config...')
-    service.set_config(config.slug, config)
+    service.set_config(config.slug, new_config)
 
 
 def set_config(

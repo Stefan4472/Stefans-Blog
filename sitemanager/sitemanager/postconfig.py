@@ -19,7 +19,7 @@ class PostConfig:
     featured_img: pathlib.Path
     thumbnail_img: pathlib.Path
     banner_img: pathlib.Path
-    # Note: these two value are not read from JSON
+    # Note: these two values are not read from JSON
     publish: typing.Optional[bool] = None
     feature: typing.Optional[bool] = None
     title_color: typing.Optional[str] = None

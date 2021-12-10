@@ -212,21 +212,18 @@ def upload_markdown(slug: str):
 
     # Look up referenced images and ensure they exist on server.
     # Also update `post.images`.
-    # TODO: NEED TO FIX THE URLS (`URL_FOR()`...)
     post.images_new = []
     for image_name in md2.find_images(markdown):
         found_image = Image.query.filter_by(filename=image_name).first()
         if found_image:
             post.images_new.append(found_image)
-            # TODO: THIS SHOULD BE DONE DURING THE RENDERING PROCESS
-            markdown = md2.replace_image(markdown, image_name, flask.url_for('static', filename=found_image.filename))
         else:
             message = f'Image file not found on server: {image_name}'
             return Response(status=400, response=message)
 
     # Render HTML to check for errors
     try:
-        md2.render_string(markdown, slug)
+        md2.render_string(markdown)
     except Exception as e:
         return Response(status=400, response=f'Error processing Markdown: {e}')
 

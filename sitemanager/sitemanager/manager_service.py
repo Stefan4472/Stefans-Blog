@@ -85,22 +85,22 @@ class ManagerService:
         )
         self._check_response(res)
 
-    # TODO: SHOULD PROBABLY BE SOMEWHERE ELSE
-    def apply_diff(self, diff: SiteDiff):
-        for create_slug in diff.create_posts:
-            self.create_post(create_slug)
-        for delete_slug in diff.delete_posts:
-            self.delete_post(delete_slug)
-        for post_diff in diff.post_diffs:
-            if post_diff.write_html:
-                print('Uploading HTML')
-                self.upload_html(post_diff.slug, post_diff.write_html)
-            for upload in post_diff.write_images:
-                print('Uploading {}'.format(upload))
-                self.upload_image(post_diff.slug, upload)
-            for delete in post_diff.delete_images:
-                print('Deleting {}'.format(delete))
-                self.delete_image(post_diff.slug, delete)
+    # # TODO: SHOULD PROBABLY BE SOMEWHERE ELSE -> move to `manager.py`
+    # def apply_diff(self, diff: SiteDiff):
+    #     for create_slug in diff.create_posts:
+    #         self.create_post(create_slug)
+    #     for delete_slug in diff.delete_posts:
+    #         self.delete_post(delete_slug)
+    #     for post_diff in diff.post_diffs:
+    #         if post_diff.write_html:
+    #             print('Uploading HTML')
+    #             self.upload_html(post_diff.slug, post_diff.write_html)
+    #         for upload in post_diff.write_images:
+    #             print('Uploading {}'.format(upload))
+    #             self.upload_image(post_diff.slug, upload)
+    #         for delete in post_diff.delete_images:
+    #             print('Deleting {}'.format(delete))
+    #             self.delete_image(post_diff.slug, delete)
 
     @staticmethod
     def _check_response(res: flask.Response):
