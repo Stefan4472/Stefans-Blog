@@ -32,4 +32,3 @@ typing-extensions==3.10.0.0
 urllib3==1.26.5
 Werkzeug==1.0.1
 zipp==3.4.1
-git+https://github.com/Stefan4472/python-markdown2

@@ -2,8 +2,6 @@
 
 A blog platform written in Python 3.6 using the [Flask](https://palletsprojects.com/p/flask/) framework. See it live at [www.stefanonsoftware.com](https://www.stefanonsoftware.com/).
 
-**This project is a Work In Progress**. It is a hobby of mine that I revisit once or twice a year, and a lot of the code is waiting to be cleaned up and documented.
-
 ## Sibling Projects
 
 Along with this site, I'm working on two sibling projects:
@@ -16,8 +14,11 @@ This repository contains code and templates, but no blog articles. My long-term 
 
 Important directories:
 - `flaskr`: the Flask code for the website, as well as static resources and templates.
-- `imagecropper`: a Python module that provides a Tkinter GUI to crop an image to a specific size. This is used to create properly-sized thumbnails, for example. Install with pip!
-- `sitemanager`: a Python module that provides a CLI to the blog's API. Install with pip!
+- `imagecropper`: a Python module that provides a Tkinter GUI to crop an image to a specific size. This is used to create properly-sized thumbnails, for example.
+- `sitemanager`: a Python module that provides a CLI to the blog's API.
+- `renderer`: a Python module for rendering post Markdown into HTML.
+
+Follow the setup instructions below to install the `imagecropper`, `sitemanager`, and `renderer` modules!
 
 ## Setup
 
@@ -65,9 +66,9 @@ flask reset_site
 
 ## Custom Markdown Rendering
 
-Posts are written in Markdown, which is rendered to HTML. I've found that I need some extra Markdown functionality--for example, rendering images as `<figure>` elements. To make this possible, I modified the `markdown2` library (see [my fork](https://github.com/Stefan4472/python-markdown2)) and added some custom XML tags that get ignored during the initial Markdown-rendering process.
+Posts are written in Markdown, which is rendered to HTML. I've found that I need some extra Markdown functionality--for example, rendering images as `<figure>` elements, or rendering code blocks. To make this possible, I created a little rendering program (the `renderer` module) that uses the `markdown2` library to render text to Markdown, and furthermore supports a few custom XML tags.
 
-For example, you can now add a figure to your markdown using the custom `x-image` tag:
+You can add a figure to your markdown using the custom `x-image` tag:
 ```
 <x-image>
   <path>colorwheel.png</path>
@@ -84,10 +85,6 @@ if __name__ == '__main__':
     print('Hello world')
 </x-code>
 ```
-
-This isn't a perfect solution, but it's a good current workaround for defining and rendering custom HTML components. In this case, we can define the image along with a caption and `alt` description. The `caption` text will be rendered as regular Markdown.
-
-How it works: the backend will first render the Markdown, leaving the custom `x-image` tag as-is. It will then read the created HTML and convert all `x-image` tags into `<figure>` elements. I plan to extend this to support other custom rendering.
 
 ## Ideas for Improvement
 
