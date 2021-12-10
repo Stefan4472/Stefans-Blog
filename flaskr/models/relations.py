@@ -12,5 +12,5 @@ posts_to_tags = db.Table('posts_to_tags',
 # Track which posts link which images.
 posts_to_images = db.Table('posts_to_images',
     db.Column('post', db.Integer, db.ForeignKey('post.id')),
-    db.Column('images2', db.Integer, db.ForeignKey('images2.filename')),
+    db.Column('image', db.Integer, db.ForeignKey('images.filename')),
 )

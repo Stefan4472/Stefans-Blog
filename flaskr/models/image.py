@@ -4,7 +4,7 @@ from flaskr import db
 
 
 class Image(db.Model):
-    __tablename__ = 'images2'  # TODO: SET TO `images` ONCE READY. THEN DELETE THE ORIGINAL `POSTIMAGE` CLASS
+    __tablename__ = 'images'
     filename = db.Column(db.String, primary_key=True)
     # User-given name at time of upload
     upload_name = db.Column(db.String, nullable=False)

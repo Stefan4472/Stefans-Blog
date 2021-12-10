@@ -32,11 +32,11 @@ def upload_post(
 
     if upload_images:
         print('Uploading featured image {}...'.format(config.featured_img))
-        service.upload_image(config.slug, config.featured_img)
+        config.featured_img = pathlib.Path(service.upload_image(config.featured_img))
         print('Uploading banner image {}...'.format(config.banner_img))
-        service.upload_image(config.slug, config.banner_img)
+        config.banner_img = pathlib.Path(service.upload_image(config.banner_img))
         print('Uploading thumbnail image {}...'.format(config.thumbnail_img))
-        service.upload_image(config.slug, config.thumbnail_img)
+        config.thumbnail_img = pathlib.Path(service.upload_image(config.thumbnail_img))
 
         # Get the list of image filenames referenced in the Markdown
         for filename in md.find_images(markdown):
@@ -44,7 +44,7 @@ def upload_post(
             full_path = (base_path / filename).resolve()
             # Upload image and get its online filename
             print('Uploading image {}...'.format(full_path))
-            new_filename = service.upload_image_new(full_path)
+            new_filename = service.upload_image(full_path)
             # Update Markdown in-memomry to use the new filename
             markdown = md.replace_image(markdown, filename, new_filename)
     print('Uploading Markdown...')

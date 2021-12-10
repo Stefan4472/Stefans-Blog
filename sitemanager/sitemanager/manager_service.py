@@ -9,6 +9,7 @@ from sitemanager.postconfig import PostConfig
 
 @dc.dataclass
 class ManagerService:
+    """Simple API layer."""
     base_url: str
     api_key: str
 
@@ -34,24 +35,20 @@ class ManagerService:
         )
         self._check_response(res)
 
-    def upload_image(self, slug: str, path: pathlib.Path) -> str:
+
+    def upload_image(self, path: pathlib.Path) -> str:
         with open(path, 'rb') as f:
             res = requests.post(
-                '{}/api/v1/posts/{}/images'.format(self.base_url, slug),
+                f'{self.base_url}/api/v1/images',
                 files={'file': f},
                 headers={'Authorization': self.api_key},
             )
             self._check_response(res)
-            return res.text
+            return res.text.strip().replace('"', '')
 
-    def delete_image(self, slug: str, filename: str):
-        url = '{}/api/v1/posts/{}/images/{}'.format(
-            self.base_url,
-            slug,
-            filename,
-        )
+    def delete_image(self, filename: str):
         res = requests.delete(
-            url,
+            f'{self.base_url}/api/v1/images/{filename}',
             headers={'Authorization': self.api_key},
         )
         self._check_response(res)
@@ -104,25 +101,6 @@ class ManagerService:
             for delete in post_diff.delete_images:
                 print('Deleting {}'.format(delete))
                 self.delete_image(post_diff.slug, delete)
-
-    def upload_image_new(self, path: pathlib.Path):
-        with open(path, 'rb') as f:
-            res = requests.post(
-                f'{self.base_url}/api/v1/images',
-                files={'file': f},
-                headers={'Authorization': self.api_key},
-            )
-            self._check_response(res)
-            return res.text.strip()
-
-    def delete_image_new(self, filename: str):
-        res = requests.delete(
-            f'{self.base_url}/api/v1/images/{filename}',
-            headers={'Authorization': self.api_key},
-        )
-        print(res)
-        print(res.text)
-        self._check_response(res)
 
     @staticmethod
     def _check_response(res: flask.Response):

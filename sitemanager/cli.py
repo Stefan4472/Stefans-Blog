@@ -89,6 +89,7 @@ def upload_posts(
     click.echo('Done')
 
 
+# TODO: MOVE TO `MANAGER.PY` AS `UPLOAD_POST_FROM_DIRECTORY()` OR SOMETHING
 def _upload_post(
         path: str,
         host: str,
