@@ -1,5 +1,5 @@
 import hashlib
-import datetime
+import datetime as dt
 import flask
 import shutil
 from flask import request, Response, current_app
@@ -8,7 +8,8 @@ from flaskr.database import db
 from flaskr.models.post import Post, COLOR_REGEX
 from flaskr.models.image import Image
 from flaskr.models.tag import Tag
-from flaskr import util
+import flaskr.api.constants as constants
+import flaskr.api.util as util
 from renderer import markdown as md2
 # TODO: Should have a set of Tag endpoints too
 # TODO: SETUP TESTING FRAMEWORK
@@ -30,33 +31,18 @@ def get_posts():
     """
     # Create query dynamically
     query = Post.query
-    if 'featured' in request.args:
+    if constants.KEY_FEATURE in request.args:
         # Convert string value to boolean value
-        as_bool = (request.args['featured'].lower() == 'true')
+        as_bool = (request.args[constants.KEY_FEATURE].lower() == 'true')
         query = query.filter(Post.is_featured == as_bool)
-    if 'published' in request.args:
-        as_bool = (request.args['published'].lower() == 'true')
+    if constants.KEY_PUBLISH in request.args:
+        as_bool = (request.args[constants.KEY_PUBLISH].lower() == 'true')
         query = query.filter(Post.is_published == as_bool)
 
     # Build JSON response
     manifest = {}
     for post in query.all():
-        manifest[post.slug] = {
-            util.KEY_SLUG: post.slug,
-            util.KEY_TITLE: post.title,
-            util.KEY_BYLINE: post.byline,
-            util.KEY_DATE: post.date.strftime(util.DATE_FORMAT),
-            util.KEY_IMAGE: post.featured_filename,
-            util.KEY_BANNER: post.banner_filename,
-            util.KEY_THUMBNAIL: post.thumbnail_filename,
-            util.KEY_HASH: post.hash,
-            util.KEY_TAGS: [tag.slug for tag in post.tags],
-            util.KEY_IMAGES: {
-                image.filename: {'hash': image.hash} for image in post.images
-            },
-            util.KEY_FEATURED: post.is_featured,
-            util.KEY_PUBLISHED: post.is_published,
-        }
+        manifest[post.slug] = post.to_dict()
     return flask.jsonify({'posts': manifest})
 
 
@@ -100,16 +86,16 @@ def set_config(slug: str):
     if not post:
         return Response(status=404)
     config = request.get_json()
-    # TODO: use string constants
     # TODO: implement and use Post `setter()` methods
-    if 'title' in config:
-        post.title = config['title']
-    if 'byline' in config:
-        post.byline = config['byline']
-    if 'date' in config:
-        post.date = datetime.datetime.strptime(config['date'], "%m/%d/%y").date()
-    if 'image' in config:
-        filename = config['image']
+    if constants.KEY_TITLE in config:
+        post.title = config[constants.KEY_TITLE]
+    if constants.KEY_BYLINE in config:
+        post.byline = config[constants.KEY_BYLINE]
+    if constants.KEY_DATE in config:
+        post.date = dt.datetime.strptime(
+            config[constants.KEY_DATE], constants.DATE_FORMAT).date()
+    if constants.KEY_IMAGE in config:
+        filename = config[constants.KEY_IMAGE]
         found_image = Image.query.filter_by(filename=filename).first()
         if not found_image:
             msg = f'Specified image "{filename}" not found on server'
@@ -121,8 +107,8 @@ def set_config(slug: str):
             post.featured_filename = filename
             if found_image not in post.images:
                 post.images.append(found_image)
-    if 'thumbnail' in config:
-        filename = config['thumbnail']
+    if constants.KEY_THUMBNAIL in config:
+        filename = config[constants.KEY_THUMBNAIL]
         found_image = Image.query.filter_by(filename=filename).first()
         if not found_image:
             msg = f'Specified image "{filename}" not found on server'
@@ -134,8 +120,8 @@ def set_config(slug: str):
             post.thumbnail_filename = filename
             if found_image not in post.images:
                 post.images.append(found_image)
-    if 'banner' in config:
-        filename = config['banner']
+    if constants.KEY_BANNER in config:
+        filename = config[constants.KEY_BANNER]
         found_image = Image.query.filter_by(filename=filename).first()
         if not found_image:
             msg = f'Specified image "{filename}" not found on server'
@@ -147,9 +133,9 @@ def set_config(slug: str):
             post.banner_filename = filename
             if found_image not in post.images:
                 post.images.append(found_image)
-    if 'tags' in config:
+    if constants.KEY_TAGS in config:
         # Add tags
-        for tag_name in config['tags']:
+        for tag_name in config[constants.KEY_TAGS]:
             tag_slug = util.generate_slug(tag_name)
             # Lookup tag in the database
             tag = Tag.query.filter_by(slug=tag_slug).first()
@@ -163,15 +149,15 @@ def set_config(slug: str):
                 db.session.add(tag)
             # Register the post under this tag
             tag.posts.append(post)
-    if 'publish' in config:
-        post.is_published = config['publish']
-    if 'featured' in config:
-        post.is_featured = config['featured']
-    if 'title_color' in config:
-        if not COLOR_REGEX.match(config['title_color']):
+    if constants.KEY_PUBLISH in config:
+        post.is_published = config[constants.KEY_PUBLISH]
+    if constants.KEY_FEATURE in config:
+        post.is_featured = config[constants.KEY_FEATURE]
+    if constants.KEY_TITLE_COLOR in config:
+        if not COLOR_REGEX.match(config[constants.KEY_TITLE_COLOR]):
             msg = '"title_color" is not a valid hex color string ("#------")'
             return Response(status=400, response=msg)
-        post.title_color = config['title_color']
+        post.title_color = config[constants.KEY_TITLE_COLOR]
     db.session.commit()
     return Response(status=200)
 
@@ -184,21 +170,16 @@ def upload_markdown(slug: str):
     if not post:
         return Response(status=404)
 
-    if len(request.files) == 0:
-        return Response(status=400, response='No file uploaded')
-    elif len(request.files) > 1:
-        return Response(status=400, response='More than one file uploaded')
+    try:
+        raw_markdown, _ = util.get_uploaded_file(request)
+    except ValueError as e:
+        return Response(status=400, response=str(e))
 
-    # Read uploaded file
-    file = list(request.files.values())[0]
-    raw_markdown = file.read()
-    file.close()
-
-    # Decode to utf-8
     try:
         markdown = raw_markdown.decode('utf-8', errors='strict')
     except UnicodeError as e:
-        return Response(status=400, response=f'Error reading Markdown in UTF-8: {e}')
+        msg = f'Error reading Markdown in UTF-8: {e}'
+        return Response(status=400, response=msg)
 
     # Look up referenced images and ensure they exist on server.
     # Also update `post.images`.

@@ -6,6 +6,7 @@ from sqlalchemy import asc, desc
 from flaskr import db
 import flaskr.models.relations as relations
 from flaskr.models.image import Image
+import flaskr.api.constants as constants
 import renderer.markdown as md2
 
 
@@ -88,6 +89,24 @@ class Post(db.Model):
             .filter(Post.date > self.date)\
             .order_by(asc('date'))\
             .first()
+
+    def to_dict(self) -> dict:
+        return {
+            constants.KEY_SLUG: self.slug,
+            constants.KEY_TITLE: self.title,
+            constants.KEY_BYLINE: self.byline,
+            constants.KEY_DATE: self.date.strftime(constants.DATE_FORMAT),
+            constants.KEY_IMAGE: self.featured_filename,
+            constants.KEY_BANNER: self.banner_filename,
+            constants.KEY_THUMBNAIL: self.thumbnail_filename,
+            constants.KEY_HASH: self.hash,
+            constants.KEY_TAGS: [tag.slug for tag in self.tags],
+            constants.KEY_IMAGES: {
+                image.filename: {'hash': image.hash} for image in self.images
+            },
+            constants.KEY_FEATURE: self.is_featured,
+            constants.KEY_PUBLISH: self.is_published,
+        }
 
     def __repr__(self):
         return 'Post(title="{}", slug="{}", date={}, tags={})'.format(
