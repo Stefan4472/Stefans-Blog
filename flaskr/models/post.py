@@ -13,8 +13,6 @@ import renderer.markdown as md2
 COLOR_REGEX = re.compile('^#[0-9a-fA-F]{6}$')
 
 
-# TODO: WHY AREN'T THE DEFAULTS WORKING?
-# TODO: `SLUG` SHOULD REALLY BE THE PRIMARY_KEY
 # TODO: CURRENTLY, MARKDOWN FILES ARE PUBLICLY ACCESSIBLE VIA THE 'STATIC' ROUTE. THIS SHOULD NOT BE THE CASE
 class Post(db.Model):
     __tablename__ = 'post'
@@ -31,10 +29,8 @@ class Post(db.Model):
     hash = db.Column(db.String, nullable=False, default='')
     is_featured = db.Column(db.Boolean, default=False)
     is_published = db.Column(db.Boolean, default=False)
-    # TODO: ADD `CHECK` CONSTRAINT TO ENSURE VALID HEX COLOR.
-    #   This is unfortunately difficult to do without a full database migration...
-    #   leaving for another day.
-    title_color = db.Column(db.String(length=7), server_default='#FFFFFF')
+    # Note: checking for valid hex colors is left to the application
+    title_color = db.Column(db.String(length=7), default='#FFFFFF')
 
     # Tags (Many to Many)
     tags = db.relationship(

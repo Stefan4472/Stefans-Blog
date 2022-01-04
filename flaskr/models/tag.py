@@ -1,4 +1,5 @@
 from flaskr import db
+from sqlalchemy import CheckConstraint
 
 
 class Tag(db.Model):
@@ -6,6 +7,7 @@ class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     slug = db.Column(db.String, nullable=False, unique=True)
     name = db.Column(db.String, nullable=False)
+    # Note: checking for valid hex colors is left to the application
     color = db.Column(db.String, nullable=False)
 
     def __repr__(self):
