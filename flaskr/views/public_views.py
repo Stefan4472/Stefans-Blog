@@ -1,7 +1,7 @@
 import flask
 import werkzeug.exceptions
 from sqlalchemy import desc
-from . import site_logger
+from flaskr import site_logger
 from flaskr.models.post import Post
 from flaskr.models.tag import Tag
 
