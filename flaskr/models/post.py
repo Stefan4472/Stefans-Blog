@@ -40,13 +40,15 @@ class Post(db.Model):
     tags = db.relationship(
         'Tag',
         secondary=relations.posts_to_tags,
+        # Note: this backref allows us to call Tag.posts on a `Tag` instance
         backref=db.backref('posts', lazy='dynamic'),
     )
     # Images (Many to Many)
     images = db.relationship(
         'Image',
         secondary=relations.posts_to_images,
-        backref=db.backref('posts', lazy='dynamic'),
+        # Note: this backref allows us to call Image.posts on an `Image` instance
+        backref=db.backref('images', lazy='dynamic'),
     )
 
     # TODO: MAKE INTO ATTRIBUTES

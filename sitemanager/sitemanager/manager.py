@@ -8,10 +8,11 @@ from sitemanager.manager_service import ManagerService
 from sitemanager.postconfig import read_config_file, write_config_file
 import renderer.markdown as md
 """Multi-step functionality using `ManagerService`."""
-# TODO: HANDLE EXCEPTIONS
+# TODO: HANDLE POSSIBLE EXCEPTIONS
 # TODO: THE DIFFING/SYNCING STUFF? WOULD BE FUN TO IMPLEMENT BUT NOT USEFUL
 
 
+# TODO: this has too many arguments. Provide an `Options` dataclass?
 def upload_post_from_dir(
         path: pathlib.Path,
         host: str,

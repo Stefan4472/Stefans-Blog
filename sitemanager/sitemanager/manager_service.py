@@ -35,8 +35,8 @@ class ManagerService:
         )
         self._check_response(res)
 
-
     def upload_image(self, path: pathlib.Path) -> str:
+        """Upload image at `path` and return the assigned on-server filename."""
         with open(path, 'rb') as f:
             res = requests.post(
                 f'{self.base_url}/api/v1/images',
@@ -44,7 +44,7 @@ class ManagerService:
                 headers={'Authorization': self.api_key},
             )
             self._check_response(res)
-            return res.text.strip().replace('"', '')
+            return res.json()['filename']
 
     def delete_image(self, filename: str):
         res = requests.delete(

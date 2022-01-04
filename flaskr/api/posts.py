@@ -10,24 +10,6 @@ from flaskr.models.image import Image
 from flaskr.models.tag import Tag
 from flaskr import util
 from renderer import markdown as md2
-'''
-Note: this API is not fully RESTful due to the challenge of preserving image filenames 
-(changing the image name will break the HTML that expects those images to have specific
-filenames). I plan to implement in-site drafting, at which point that problem will go 
-away.
-
-Post creation process:
-- Create post
-- Upload HTML
-- Upload images
-- Set config (including publish=True)
-
-Eventual REST API:
-- POST /post -> CREATE, with all config
-- PUT /post -> EDIT, with all config
-- PATCH /post -> EDIT, without full config
-- /files: endpoints for managing files (image AND HTML)
-'''
 # TODO: Should have a set of Tag endpoints too
 # TODO: SETUP TESTING FRAMEWORK
 
@@ -91,9 +73,9 @@ def create_post(slug: str):
         msg = 'A post with the given slug already exists'
         return Response(response=msg, status=400)
     post = Post(slug=slug)
+    post.get_directory().mkdir(exist_ok=True)
     db.session.add(post)
     db.session.commit()
-    post.get_directory().mkdir(exist_ok=True)
     return Response(status=200)
 
 
@@ -118,6 +100,8 @@ def set_config(slug: str):
     if not post:
         return Response(status=404)
     config = request.get_json()
+    # TODO: use string constants
+    # TODO: implement and use Post `setter()` methods
     if 'title' in config:
         post.title = config['title']
     if 'byline' in config:
@@ -135,6 +119,8 @@ def set_config(slug: str):
             return Response(response=msg, status=400)
         else:
             post.featured_filename = filename
+            if found_image not in post.images:
+                post.images.append(found_image)
     if 'thumbnail' in config:
         filename = config['thumbnail']
         found_image = Image.query.filter_by(filename=filename).first()
@@ -146,6 +132,8 @@ def set_config(slug: str):
             return Response(response=msg, status=400)
         else:
             post.thumbnail_filename = filename
+            if found_image not in post.images:
+                post.images.append(found_image)
     if 'banner' in config:
         filename = config['banner']
         found_image = Image.query.filter_by(filename=filename).first()
@@ -157,6 +145,8 @@ def set_config(slug: str):
             return Response(response=msg, status=400)
         else:
             post.banner_filename = filename
+            if found_image not in post.images:
+                post.images.append(found_image)
     if 'tags' in config:
         # Add tags
         for tag_name in config['tags']:
@@ -212,11 +202,19 @@ def upload_markdown(slug: str):
 
     # Look up referenced images and ensure they exist on server.
     # Also update `post.images`.
-    post.images_new = []
+    # TODO: honestly, this image stuff needs some real testing
+    # TODO: how to track featured, banner, and thumbnail as images belonging to the post?
+    post.images = []
+    if post.featured_filename:
+        post.images.append(Image.query.filter_by(filename=post.featured_filename).first())
+    if post.banner_filename:
+        post.images.append(Image.query.filter_by(filename=post.banner_filename).first())
+    if post.thumbnail_filename:
+        post.images.append(Image.query.filter_by(filename=post.thumbnail_filename).first())
     for image_name in md2.find_images(markdown):
         found_image = Image.query.filter_by(filename=image_name).first()
         if found_image:
-            post.images_new.append(found_image)
+            post.images.append(found_image)
         else:
             message = f'Image file not found on server: {image_name}'
             return Response(status=400, response=message)
