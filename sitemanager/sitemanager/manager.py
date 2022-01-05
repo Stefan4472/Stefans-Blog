@@ -53,10 +53,10 @@ def upload_post(
         key: str,
 ):
     service = ManagerService(host, key)
+    manifest = service.get_manifest()
 
-    # Check `allow_update` condition
-    if not allow_update and config.slug in service.get_manifest().posts:
-        # TODO: need to distinguish between POST (create new) and PUT (update existing)
+    # Check `allow_update` condition before we do a lot of work
+    if config.slug in manifest.posts and not allow_update:
         msg = 'Post with the specified slug already exists but update=False'
         raise ValueError(msg)
 
@@ -77,8 +77,15 @@ def upload_post(
             new_filename = service.upload_image(full_path)
             # Update Markdown in-memomry to use the new filename
             markdown = md.replace_image(markdown, filename, new_filename)
-    print('Creating post...')
-    service.create_post(new_config)
+
+    # Use PUT if post already exists, else POST
+    if config.slug in manifest.posts:
+        print('Updating post...')
+        service.update_post(new_config)
+    else:
+        print('Creating post...')
+        service.create_post(new_config)
+
     print('Uploading Markdown...')
     service.upload_markdown(config.slug, markdown)
 

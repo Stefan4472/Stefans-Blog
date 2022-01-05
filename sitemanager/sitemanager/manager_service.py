@@ -5,6 +5,7 @@ import typing
 import dataclasses as dc
 from sitemanager.manifest import Manifest, SiteDiff
 from sitemanager.postconfig import PostConfig
+import sitemanager.util as util
 
 
 @dc.dataclass
@@ -21,14 +22,16 @@ class ManagerService:
         )
         self._check_response(res)
 
-    # TODO
-    # def update_post(self, config: PostConfig):
-    #     res = requests.post(
-    #         f'{self.base_url}/api/v1/posts',
-    #         json=config.to_json(),
-    #         headers={'Authorization': self.api_key},
-    #     )
-    #     self._check_response(res)
+    def update_post(self, config: PostConfig):
+        # Remove the `slug` param
+        _json = config.to_json()
+        _json.pop(util.KEY_SLUG)
+        res = requests.put(
+            f'{self.base_url}/api/v1/posts/{config.slug}',
+            json=_json,
+            headers={'Authorization': self.api_key},
+        )
+        self._check_response(res)
 
     def delete_post(self, slug: str):
         res = requests.delete(
@@ -38,8 +41,8 @@ class ManagerService:
         self._check_response(res)
 
     def upload_markdown(self, slug: str, markdown: str):
-        res = requests.post(
-            f'{self.base_url}/api/v1/posts/{slug}/body',
+        res = requests.put(
+            f'{self.base_url}/api/v1/posts/{slug}/markdown',
             files={'file': ('post.md', markdown)},
             headers={'Authorization': self.api_key},
         )

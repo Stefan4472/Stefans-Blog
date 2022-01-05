@@ -6,8 +6,8 @@ import flaskr.api.constants as constants
 
 
 @dc.dataclass
-class CreatePostContract:
-    slug: str
+class UpdatePostContract:
+    """Note: basically the same as `CreatePostContract`, but without `slug`"""
     title: str
     byline: typing.Optional[str]
     publish_date: typing.Optional[dt.datetime]
@@ -20,20 +20,15 @@ class CreatePostContract:
     title_color: typing.Optional[str]
 
     @staticmethod
-    def get_schema() -> 'CreatePostSchema':
-        return CreatePostSchema()
+    def get_schema() -> 'UpdatePostSchema':
+        return UpdatePostSchema()
 
     @staticmethod
-    def from_json(_json: dict) -> 'CreatePostContract':
-        return CreatePostContract.get_schema().load(_json)
+    def from_json(_json: dict) -> 'UpdatePostContract':
+        return UpdatePostContract.get_schema().load(_json)
 
 
-class CreatePostSchema(msh.Schema):
-    slug = msh.fields.String(
-        required=True,
-        allow_none=False,
-        data_key=constants.KEY_SLUG,
-    )
+class UpdatePostSchema(msh.Schema):
     title = msh.fields.String(
         required=True,
         allow_none=False,
@@ -89,5 +84,5 @@ class CreatePostSchema(msh.Schema):
     )
 
     @msh.post_load
-    def make_contract(self, data, **kwargs) -> CreatePostContract:
-        return CreatePostContract(**data)
+    def make_contract(self, data, **kwargs) -> UpdatePostContract:
+        return UpdatePostContract(**data)

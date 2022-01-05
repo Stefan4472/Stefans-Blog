@@ -67,12 +67,12 @@ class Post(db.Model):
             markdown_text: str = None,
     ):
         self.slug = slug
-        self.title = title
+        self.set_title(title)
         self.set_featured_image(featured_image)
         self.set_banner_image(banner_image)
         self.set_thumbnail_image(thumbnail_image)
         self.byline = byline if byline else ''
-        self.date = publish_date if publish_date else dt.datetime.now()
+        self.publish_date = publish_date if publish_date else dt.datetime.now()
         self.is_featured = is_featured if is_featured is not None else False
         self.is_published = is_published if is_published is not None else False
         self.set_title_color(title_color if title_color else '#FFFFFF')
@@ -135,13 +135,40 @@ class Post(db.Model):
             raise ValueError('Improper HEX color (expects #[A-F]{6})')
         self.title_color = color
 
+    # TODO: honestly, the image stuff needs some real testing
     def set_markdown(self, markdown_text: str):
+        # Remove all images except for featured, banner, and thumbnail
+        self.images = [
+            img for img in self.images if
+            img.filename == self.featured_filename
+            or img.filename == self.banner_filename
+            or img.filename == self.thumbnail_filename]
+        # Look up images referenced in the Markdown and ensure they exist
+        for image_name in md2.find_images(markdown_text):
+            found_image = Image.query.filter_by(filename=image_name).first()
+            if found_image:
+                self.images.append(found_image)
+            else:
+                msg = f'Image file not found on server: {image_name}'
+                raise ValueError(msg)
+
+        # Render HTML to check for errors
+        try:
+            md2.render_string(markdown_text)
+        except Exception as e:
+            raise ValueError(f'Error processing Markdown: {e}')
+
         # Create directory
         # TODO: probably refactor this out and just have a `posts` folder
         self.get_directory().mkdir(exist_ok=True)
         with open(self.get_markdown_path(), 'w+', encoding='utf-8') as out:
             out.write(markdown_text)
         self.hash = hashlib.md5(bytes(markdown_text, encoding='utf8')).hexdigest()
+
+        # Add Markdown file to the search engine index
+        # TODO: PROVIDE AN `INDEX_STRING()` METHOD
+        flask.current_app.search_engine.index_file(self.get_markdown_path(), self.slug)
+        flask.current_app.search_engine.commit()
 
     def render_html(self) -> str:
         """Retrieve the Markdown file containing the post's contents and render to HTML."""
