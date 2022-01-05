@@ -2,10 +2,13 @@ import flask
 import datetime
 import pathlib
 import re
+import hashlib
+import typing
 from sqlalchemy import asc, desc
 from flaskr import db
 import flaskr.models.relations as relations
 from flaskr.models.image import Image
+from flaskr.models.tag import Tag
 import flaskr.api.constants as constants
 import renderer.markdown as md2
 
@@ -15,23 +18,24 @@ COLOR_REGEX = re.compile('^#[0-9a-fA-F]{6}$')
 
 
 # TODO: CURRENTLY, MARKDOWN FILES ARE PUBLICLY ACCESSIBLE VIA THE 'STATIC' ROUTE. THIS SHOULD NOT BE THE CASE
+# TODO: implement and use Post `setter()` methods
 class Post(db.Model):
     __tablename__ = 'post'
     id = db.Column(db.Integer, primary_key=True)
-    slug = db.Column(db.String, nullable=False, unique=True)
-    title = db.Column(db.String, nullable=False, default='')
-    byline = db.Column(db.String, nullable=False, default='')
-    date = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now().date())
-    # Image filenames
-    featured_filename = db.Column(db.String, nullable=False, default='')
-    banner_filename = db.Column(db.String, nullable=False, default='')
-    thumbnail_filename = db.Column(db.String, nullable=False, default='')
+    slug = db.Column(db.String, unique=True, nullable=False)
+    title = db.Column(db.String, nullable=False)
+    byline = db.Column(db.String, nullable=False)
+    date = db.Column(db.DateTime, nullable=False)
+    # Image filenames TODO: change to image ID
+    featured_filename = db.Column(db.String, nullable=False)
+    banner_filename = db.Column(db.String, nullable=False)
+    thumbnail_filename = db.Column(db.String, nullable=False)
     # MD5 hash of the post's Markdown
-    hash = db.Column(db.String, nullable=False, default='')
-    is_featured = db.Column(db.Boolean, default=False)
-    is_published = db.Column(db.Boolean, default=False)
+    hash = db.Column(db.String, nullable=False)
+    is_featured = db.Column(db.Boolean, nullable=False)
+    is_published = db.Column(db.Boolean, nullable=False)
     # Note: checking for valid hex colors is left to the application
-    title_color = db.Column(db.String(length=7), default='#FFFFFF')
+    title_color = db.Column(db.String(length=7), nullable=False)
 
     # Tags (Many to Many)
     tags = db.relationship(
@@ -48,11 +52,44 @@ class Post(db.Model):
         backref=db.backref('images', lazy='dynamic'),
     )
 
+    # TODO: explicit choice of defaults--don't just set in the contract
+    def __init__(
+            self,
+            slug: str,
+            title: str,
+            byline: str,
+            publish_date: datetime.datetime,
+            featured_image: 'Image',
+            banner_image: 'Image',
+            thumbnail_image: 'Image',
+            markdown_text: str,
+            is_featured: bool,
+            is_published: bool,
+            title_color: str,
+            tags: typing.List[Tag],
+    ):
+        self.slug = slug
+        self.title = title
+        self.byline = byline
+        self.date = publish_date
+        self.set_featured_image(featured_image)
+        self.set_banner_image(banner_image)
+        self.set_thumbnail_image(thumbnail_image)
+        self.is_featured = is_featured
+        self.is_published = is_published
+        self.set_title_color(title_color)
+        # Create directory
+        # TODO: probably refactor this out and just have a `posts` folder
+        self.get_directory().mkdir(exist_ok=True)
+        self.set_markdown(markdown_text)
+        self.tags = tags
+
     # TODO: MAKE INTO ATTRIBUTES
     def get_directory(self) -> pathlib.Path:
         """Return Path object to static folder."""
         return pathlib.Path(flask.current_app.static_folder) / self.slug
 
+    # TODO: refactor to `get_featured_image()`
     def get_featured_url(self) -> str:
         return flask.url_for('static', filename=self.featured_filename)
 
@@ -64,6 +101,49 @@ class Post(db.Model):
 
     def get_markdown_path(self) -> pathlib.Path:
         return self.get_directory() / 'post.md'
+
+    def set_featured_image(self, image: Image):
+        if (image.width, image.height) != constants.FEATURED_IMG_SIZE:
+            raise ValueError('Featured image has the wrong dimensions')
+        if self.featured_filename:
+            curr_featured = \
+                Image.query.filter_by(filename=self.featured_filename).first()
+            self.images.remove(curr_featured)
+        self.featured_filename = image.filename
+        if image not in self.images:
+            self.images.append(image)
+
+    def set_banner_image(self, image: Image):
+        if (image.width, image.height) != constants.BANNER_SIZE:
+            raise ValueError('Banner image has the wrong dimensions')
+        if self.banner_filename:
+            curr_banner = \
+                Image.query.filter_by(filename=self.banner_filename).first()
+            self.images.remove(curr_banner)
+        self.banner_filename = image.filename
+        if image not in self.images:
+            self.images.append(image)
+
+    def set_thumbnail_image(self, image: Image):
+        if (image.width, image.height) != constants.THUMBNAIL_SIZE:
+            raise ValueError('Thumbnail image has the wrong dimensions')
+        if self.thumbnail_filename:
+            curr_thumbnail = \
+                Image.query.filter_by(filename=self.thumbnail_filename).first()
+            self.images.remove(curr_thumbnail)
+        self.thumbnail_filename = image.filename
+        if image not in self.images:
+            self.images.append(image)
+
+    def set_title_color(self, color: str):
+        if not re.compile(constants.COLOR_REGEX).match(color):
+            raise ValueError('Improper HEX color (expects #[A-F]{6})')
+        self.title_color = color
+
+    def set_markdown(self, markdown_text: str):
+        with open(self.get_markdown_path(), 'w+', encoding='utf-8') as out:
+            out.write(markdown_text)
+        self.hash = hashlib.md5(bytes(markdown_text, encoding='utf8')).hexdigest()
 
     def render_html(self) -> str:
         """Retrieve the Markdown file containing the post's contents and render to HTML."""

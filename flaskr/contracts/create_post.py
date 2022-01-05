@@ -10,7 +10,7 @@ class CreatePostContract:
     slug: str
     title: str
     byline: str
-    date: dt.date
+    date: dt.datetime
     image: str
     thumbnail: str
     banner: str

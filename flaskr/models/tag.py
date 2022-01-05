@@ -1,5 +1,4 @@
 from flaskr import db
-from sqlalchemy import CheckConstraint
 
 
 class Tag(db.Model):
