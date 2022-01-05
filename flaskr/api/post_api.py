@@ -2,6 +2,7 @@ import hashlib
 import shutil
 import marshmallow
 import typing
+import sqlalchemy
 import datetime as dt
 from flask import request, Response, current_app, Blueprint, jsonify
 from flask_login import login_required
@@ -67,57 +68,32 @@ def create_post():
     except marshmallow.exceptions.ValidationError as e:
         return Response(status=400, response='Invalid parameters: {}'.format(e))
 
-    # if Post.query.filter_by(slug=contract.slug).first():
-    #     msg = 'A post with the given slug already exists'
-    #     return Response(response=msg, status=400)
-
-    # featured_image = Image.query.filter_by(filename=contract.image).first()
-    # if not featured_image:
-    #     msg = f'Specified image "{contract.image}" not found on server'
-    #     return Response(response=msg, status=400)
-    #
-    # thumbnail = Image.query.filter_by(filename=contract.thumbnail).first()
-    # if not thumbnail:
-    #     msg = f'Specified image "{contract.thumbnail}" not found on server'
-    #     return Response(response=msg, status=400)
-    #
-    # banner = Image.query.filter_by(filename=contract.banner).first()
-    # if not banner:
-    #     msg = f'Specified image "{contract.banner}" not found on server'
-    #     return Response(response=msg, status=400)
-    # for tag_name in contract.tags:
-    #     tag_slug = util.generate_slug(tag_name)
-    #     tag_obj = Tag.query.filter_by(slug=tag_slug).first()
-    #     # Create tag if doesn't exist already
-    #     if not tag_obj:
-    #         tag_obj = Tag(
-    #             slug=tag_slug,
-    #             name=tag_name,
-    #             color=util.generate_random_color(),
-    #         )
-    #         db.session.add(tag_obj)
+    if Post.query.filter_by(slug=contract.slug).first():
+        msg = 'A post with the given slug already exists'
+        return Response(response=msg, status=400)
 
     try:
         post = Post(
-            slug=contract.slug,
-            title=contract.title,
+            contract.slug,
+            contract.title,
+            get_image(contract.image),
+            get_image(contract.banner),
+            get_image(contract.thumbnail),
             byline=contract.byline,
             publish_date=dt.datetime(contract.date.year, contract.date.month, contract.date.day),
-            featured_image=get_image(contract.image),
-            banner_image=get_image(contract.banner),
-            thumbnail_image=get_image(contract.thumbnail),
-            markdown_text='',
             is_featured=contract.feature,
             is_published=contract.publish,
             title_color=contract.title_color,
             tags=get_or_create_tags(contract.tags),
         )
+        db.session.add(post)
+        db.session.commit()
+        return Response(status=200)
     except ValueError as e:
         return Response(status=400, response=str(e))
-
-    db.session.add(post)
-    db.session.commit()
-    return Response(status=200)
+    except sqlalchemy.exc.SQLAlchemyError as e:
+        # TODO: log error
+        return Response(status=500, response='Internal database error')
 
 
 @BLUEPRINT.route('/<string:slug>', methods=['DELETE'])
@@ -278,20 +254,21 @@ def upload_markdown(slug: str):
 
 
 def get_or_create_tags(tags: typing.List[str]) -> typing.List[Tag]:
-    tag_objects: typing.List[Tag] = []
-    for tag_name in tags:
-        tag_slug = util.generate_slug(tag_name)
-        tag_obj = Tag.query.filter_by(slug=tag_slug).first()
-        # Create tag if doesn't exist already
-        if not tag_obj:
-            tag_obj = Tag(
-                slug=tag_slug,
-                name=tag_name,
-                color=util.generate_random_color(),
-            )
-            db.session.add(tag_obj)
-        tag_objects.append(tag_obj)
-    return tag_objects
+    if tags:
+        tag_objects: typing.List[Tag] = []
+        for tag_name in tags:
+            tag_slug = util.generate_slug(tag_name)
+            tag_obj = Tag.query.filter_by(slug=tag_slug).first()
+            # Create tag if doesn't exist already
+            if not tag_obj:
+                tag_obj = Tag(
+                    slug=tag_slug,
+                    name=tag_name,
+                    color=util.generate_random_color(),
+                )
+                db.session.add(tag_obj)
+            tag_objects.append(tag_obj)
+        return tag_objects
 
 
 def get_image(filename: str) -> Image:

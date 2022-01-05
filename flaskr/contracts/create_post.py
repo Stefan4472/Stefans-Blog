@@ -9,15 +9,15 @@ import flaskr.api.constants as constants
 class CreatePostContract:
     slug: str
     title: str
-    byline: str
-    date: dt.datetime
+    byline: typing.Optional[str]
+    date: typing.Optional[dt.datetime]
     image: str
     thumbnail: str
     banner: str
-    tags: typing.List[str]
-    publish: bool
-    feature: bool
-    title_color: str
+    tags: typing.Optional[typing.List[str]]
+    publish: typing.Optional[bool]
+    feature: typing.Optional[bool]
+    title_color: typing.Optional[str]
 
     @staticmethod
     def get_schema() -> 'CreatePostSchema':
@@ -41,14 +41,12 @@ class CreatePostSchema(msh.Schema):
     )
     byline = msh.fields.String(
         required=False,
-        load_default='',
-        allow_none=False,
+        load_default=None,
         data_key=constants.KEY_BYLINE,
     )
     date = msh.fields.Date(
         required=False,
-        load_default=dt.datetime.now().date,
-        allow_none=False,
+        load_default=None,
         data_key=constants.KEY_DATE,
     )
     image = msh.fields.String(
@@ -69,26 +67,22 @@ class CreatePostSchema(msh.Schema):
     tags = msh.fields.List(
         msh.fields.String(),
         required=False,
-        default=[],
-        allow_none=True,
+        load_default=None,
         data_key=constants.KEY_TAGS,
     )
     publish = msh.fields.Boolean(
         required=False,
-        load_default=False,
-        allow_none=False,
+        load_default=None,
         data_key=constants.KEY_PUBLISH,
     )
     feature = msh.fields.Boolean(
         required=False,
-        load_default=False,
-        allow_none=False,
+        load_default=None,
         data_key=constants.KEY_FEATURE,
     )
     title_color = msh.fields.String(
         required=False,
-        load_default='#FFFFFF',
-        allow_none=False,
+        load_default=None,
         data_key=constants.KEY_TITLE_COLOR,
         validate=msh.validate.Regexp(constants.COLOR_REGEX),
     )

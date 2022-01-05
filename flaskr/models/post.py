@@ -1,5 +1,5 @@
 import flask
-import datetime
+import datetime as dt
 import pathlib
 import re
 import hashlib
@@ -18,7 +18,6 @@ COLOR_REGEX = re.compile('^#[0-9a-fA-F]{6}$')
 
 
 # TODO: CURRENTLY, MARKDOWN FILES ARE PUBLICLY ACCESSIBLE VIA THE 'STATIC' ROUTE. THIS SHOULD NOT BE THE CASE
-# TODO: implement and use Post `setter()` methods
 class Post(db.Model):
     __tablename__ = 'post'
     id = db.Column(db.Integer, primary_key=True)
@@ -52,37 +51,33 @@ class Post(db.Model):
         backref=db.backref('images', lazy='dynamic'),
     )
 
-    # TODO: explicit choice of defaults--don't just set in the contract
     def __init__(
             self,
             slug: str,
             title: str,
-            byline: str,
-            publish_date: datetime.datetime,
             featured_image: 'Image',
             banner_image: 'Image',
             thumbnail_image: 'Image',
-            markdown_text: str,
-            is_featured: bool,
-            is_published: bool,
-            title_color: str,
-            tags: typing.List[Tag],
+            byline: str = None,
+            publish_date: dt.datetime = None,
+            is_featured: bool = None,
+            is_published: bool = None,
+            title_color: str = None,
+            tags: typing.List[Tag] = None,
+            markdown_text: str = None,
     ):
         self.slug = slug
         self.title = title
-        self.byline = byline
-        self.date = publish_date
         self.set_featured_image(featured_image)
         self.set_banner_image(banner_image)
         self.set_thumbnail_image(thumbnail_image)
-        self.is_featured = is_featured
-        self.is_published = is_published
-        self.set_title_color(title_color)
-        # Create directory
-        # TODO: probably refactor this out and just have a `posts` folder
-        self.get_directory().mkdir(exist_ok=True)
-        self.set_markdown(markdown_text)
-        self.tags = tags
+        self.byline = byline if byline else ''
+        self.date = publish_date if publish_date else dt.datetime.now()
+        self.is_featured = is_featured if is_featured is not None else False
+        self.is_published = is_published if is_published is not None else False
+        self.set_title_color(title_color if title_color else '#FFFFFF')
+        self.tags = tags if tags else []
+        self.set_markdown(markdown_text if markdown_text else '')
 
     # TODO: MAKE INTO ATTRIBUTES
     def get_directory(self) -> pathlib.Path:
@@ -141,6 +136,9 @@ class Post(db.Model):
         self.title_color = color
 
     def set_markdown(self, markdown_text: str):
+        # Create directory
+        # TODO: probably refactor this out and just have a `posts` folder
+        self.get_directory().mkdir(exist_ok=True)
         with open(self.get_markdown_path(), 'w+', encoding='utf-8') as out:
             out.write(markdown_text)
         self.hash = hashlib.md5(bytes(markdown_text, encoding='utf8')).hexdigest()
