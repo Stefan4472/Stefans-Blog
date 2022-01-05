@@ -96,6 +96,7 @@ def create_post():
     except ValueError as e:
         return Response(status=400, response=str(e))
     except sqlalchemy.exc.SQLAlchemyError as e:
+        print(e)
         return Response(status=500, response='Internal database error')
 
 

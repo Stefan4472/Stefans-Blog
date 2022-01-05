@@ -15,12 +15,12 @@ BLUEPRINT = flask.Blueprint('blog', __name__)
 def index():
     """Site index. Displays featured and recent posts."""
     recent_posts = Post.query\
-        .filter_by(is_published=True)\
-        .order_by(desc('date'))\
+        .filter(Post.is_published)\
+        .order_by(desc(Post.publish_date))\
         .limit(5)\
         .all()
     featured_posts = Post.query\
-        .filter_by(is_featured=True, is_published=True)\
+        .filter(Post.is_featured and Post.is_published)\
         .all()
     return flask.render_template(
         'blog/index.html',
@@ -36,8 +36,8 @@ def posts_page(page: int = 1):
     """The "posts" page, which displays all posts on the site (paginated)."""
     # Using pagination example from https://stackoverflow.com/a/57348599
     posts = Post.query\
-        .filter_by(is_published=True)\
-        .order_by(desc('date'))\
+        .filter(Post.is_published)\
+        .order_by(desc(Post.publish_date))\
         .paginate(
             page,
             flask.current_app.config['PAGINATE_POSTS_PER_PAGE'],
@@ -54,7 +54,7 @@ def posts_page(page: int = 1):
 def post_view(slug):
     """Shows the page for the post with the specified slug."""
     # Retrieve post
-    post = Post.query.filter_by(slug=slug, is_published=True).first()
+    post = Post.query.filter(Post.slug == slug and Post.is_published).first()
     # Throw 404 if there is no post with the given slug in the database.
     if not post:
         werkzeug.exceptions.abort(404)
@@ -75,11 +75,10 @@ def tag_view(slug):
     Display all posts that have the given tag.
     TODO: PAGINATION, POTENTIALLY COMBINE INTO THE 'POSTS' URL
     """
-    tag = Tag.query.filter_by(slug=slug).first()
+    tag = Tag.query.filter(Tag.slug == slug).first()
     # Make sure the queried tag exists
     if not tag:
         werkzeug.exceptions.abort(404)
-
     return flask.render_template(
         'blog/tag_view.html',
         tag=tag,
@@ -100,7 +99,7 @@ def search_page():
     # Perform search and fetch results
     if query:
         posts = [
-            Post.query.filter_by(slug=result.slug, is_published=True).first()
+            Post.query.filter(Post.slug == result.slug, Post.is_published).first()
             for result in flask.current_app.search_engine.search(query)
         ]
 

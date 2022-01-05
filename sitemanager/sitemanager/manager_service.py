@@ -33,17 +33,17 @@ class ManagerService:
         )
         self._check_response(res)
 
-    def delete_post(self, slug: str):
-        res = requests.delete(
-            f'{self.base_url}/api/v1/posts/{slug}',
-            headers={'Authorization': self.api_key},
-        )
-        self._check_response(res)
-
     def upload_markdown(self, slug: str, markdown: str):
         res = requests.put(
             f'{self.base_url}/api/v1/posts/{slug}/markdown',
             files={'file': ('post.md', markdown)},
+            headers={'Authorization': self.api_key},
+        )
+        self._check_response(res)
+
+    def delete_post(self, slug: str):
+        res = requests.delete(
+            f'{self.base_url}/api/v1/posts/{slug}',
             headers={'Authorization': self.api_key},
         )
         self._check_response(res)
@@ -62,16 +62,6 @@ class ManagerService:
     def delete_image(self, filename: str):
         res = requests.delete(
             f'{self.base_url}/api/v1/images/{filename}',
-            headers={'Authorization': self.api_key},
-        )
-        self._check_response(res)
-
-    def set_config(self, slug: str, config: PostConfig):
-        _json = config.to_json()
-        _json.pop('slug')
-        res = requests.post(
-            f'{self.base_url}/api/v1/posts/{slug}/config',
-            json=_json,
             headers={'Authorization': self.api_key},
         )
         self._check_response(res)
@@ -107,4 +97,4 @@ class ManagerService:
         elif res.status_code == 401:
             raise ValueError('Couldn\'t access API: invalid authentication credentials')
         elif res.status_code != 200:
-            raise ValueError('Error: {}'.format(str(res)))
+            raise ValueError('Error: {}'.format(res.text))

@@ -24,11 +24,11 @@ class Post(db.Model):
     slug = db.Column(db.String, unique=True, nullable=False)
     title = db.Column(db.String, nullable=False)
     byline = db.Column(db.String, nullable=False)
-    date = db.Column(db.DateTime, nullable=False)
-    # Image filenames TODO: change to image ID
-    featured_filename = db.Column(db.String, nullable=False)
-    banner_filename = db.Column(db.String, nullable=False)
-    thumbnail_filename = db.Column(db.String, nullable=False)
+    publish_date = db.Column(db.DateTime, nullable=False)
+    # Image IDs
+    featured_id = db.Column(db.String, nullable=False)
+    banner_id = db.Column(db.String, nullable=False)
+    thumbnail_id = db.Column(db.String, nullable=False)
     # MD5 hash of the post's Markdown
     hash = db.Column(db.String, nullable=False)
     is_featured = db.Column(db.Boolean, nullable=False)
@@ -67,7 +67,7 @@ class Post(db.Model):
             markdown_text: str = None,
     ):
         self.slug = slug
-        self.set_title(title)
+        self.title = title
         self.set_featured_image(featured_image)
         self.set_banner_image(banner_image)
         self.set_thumbnail_image(thumbnail_image)
@@ -79,20 +79,18 @@ class Post(db.Model):
         self.tags = tags if tags else []
         self.set_markdown(markdown_text if markdown_text else '')
 
-    # TODO: MAKE INTO ATTRIBUTES
     def get_directory(self) -> pathlib.Path:
         """Return Path object to static folder."""
         return pathlib.Path(flask.current_app.static_folder) / self.slug
 
-    # TODO: refactor to `get_featured_image()`
-    def get_featured_url(self) -> str:
-        return flask.url_for('static', filename=self.featured_filename)
+    def get_featured_image(self) -> Image:
+        return Image.query.filter_by(id=self.featured_id).first()
 
-    def get_banner_url(self) -> str:
-        return flask.url_for('static', filename=self.banner_filename)
+    def get_banner_image(self) -> Image:
+        return Image.query.filter_by(id=self.banner_id).first()
 
-    def get_thumbnail_url(self) -> str:
-        return flask.url_for('static', filename=self.thumbnail_filename)
+    def get_thumbnail_image(self) -> Image:
+        return Image.query.filter_by(id=self.thumbnail_id).first()
 
     def get_markdown_path(self) -> pathlib.Path:
         return self.get_directory() / 'post.md'
@@ -100,33 +98,30 @@ class Post(db.Model):
     def set_featured_image(self, image: Image):
         if (image.width, image.height) != constants.FEATURED_IMG_SIZE:
             raise ValueError('Featured image has the wrong dimensions')
-        if self.featured_filename:
-            curr_featured = \
-                Image.query.filter_by(filename=self.featured_filename).first()
+        if self.featured_id:
+            curr_featured = Image.query.filter_by(id=self.featured_id).first()
             self.images.remove(curr_featured)
-        self.featured_filename = image.filename
+        self.featured_id = image.id
         if image not in self.images:
             self.images.append(image)
 
     def set_banner_image(self, image: Image):
         if (image.width, image.height) != constants.BANNER_SIZE:
             raise ValueError('Banner image has the wrong dimensions')
-        if self.banner_filename:
-            curr_banner = \
-                Image.query.filter_by(filename=self.banner_filename).first()
+        if self.banner_id:
+            curr_banner = Image.query.filter_by(id=self.banner_id).first()
             self.images.remove(curr_banner)
-        self.banner_filename = image.filename
+        self.banner_id = image.id
         if image not in self.images:
             self.images.append(image)
 
     def set_thumbnail_image(self, image: Image):
         if (image.width, image.height) != constants.THUMBNAIL_SIZE:
             raise ValueError('Thumbnail image has the wrong dimensions')
-        if self.thumbnail_filename:
-            curr_thumbnail = \
-                Image.query.filter_by(filename=self.thumbnail_filename).first()
+        if self.thumbnail_id:
+            curr_thumbnail = Image.query.filter_by(id=self.thumbnail_id).first()
             self.images.remove(curr_thumbnail)
-        self.thumbnail_filename = image.filename
+        self.thumbnail_id = image.id
         if image not in self.images:
             self.images.append(image)
 
@@ -140,9 +135,9 @@ class Post(db.Model):
         # Remove all images except for featured, banner, and thumbnail
         self.images = [
             img for img in self.images if
-            img.filename == self.featured_filename
-            or img.filename == self.banner_filename
-            or img.filename == self.thumbnail_filename]
+            img.id == self.featured_id
+            or img.id == self.banner_id
+            or img.id == self.thumbnail_id]
         # Look up images referenced in the Markdown and ensure they exist
         for image_name in md2.find_images(markdown_text):
             found_image = Image.query.filter_by(filename=image_name).first()
@@ -185,14 +180,14 @@ class Post(db.Model):
 
     def get_prev(self) -> 'Post':
         return Post.query\
-            .filter(Post.date < self.date)\
-            .order_by(desc('date'))\
+            .filter(Post.publish_date < self.publish_date)\
+            .order_by(desc(Post.publish_date))\
             .first()
 
     def get_next(self) -> 'Post':
         return Post.query\
-            .filter(Post.date > self.date)\
-            .order_by(asc('date'))\
+            .filter(Post.publish_date > self.publish_date)\
+            .order_by(asc(Post.publish_date))\
             .first()
 
     def to_dict(self) -> dict:
@@ -200,14 +195,14 @@ class Post(db.Model):
             constants.KEY_SLUG: self.slug,
             constants.KEY_TITLE: self.title,
             constants.KEY_BYLINE: self.byline,
-            constants.KEY_DATE: self.date.strftime(constants.DATE_FORMAT),
-            constants.KEY_IMAGE: self.featured_filename,
-            constants.KEY_BANNER: self.banner_filename,
-            constants.KEY_THUMBNAIL: self.thumbnail_filename,
+            constants.KEY_DATE: self.publish_date.strftime(constants.DATE_FORMAT),
+            constants.KEY_IMAGE: self.featured_id,
+            constants.KEY_BANNER: self.banner_id,
+            constants.KEY_THUMBNAIL: self.thumbnail_id,
             constants.KEY_HASH: self.hash,
             constants.KEY_TAGS: [tag.slug for tag in self.tags],
             constants.KEY_IMAGES: {
-                image.filename: {'hash': image.hash} for image in self.images
+                image.id: {'hash': image.hash} for image in self.images
             },
             constants.KEY_FEATURE: self.is_featured,
             constants.KEY_PUBLISH: self.is_published,
@@ -217,6 +212,6 @@ class Post(db.Model):
         return 'Post(title="{}", slug="{}", date={}, tags={})'.format(
             self.title,
             self.slug,
-            self.date,
+            self.publish_date,
             self.tags,
         )
