@@ -13,12 +13,22 @@ class ManagerService:
     base_url: str
     api_key: str
 
-    def create_post(self, slug: str):
+    def create_post(self, config: PostConfig):
         res = requests.post(
-            f'{self.base_url}/api/v1/posts/{slug}',
+            f'{self.base_url}/api/v1/posts',
+            json=config.to_json(),
             headers={'Authorization': self.api_key},
         )
         self._check_response(res)
+
+    # TODO
+    # def update_post(self, config: PostConfig):
+    #     res = requests.post(
+    #         f'{self.base_url}/api/v1/posts',
+    #         json=config.to_json(),
+    #         headers={'Authorization': self.api_key},
+    #     )
+    #     self._check_response(res)
 
     def delete_post(self, slug: str):
         res = requests.delete(

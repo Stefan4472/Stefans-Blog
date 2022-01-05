@@ -53,15 +53,12 @@ def upload_post(
         key: str,
 ):
     service = ManagerService(host, key)
-    manifest = service.get_manifest()
 
-    # No post with given slug exists: create new
-    if config.slug not in manifest.posts:
-        print('Creating post...')
-        service.create_post(config.slug)
-    # Throw error if a post with given slug exists but `update` is not set to True
-    elif not allow_update:
-        raise ValueError('Post with the specified slug already exists but update=False')
+    # Check `allow_update` condition
+    if not allow_update and config.slug in service.get_manifest().posts:
+        # TODO: need to distinguish between POST (create new) and PUT (update existing)
+        msg = 'Post with the specified slug already exists but update=False'
+        raise ValueError(msg)
 
     new_config = copy.copy(config)
     if upload_images:
@@ -71,7 +68,6 @@ def upload_post(
         new_config.banner_img = pathlib.Path(service.upload_image(config.banner_img))
         print('Uploading thumbnail image {}...'.format(config.thumbnail_img))
         new_config.thumbnail_img = pathlib.Path(service.upload_image(config.thumbnail_img))
-
         # Get the list of image filenames referenced in the Markdown
         for filename in md.find_images(markdown):
             # Resolve absolute path
@@ -81,10 +77,10 @@ def upload_post(
             new_filename = service.upload_image(full_path)
             # Update Markdown in-memomry to use the new filename
             markdown = md.replace_image(markdown, filename, new_filename)
+    print('Creating post...')
+    service.create_post(new_config)
     print('Uploading Markdown...')
     service.upload_markdown(config.slug, markdown)
-    print('Setting config...')
-    service.set_config(config.slug, new_config)
 
 
 # def apply_diff(self, diff: SiteDiff):

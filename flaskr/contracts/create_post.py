@@ -7,6 +7,7 @@ import flaskr.api.constants as constants
 
 @dc.dataclass
 class CreatePostContract:
+    slug: str
     title: str
     byline: str
     date: dt.date
@@ -28,6 +29,11 @@ class CreatePostContract:
 
 
 class CreatePostSchema(msh.Schema):
+    slug = msh.fields.String(
+        required=True,
+        allow_none=False,
+        data_key=constants.KEY_SLUG,
+    )
     title = msh.fields.String(
         required=True,
         allow_none=False,
