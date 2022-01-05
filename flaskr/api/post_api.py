@@ -1,49 +1,47 @@
 import hashlib
-import datetime as dt
-import flask
 import shutil
-from flask import request, Response, current_app
+import marshmallow
+from flask import request, Response, current_app, Blueprint, jsonify
 from flask_login import login_required
-from flaskr.database import db
-from flaskr.models.post import Post, COLOR_REGEX
-from flaskr.models.image import Image
-from flaskr.models.tag import Tag
 import flaskr.api.constants as constants
 import flaskr.api.util as util
+from flaskr.database import db
+from flaskr.models.post import Post
+from flaskr.models.image import Image
+from flaskr.models.tag import Tag
+from flaskr.contracts.create_post import CreatePostContract
 from renderer import markdown as md2
 # TODO: Should have a set of Tag endpoints too
 # TODO: SETUP TESTING FRAMEWORK
 
 
 # Blueprint under which all views will be assigned
-BLUEPRINT = flask.Blueprint('posts', __name__, url_prefix='/api/v1/posts')
+BLUEPRINT = Blueprint('posts', __name__, url_prefix='/api/v1/posts')
 
 
 @BLUEPRINT.route('/', methods=['GET'])
 @login_required
 def get_posts():
     """
-    Get posts.
+    Get a JSON "manifest" of posts.
 
     Query parameters:
     (bool) `featured`: return only posts where is_featured = ?
     (bool) `published`: return only posts where is_published = ?
     """
-    # Create query dynamically
+    # Create query dynamically based on the parameters passed in the request
     query = Post.query
     if constants.KEY_FEATURE in request.args:
-        # Convert string value to boolean value
         as_bool = (request.args[constants.KEY_FEATURE].lower() == 'true')
         query = query.filter(Post.is_featured == as_bool)
     if constants.KEY_PUBLISH in request.args:
         as_bool = (request.args[constants.KEY_PUBLISH].lower() == 'true')
         query = query.filter(Post.is_published == as_bool)
 
-    # Build JSON response
     manifest = {}
     for post in query.all():
         manifest[post.slug] = post.to_dict()
-    return flask.jsonify({'posts': manifest})
+    return jsonify({'posts': manifest})
 
 
 @BLUEPRINT.route('/<string:slug>', methods=['POST'])
@@ -82,20 +80,24 @@ def delete_post(slug: str):
 @BLUEPRINT.route('/<string:slug>/config', methods=['POST'])
 @login_required
 def set_config(slug: str):
+    try:
+        contract = CreatePostContract.from_json(request.get_json())
+    except marshmallow.exceptions.ValidationError as e:
+        return Response(status=400, response='Invalid parameters: {}'.format(e))
+
     post = Post.query.filter_by(slug=slug).first()
     if not post:
         return Response(status=404)
-    config = request.get_json()
+
     # TODO: implement and use Post `setter()` methods
-    if constants.KEY_TITLE in config:
-        post.title = config[constants.KEY_TITLE]
-    if constants.KEY_BYLINE in config:
-        post.byline = config[constants.KEY_BYLINE]
-    if constants.KEY_DATE in config:
-        post.date = dt.datetime.strptime(
-            config[constants.KEY_DATE], constants.DATE_FORMAT).date()
-    if constants.KEY_IMAGE in config:
-        filename = config[constants.KEY_IMAGE]
+    if contract.title:
+        post.title = contract.title
+    if contract.byline:
+        post.byline = contract.byline
+    if contract.date:
+        post.date = contract.date
+    if contract.image:
+        filename = contract.image
         found_image = Image.query.filter_by(filename=filename).first()
         if not found_image:
             msg = f'Specified image "{filename}" not found on server'
@@ -107,8 +109,8 @@ def set_config(slug: str):
             post.featured_filename = filename
             if found_image not in post.images:
                 post.images.append(found_image)
-    if constants.KEY_THUMBNAIL in config:
-        filename = config[constants.KEY_THUMBNAIL]
+    if contract.thumbnail:
+        filename = contract.thumbnail
         found_image = Image.query.filter_by(filename=filename).first()
         if not found_image:
             msg = f'Specified image "{filename}" not found on server'
@@ -120,8 +122,8 @@ def set_config(slug: str):
             post.thumbnail_filename = filename
             if found_image not in post.images:
                 post.images.append(found_image)
-    if constants.KEY_BANNER in config:
-        filename = config[constants.KEY_BANNER]
+    if contract.banner:
+        filename = contract.banner
         found_image = Image.query.filter_by(filename=filename).first()
         if not found_image:
             msg = f'Specified image "{filename}" not found on server'
@@ -133,9 +135,9 @@ def set_config(slug: str):
             post.banner_filename = filename
             if found_image not in post.images:
                 post.images.append(found_image)
-    if constants.KEY_TAGS in config:
+    if contract.tags:
         # Add tags
-        for tag_name in config[constants.KEY_TAGS]:
+        for tag_name in contract.tags:
             tag_slug = util.generate_slug(tag_name)
             # Lookup tag in the database
             tag = Tag.query.filter_by(slug=tag_slug).first()
@@ -149,15 +151,12 @@ def set_config(slug: str):
                 db.session.add(tag)
             # Register the post under this tag
             tag.posts.append(post)
-    if constants.KEY_PUBLISH in config:
-        post.is_published = config[constants.KEY_PUBLISH]
-    if constants.KEY_FEATURE in config:
-        post.is_featured = config[constants.KEY_FEATURE]
-    if constants.KEY_TITLE_COLOR in config:
-        if not COLOR_REGEX.match(config[constants.KEY_TITLE_COLOR]):
-            msg = '"title_color" is not a valid hex color string ("#------")'
-            return Response(status=400, response=msg)
-        post.title_color = config[constants.KEY_TITLE_COLOR]
+    if contract.publish:
+        post.is_published = contract.publish
+    if contract.feature:
+        post.is_featured = contract.feature
+    if contract.title_color:
+        post.title_color = contract.title_color
     db.session.commit()
     return Response(status=200)
 

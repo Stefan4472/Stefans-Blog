@@ -16,6 +16,9 @@ KEY_TITLE_COLOR = 'title_color'
 # Expected data format for JSON
 DATE_FORMAT = "%m/%d/%y"
 
+# Regex used to match a HEX color for the `title_color` field
+COLOR_REGEX = '^#[0-9a-fA-F]{6}$'
+
 # Prescribed featured-image size
 FEATURED_IMG_SIZE = (1000, 540)
 # Prescribed banner size

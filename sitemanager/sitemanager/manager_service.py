@@ -54,9 +54,11 @@ class ManagerService:
         self._check_response(res)
 
     def set_config(self, slug: str, config: PostConfig):
+        _json = config.to_json()
+        _json.pop('slug')
         res = requests.post(
             f'{self.base_url}/api/v1/posts/{slug}/config',
-            json=config.to_json(),
+            json=_json,
             headers={'Authorization': self.api_key},
         )
         self._check_response(res)
