@@ -1,3 +1,4 @@
+import hashlib
 import flask
 import re
 import randomcolor
@@ -34,3 +35,8 @@ def generate_slug(string: str) -> str:
 def generate_random_color() -> str:
     """Generates a random color and returns it as a hex string."""
     return randomcolor.RandomColor().generate(luminosity='light', count=1)[0]
+
+
+def calc_hash(_bytes: bytes) -> str:
+    """Calculate and return the MD5 hex digest for the given PIL Image."""
+    return hashlib.md5(_bytes).hexdigest()

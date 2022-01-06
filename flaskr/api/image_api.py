@@ -1,18 +1,12 @@
-import hashlib
 import flask
-import io
-import os
-import pathlib
-import uuid
 import datetime as dt
-from flask import request, Response, current_app
+from flask import request, Response
 from flask_login import login_required
-from PIL import UnidentifiedImageError, Image as PilImage
 import werkzeug.exceptions
 import werkzeug.utils
 from flaskr.database import db
 from flaskr.models.image import Image
-from flaskr.api.util import get_uploaded_file
+import flaskr.api.util as util
 
 
 BLUEPRINT = flask.Blueprint('images', __name__, url_prefix='/api/v1/images')
@@ -23,48 +17,29 @@ BLUEPRINT = flask.Blueprint('images', __name__, url_prefix='/api/v1/images')
 def upload_image():
     """Upload an image."""
     try:
-        raw_image, upload_name = get_uploaded_file(request)
+        raw_image, upload_name = util.get_uploaded_file(request)
     except ValueError as e:
         return Response(status=400, response=str(e))
 
     # Check if an image with the same hash has already been uploaded.
     # If so, return the details of the already existing copy.
-    file_hash = hashlib.md5(raw_image).hexdigest()
-    query = Image.query.filter_by(hash=file_hash)
+    img_hash = util.calc_hash(raw_image)
+    query = Image.query.filter_by(hash=img_hash)
     if query.first():
+        print('Duplicate')
         return flask.jsonify(query.first().to_dict())
 
     try:
-        image = PilImage.open(io.BytesIO(raw_image))
-    except UnidentifiedImageError:
-        return Response(status=400, response='Cannot read file (improper format)')
-
-    # Generate random UUID
-    image_id = uuid.uuid4().hex
-    safe_name = werkzeug.utils.secure_filename(upload_name)
-    extension = os.path.splitext(safe_name)[-1]
-    filename = image_id + extension
-
-    # Write out
-    write_path = pathlib.Path(flask.current_app.static_folder) / filename
-    with open(write_path, 'wb+') as out:
-        out.write(raw_image)
-
-    record = Image(
-        id=image_id,
-        filename=filename,
-        upload_name=safe_name,
-        upload_date=dt.datetime.now(),
-        extension=extension,
-        hash=file_hash,
-        width=image.width,
-        height=image.height,
-        size=os.path.getsize(write_path),
-    )
-
-    db.session.add(record)
-    db.session.commit()
-    return flask.jsonify(record.to_dict())
+        record = Image(
+            raw_image,
+            werkzeug.utils.secure_filename(upload_name),
+            dt.datetime.now(),
+        )
+        db.session.add(record)
+        db.session.commit()
+        return flask.jsonify(record.to_dict())
+    except ValueError as e:  # Note: ValueError is a little broad
+        return Response(status=400, response=str(e))
 
 
 @BLUEPRINT.route('/<string:image_id>', methods=['GET'])

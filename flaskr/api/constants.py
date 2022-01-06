@@ -19,11 +19,12 @@ DATE_FORMAT = "%m/%d/%y"
 # Regex used to match a HEX color for the `title_color` field
 COLOR_REGEX = '^#[0-9a-fA-F]{6}$'
 
-# Prescribed featured-image size
+# Prescribed featured-image size (width, height)
 FEATURED_IMG_SIZE = (1000, 540)
 # Prescribed banner size
-BANNER_SIZE = (1000, 175) # (1928, 768)
+BANNER_SIZE = (1000, 175)
 # Size of image thumbnails
 THUMBNAIL_SIZE = (400, 400)
-# The size that images in posts are resized to, by default
-DEFAULT_IMG_SIZE = (640, 480)
+# The size that images in posts cannot exceed.
+# Images that exceed this size will be thumbnail-ed to it.
+MAX_IMG_SIZE = (1200, 800)
