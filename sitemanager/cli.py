@@ -119,9 +119,9 @@ def set_featured(
         host: str,
         key: str,
 ):
-    """List the featured posts."""
+    """Toggle whether a specific post is featured."""
     service = ManagerService(host, key)
-    service.set_featured(slug, is_featured)
+    service.set_featured(slug, featured)
     click.echo('Done')
 
 

@@ -22,47 +22,40 @@ Follow the setup instructions below to install the `imagecropper`, `sitemanager`
 
 ## Setup
 
-Create a virtual environment and install the required packages:
+Install the required packages:
 ```
-python3 -m venv blogenv
-call blogenv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-Install the `imagecropper` package:
-```
-pip install -e ./imagecropper
-```
-
-Install the `sitemanager` package:
-```
-pip install -e ./sitemanager
-```
-
-Install the `renderer` package:
-```
-pip install -e ./renderer
-```
-
-Install my `simplesearch` package. It's not yet on pip, so you have to get it via Github:
-```
-git clone https://github.com/Stefan4472/simple-search-engine
-cd simple-search-engine
-pip install -e .
-```
+`flaskr/.flaskenv` contains several initial configuration parameters. These will be set as environment variables when `flask` is run. Take a look at those values before running the site. The `SECRET_KEY` should of course be changed in production.
 
 ## Usage
 
-To run the site, simply run Flask from the `flaskr` directory. The `python-dotenv` will use the `.flaskenv` config file to set environment variables for you.
+To run the site, simply run Flask from the `flaskr` directory. The `python-dotenv` package will use the `.flaskenv` config file to set environment variables for you.
 ```
 cd flaskr 
 flask run
 ```
 
-To reset the site:
+To reset the site's database:
 ```
 flask reset_site
 ```
+
+## Uploading a post
+
+I've included an example post in the `example-post` directory. It provides a good example of how to write posts in Markdown with custom XML tags (described below) and how to configure a post via JSON (`post-meta.json`). To upload it to the site, first make sure the site is running (`flask run`, as per the instructions above). To upload it to the site, execute the following in a command prompt:
+```
+cd sitemanager
+# This assumes SECRET_KEY='x123456', as set by default in `flaskr/.flaskenv`
+python cli.py upload-post ..\example-post --host=http://127.0.0.1:5000 --key=x123456 --publish=true --allow_update=true 
+# Optional: mark the post as "featured"
+python cli.py set-featured gamedev-spritesheets --host=http://127.0.0.1:5000 --key=x123456 --featured=true
+```
+
+This command uses the `sitemanager` CLI to upload a post. The CLI communicates with the website's API to upload all files for you and configure the post properly. It will also open my `ImageCropper` program, allowing you to crop the post's featured image, banner and thumbnail to the correct sizes. Once finished, it will write the new (cropped) images to the file system and update the `post-meta.json`.
+
+To see help information on the `upload-post` command, call `python cli.py upload-post --help`. The `upload-post` command also works on a live deployment--just set the `--host` and `--key` options properly. To see more available commands, run `python cli.py --help`.
 
 ## Custom Markdown Rendering
 
@@ -85,9 +78,3 @@ if __name__ == '__main__':
     print('Hello world')
 </x-code>
 ```
-
-## Ideas for Improvement
-
-- Allow for "reference links", which add a "?ref=xxxxxx" key to the end of a URL. This way, we can track which clicks came from a specific LinkedIn post, for example.
-- Use AJAX to display the "posts" page (load more posts dynamically), and provide Tag filters.
-- Build a web interface for writing and managing posts

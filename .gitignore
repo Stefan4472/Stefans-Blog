@@ -1,11 +1,16 @@
-venv/
+flaskr/static/
+flaskr/.flaskenv
+instance/
+env/
+example-post/banner.jpg
+example-post/featured.jpg
+example-post/thumb.jpg
+
 .idea/
 
 *.pyc
-__pycache__/
+*__pycache__/
 
-flaskr/static/
-instance/
 .vscode/
 
 .pytest_cache/
@@ -16,4 +21,3 @@ dist/
 build/
 *.egg-info/
 
-flaskr/config/*

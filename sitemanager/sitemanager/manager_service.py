@@ -83,10 +83,10 @@ class ManagerService:
         return res.json()
 
     def set_featured(self, slug: str, is_featured: bool):
-        res = requests.post(
-            f'{self.base_url}/api/v1/posts/{slug}/config',
+        res = requests.patch(
+            f'{self.base_url}/api/v1/posts/{slug}',
             headers={'Authorization': self.api_key},
-            json={'featured': is_featured},
+            json={'feature': is_featured},
         )
         self._check_response(res)
 

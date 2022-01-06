@@ -1,3 +1,7 @@
+-e ./imagecropper
+-e ./sitemanager
+-e ./renderer
+-e git+https://github.com/Stefan4472/simple-search-engine.git@2447652ed68dc58a5f206f98a1867de841e4bf4c#egg=simplesearch
 bcrypt==3.2.0
 beautifulsoup4==4.10.0
 certifi==2020.12.5
