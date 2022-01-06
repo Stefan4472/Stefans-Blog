@@ -20,7 +20,7 @@ def index():
         .limit(5)\
         .all()
     featured_posts = Post.query\
-        .filter(Post.is_featured and Post.is_published)\
+        .filter(Post.is_featured, Post.is_published)\
         .all()
     return flask.render_template(
         'blog/index.html',
@@ -54,7 +54,7 @@ def posts_page(page: int = 1):
 def post_view(slug):
     """Shows the page for the post with the specified slug."""
     # Retrieve post
-    post = Post.query.filter(Post.slug == slug and Post.is_published).first()
+    post = Post.query.filter(Post.slug == slug, Post.is_published).first()
     # Throw 404 if there is no post with the given slug in the database.
     if not post:
         werkzeug.exceptions.abort(404)

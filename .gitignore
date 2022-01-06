@@ -2,9 +2,6 @@ flaskr/static/
 flaskr/.flaskenv
 instance/
 env/
-example-post/banner.jpg
-example-post/featured.jpg
-example-post/thumb.jpg
 
 .idea/
 
