@@ -77,7 +77,7 @@ class Image(db.Model):
         else:
             # Bound to MAX_IMG_SIZE
             if image.width > constants.MAX_IMG_SIZE[0] or image.height > constants.MAX_IMG_SIZE[1]:
-                image = image.thumbnail(constants.MAX_IMG_SIZE, PilImage.ANTIALIAS)
+                image.thumbnail(constants.MAX_IMG_SIZE, PilImage.ANTIALIAS)
             # Convert to RGB (for saving to JPEG)
             image = image.convert('RGB')
             return image, 'JPEG', '.jpg'
