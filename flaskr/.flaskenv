@@ -1,6 +1,8 @@
 FLASK_APP=.
 FLASK_ENV=development
-# url to the traffic API (optional)
+# Secret key used to authenticate API requests
+SECRET_KEY='x123456'
+# Url to the traffic API (optional)
 TRAFFIC_API=''
-# secret key used for the traffic API (optional)
+# Secret key used for the traffic API (optional)
 TRAFFIC_KEY=''

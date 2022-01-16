@@ -4,7 +4,7 @@
 
 <p>Animation is in fact an illusion. Think of the film strips that were used in the early days of cinema, or the flip books you may have seen as a kid. Those are a bunch of images that get shown to you so briefly, it feels like you're watching a video.</p>
 
-<figure class="figure text-center">    <img src="{{ url_for('static', filename='gamedev-animation/vintage-film-reel.jpg') }}" class="figure-img img-fluid img-thumbnail rounded" alt="">    <figcaption class="figure-caption">Photo of a hand-colored reel from a 1989 film called "Little Nemo: Adventures in Slumberland" (<a href="https://upload.wikimedia.org/wikipedia/commons/3/34/Little_Nemo_film_-_hand-colored_filmreel.jpg">source</a>)</p></figcaption></figure>
+<figure class="figure text-center">    <img src="vintage-film-reel.jpg" class="figure-img img-fluid img-thumbnail rounded" alt="">    <figcaption class="figure-caption">Photo of a hand-colored reel from a 1989 film called "Little Nemo: Adventures in Slumberland" (<a href="https://upload.wikimedia.org/wikipedia/commons/3/34/Little_Nemo_film_-_hand-colored_filmreel.jpg">source</a>)</p></figcaption></figure>
 
 <p>To trick your viewer into seeing fluid, realistic motion, you need to show 25-30 still images per second, with small changes made between each frame. Each image is called a <em>frame</em>, and we say <em>"Frames per Second"</em> to indicate how many frames are played back per second.</p>
 
@@ -55,7 +55,7 @@
 
 <p>If we compile the code and run Main, we'll see the following screen:</p>
 
-<figure class="figure text-center">    <img src="{{ url_for('static', filename='gamedev-animation/example-draw-square.jpg') }}" class="figure-img img-fluid img-thumbnail rounded" alt=""></figure>
+<figure class="figure text-center">    <img src="example-draw-square.jpg" class="figure-img img-fluid img-thumbnail rounded" alt=""></figure>
 
 <p>But animation is all about movement, and our square doesn't move.</p>
 
@@ -126,7 +126,7 @@
 }
 </pre></div>
 
-<figure class="figure text-center">    <img src="{{ url_for('static', filename='gamedev-animation/example-moving-square.gif') }}" class="figure-img img-fluid img-thumbnail rounded" alt=""></figure>
+<figure class="figure text-center">    <img src="example-moving-square.gif" class="figure-img img-fluid img-thumbnail rounded" alt=""></figure>
 
 <p><em>Good to Know: Performing graphics functions takes time. An important optimization in animation and game development is to only redraw parts of the screen that changed since the last frame. In this case, instead of painting over the entire window with white, we could paint over the square's last position to hide it.</em></p>
 
@@ -225,7 +225,7 @@
 }
 </pre></div>
 
-<figure class="figure text-center">    <img src="{{ url_for('static', filename='gamedev-animation/example-changing-square.gif') }}" class="figure-img img-fluid img-thumbnail rounded" alt=""></figure>
+<figure class="figure text-center">    <img src="example-changing-square.gif" class="figure-img img-fluid img-thumbnail rounded" alt=""></figure>
 
 <p><em>Also Good to Know: I recommend working with coordinates and speeds in floats. This way, for especially slow or precise motion, you can support sub-pixel speeds.</em></p>
 

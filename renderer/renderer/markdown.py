@@ -11,10 +11,7 @@ and custom XML tags.
 """
 
 
-def render_string(
-        post_text: str,
-        post_slug: str,
-) -> str:
+def render_string(post_text: str) -> str:
     """
     Render the provided text into HTML. This will also render custom tags.
 
@@ -34,7 +31,7 @@ def render_string(
             segments.append(_render_markdown(str(tag)))
         # Found an `<x-image>` tag
         elif tag.name == 'x-image':
-            segments.append(_render_image(tag, post_slug) + '\n')
+            segments.append(_render_image(tag) + '\n')
         # Found an `<x-code>` tag
         elif tag.name == 'x-code':
             segments.append(_render_code(tag))
@@ -46,15 +43,11 @@ def _render_markdown(text: str) -> str:
     return markdown2.markdown(text)
 
 
-def _render_image(
-        image_elem: bs4.element.Tag,
-        post_slug: str,
-) -> str:
+def _render_image(image_elem: bs4.element.Tag) -> str:
     """
     Render custom <x-image> tag into an HTML string.
 
     `image_elem`: the tag as it exists in the current BS4 tree
-    `post_slug`: the post's slug, used to build the image URL
     """
     path_elems = image_elem.findChildren('path', recursive=False)
     caption_elems = image_elem.findChildren('caption', recursive=False)
@@ -71,22 +64,8 @@ def _render_image(
     caption = caption_elems[0].contents[0] if caption_elems else None
     alt = alt_elems[0].contents[0] if alt_elems else ''
 
-    # Form image URL using image filename and post slug
-    img_url = _get_static_url(post_slug + '/' + pathlib.Path(path).name)
-
     # Render custom <figure> HTML
-    return _create_figure_html(img_url, caption, alt)
-
-
-def _get_static_url(rel_path_from_static: str) -> str:
-    """
-    Create a `url_for()` template function with a relative path from
-    the `static` folder.
-    """
-    # TODO: FIND A WAY TO REFACTOR THIS OUT. Allow user to provide their own formatting function, or some other mechanism for building URLs
-    return '{{{{ url_for(\'static\', filename=\'{}\') }}}}'.format(
-        rel_path_from_static
-    )
+    return _create_figure_html(path, caption, alt)
 
 
 def _create_figure_html(url: str, caption: str = None, alt: str = '') -> str:
@@ -134,5 +113,21 @@ def find_images(post_markdown: str) -> typing.List[str]:
     soup = bs4.BeautifulSoup(post_markdown, features='html.parser')
     paths = []
     for image_elem in soup.find_all('x-image'):
-        paths.append(image_elem.findChildren('path', recursive=False)[0].contents[0])
+        paths.append(image_elem.findChildren('path', recursive=False)[0].contents[0].replace('"', ''))
     return paths
+
+
+def replace_image(post_markdown: str, old_path: str, new_path: str) -> str:
+    """
+    Replace all instances of `old_path` in an <x-image> with `new_path`.
+
+    This is pretty inefficient because it will re-parse the text each time.
+    But it's good enough for now.
+    """
+    soup = bs4.BeautifulSoup(post_markdown, features='html.parser')
+    for image_elem in soup.find_all('x-image'):
+        path_tag = image_elem.findChildren('path', recursive=False)[0]
+        # TODO: THIS DELETES THE `URL_FOR` ATTRIBUTE
+        if path_tag.contents[0] == old_path:
+            path_tag.string.replace_with(new_path)
+    return str(soup)

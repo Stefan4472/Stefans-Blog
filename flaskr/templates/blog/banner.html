@@ -30,11 +30,11 @@ function updateBannerImgResponsively(windowWidth) {
 function setBannerImgForWidth(windowWidth) {
   // Show the post's "featured" image if window width is less than 800 pix.
   if (windowWidth < 800) {
-    banner_element.style.backgroundImage = 'url({{ post.get_featured_url() }})';
+    banner_element.style.backgroundImage = 'url({{ post.get_featured_image().get_url() }})';
   }
   // Show the post's "banner" image otherwise
   else {
-    banner_element.style.backgroundImage = 'url({{ post.get_banner_url() }})';
+    banner_element.style.backgroundImage = 'url({{ post.get_banner_image().get_url() }})';
   }
 }
 

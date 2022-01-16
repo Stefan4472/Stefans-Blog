@@ -1,3 +1,7 @@
+-e ./imagecropper
+-e ./sitemanager
+-e ./renderer
+-e git+https://github.com/Stefan4472/simple-search-engine.git@2447652ed68dc58a5f206f98a1867de841e4bf4c#egg=simplesearch
 bcrypt==3.2.0
 beautifulsoup4==4.10.0
 certifi==2020.12.5
@@ -6,7 +10,7 @@ chardet==4.0.0
 click==7.1.2
 colorama==0.4.4
 cryptography==3.4.6
-dataclasses==0.8
+dataclasses==0.6
 Flask==1.1.2
 Flask-Login==0.5.0
 Flask-SQLAlchemy==2.5.1
@@ -32,4 +36,5 @@ typing-extensions==3.10.0.0
 urllib3==1.26.5
 Werkzeug==1.0.1
 zipp==3.4.1
-git+https://github.com/Stefan4472/python-markdown2
+marshmallow==3.14.1
+markdown2==2.4.2

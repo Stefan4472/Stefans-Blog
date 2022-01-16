@@ -115,7 +115,6 @@ class ImageCropper(tk.Frame):
         self._last_mouse_y = event.y
         # Check if user has clicked an anchor
         anchor = self._resolve_anchor(event.x, event.y)
-        print('Got anchor {}'.format(anchor))
         # No anchor: check if user is clicking within the image (to drag)
         if anchor == AnchorPosition.NONE:
             if self._are_coords_on_image(event.x, event.y):
@@ -138,7 +137,6 @@ class ImageCropper(tk.Frame):
         if self._is_dragging:
             self.canvas.move(self.image_id, dx, dy)
         elif self._is_resizing:
-            print('resizing')
             self._perform_resize(dx, dy, self._resize_anchor)
         self._last_mouse_x = event.x 
         self._last_mouse_y = event.y
@@ -180,7 +178,7 @@ class ImageCropper(tk.Frame):
         # Found intersect: copy whatever is within the bounding box into `resized_image`
         if overlap_left_x < overlap_right_x and overlap_top_y < overlap_bottom_y:        
             intersect = (overlap_left_x, overlap_top_y, overlap_right_x, overlap_bottom_y)
-            print('intersect (absolute coordinates: {}'.format(intersect))
+            # print('intersect (absolute coordinates: {}'.format(intersect))
             # Get itersect bounds relative to `resized_image`'s coordinate space
             crop_rel_x1 = overlap_left_x - img_top_left_x
             crop_rel_y1 = overlap_top_y - img_top_left_y
@@ -204,8 +202,8 @@ class ImageCropper(tk.Frame):
                 (intersect_offset_x1, intersect_offset_y1)
             )
         # No intersect: leave `resized_image` blank
-        else:
-            print('no intersect')
+        # else:
+        #     print('no intersect')
         self.finished_successfully = True
         self.master.destroy()
 
@@ -350,6 +348,7 @@ class ImageCropper(tk.Frame):
             img_center_y - img_height / 2 - self.ANCHOR_SIZE_PX / 2
         )
         return anchor_positions
+
 
 if __name__ == '__main__':
     execution_path = pathlib.Path(os.getcwd())

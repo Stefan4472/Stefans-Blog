@@ -2,8 +2,6 @@
 
 A blog platform written in Python 3.6 using the [Flask](https://palletsprojects.com/p/flask/) framework. See it live at [www.stefanonsoftware.com](https://www.stefanonsoftware.com/).
 
-**This project is a Work In Progress**. It is a hobby of mine that I revisit once or twice a year, and a lot of the code is waiting to be cleaned up and documented.
-
 ## Sibling Projects
 
 Along with this site, I'm working on two sibling projects:
@@ -16,58 +14,54 @@ This repository contains code and templates, but no blog articles. My long-term 
 
 Important directories:
 - `flaskr`: the Flask code for the website, as well as static resources and templates.
-- `imagecropper`: a Python module that provides a Tkinter GUI to crop an image to a specific size. This is used to create properly-sized thumbnails, for example. Install with pip!
-- `sitemanager`: a Python module that provides a CLI to the blog's API. Install with pip!
+- `imagecropper`: a Python module that provides a Tkinter GUI to crop an image to a specific size. This is used to create properly-sized thumbnails, for example.
+- `sitemanager`: a Python module that provides a CLI to the blog's API.
+- `renderer`: a Python module for rendering post Markdown into HTML.
+
+Follow the setup instructions below to install the `imagecropper`, `sitemanager`, and `renderer` modules!
 
 ## Setup
 
-Create a virtual environment and install the required packages:
+Install the required packages:
 ```
-python3 -m venv blogenv
-call blogenv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-Install the `imagecropper` package:
-```
-pip install -e ./imagecropper
-```
-
-Install the `sitemanager` package:
-```
-pip install -e ./sitemanager
-```
-
-Install the `renderer` package:
-```
-pip install -e ./renderer
-```
-
-Install my `simplesearch` package. It's not yet on pip, so you have to get it via Github:
-```
-git clone https://github.com/Stefan4472/simple-search-engine
-cd simple-search-engine
-pip install -e .
-```
+`flaskr/.flaskenv` contains several initial configuration parameters. These will be set as environment variables when `flask` is run. Take a look at those values before running the site. The `SECRET_KEY` should of course be changed in production.
 
 ## Usage
 
-To run the site, simply run Flask from the `flaskr` directory. The `python-dotenv` will use the `.flaskenv` config file to set environment variables for you.
+To run the site, simply run Flask from the `flaskr` directory. The `python-dotenv` package will use the `.flaskenv` config file to set environment variables for you.
 ```
 cd flaskr 
 flask run
 ```
 
-To reset the site:
+To reset the site's database:
 ```
 flask reset_site
 ```
 
+## Uploading a post
+
+I've included an example post in the `example-post` directory. It provides a good example of how to write posts in Markdown with custom XML tags (described below) and how to configure a post via JSON (`post-meta.json`). To upload it to the site, first make sure the site is running (`flask run`, as per the instructions above). To upload it to the site, execute the following in a command prompt:
+```
+cd sitemanager
+# This assumes SECRET_KEY='x123456', as set by default in `flaskr/.flaskenv`
+python cli.py upload-post ..\example-post --host=http://127.0.0.1:5000 --key=x123456 --publish=true --allow_update=true 
+# Optional: mark the post as "featured"
+python cli.py set-featured gamedev-spritesheets --host=http://127.0.0.1:5000 --key=x123456 --featured=true
+```
+
+This command uses the `sitemanager` CLI to upload a post. The CLI communicates with the website's API to upload all files for you and configure the post properly. It will also open my `ImageCropper` program, allowing you to crop the post's featured image, banner and thumbnail to the correct sizes. Once finished, it will write the new (cropped) images to the file system and update the `post-meta.json`.
+
+To see help information on the `upload-post` command, call `python cli.py upload-post --help`. The `upload-post` command also works on a live deployment--just set the `--host` and `--key` options properly. To see more available commands, run `python cli.py --help`.
+
 ## Custom Markdown Rendering
 
-Posts are written in Markdown, which is rendered to HTML. I've found that I need some extra Markdown functionality--for example, rendering images as `<figure>` elements. To make this possible, I modified the `markdown2` library (see [my fork](https://github.com/Stefan4472/python-markdown2)) and added some custom XML tags that get ignored during the initial Markdown-rendering process.
+Posts are written in Markdown, which is rendered to HTML. I've found that I need some extra Markdown functionality--for example, rendering images as `<figure>` elements, or rendering code blocks. To make this possible, I created a little rendering program (the `renderer` module) that uses the `markdown2` library to render text to Markdown, and furthermore supports a few custom XML tags.
 
-For example, you can now add a figure to your markdown using the custom `x-image` tag:
+You can add a figure to your markdown using the custom `x-image` tag:
 ```
 <x-image>
   <path>colorwheel.png</path>
@@ -84,13 +78,3 @@ if __name__ == '__main__':
     print('Hello world')
 </x-code>
 ```
-
-This isn't a perfect solution, but it's a good current workaround for defining and rendering custom HTML components. In this case, we can define the image along with a caption and `alt` description. The `caption` text will be rendered as regular Markdown.
-
-How it works: the backend will first render the Markdown, leaving the custom `x-image` tag as-is. It will then read the created HTML and convert all `x-image` tags into `<figure>` elements. I plan to extend this to support other custom rendering.
-
-## Ideas for Improvement
-
-- Allow for "reference links", which add a "?ref=xxxxxx" key to the end of a URL. This way, we can track which clicks came from a specific LinkedIn post, for example.
-- Use AJAX to display the "posts" page (load more posts dynamically), and provide Tag filters.
-- Build a web interface for writing and managing posts

@@ -1,8 +1,8 @@
 import flask
 import pathlib
 from .database import db
-from . import views
-from flaskr.api import posts, featured
+from flaskr.views import public_views
+from flaskr.api import post_api, featured_api, image_api
 from . import auth
 from . import config as cfg
 from . import cli
@@ -25,9 +25,10 @@ def create_app():
     db.init_app(app)
 
     # Register blueprints
-    app.register_blueprint(views.BLUEPRINT)
-    app.register_blueprint(posts.BLUEPRINT)
-    app.register_blueprint(featured.BLUEPRINT)
+    app.register_blueprint(public_views.BLUEPRINT)
+    app.register_blueprint(post_api.BLUEPRINT)
+    app.register_blueprint(featured_api.BLUEPRINT)
+    app.register_blueprint(image_api.BLUEPRINT)
     app.add_url_rule('/', endpoint='index')
 
     # Init search engine and manifest
