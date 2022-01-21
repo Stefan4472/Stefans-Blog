@@ -3,7 +3,7 @@ import flask
 import marshmallow
 import typing
 import sqlalchemy
-from flask import request, Response, Blueprint, jsonify
+from flask import request, Response, Blueprint, jsonify, current_app
 from flask_login import login_required
 import flaskr.api.constants as constants
 import flaskr.api.util as util
@@ -220,9 +220,8 @@ def delete_post(slug: str):
     post = Post.query.filter_by(slug=slug).first()
     if not post:
         return Response(status=404)
-    # Delete files, then delete record from DB
-    shutil.rmtree(post.get_directory())
-    Post.query.filter_by(slug=slug).delete()
+    post.run_delete_logic()
+    post.delete()
     db.session.commit()
     return Response(status=200)
 

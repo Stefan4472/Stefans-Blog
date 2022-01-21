@@ -3,6 +3,7 @@ import datetime as dt
 import pathlib
 import re
 import hashlib
+import shutil
 import typing
 from sqlalchemy import asc, desc
 from flaskr import db
@@ -161,8 +162,8 @@ class Post(db.Model):
         self.hash = hashlib.md5(bytes(markdown_text, encoding='utf8')).hexdigest()
 
         # Add Markdown file to the search engine index
-        # TODO: PROVIDE AN `INDEX_STRING()` METHOD
-        flask.current_app.search_engine.index_file(self.get_markdown_path(), self.slug)
+        flask.current_app.search_engine.index_string(
+            markdown_text, self.slug, allow_overwrite=True)
         flask.current_app.search_engine.commit()
 
     def render_html(self) -> str:
@@ -207,6 +208,14 @@ class Post(db.Model):
             constants.KEY_FEATURE: self.is_featured,
             constants.KEY_PUBLISH: self.is_published,
         }
+
+    def run_delete_logic(self):
+        """
+        Perform logic to delete the post. The actual database record must
+        then be deleted via SQLAlchemy.
+        """
+        shutil.rmtree(self.get_directory())
+        flask.current_app.search_engine.remove_document(self.slug)
 
     def __repr__(self):
         return 'Post(title="{}", slug="{}", date={}, tags={})'.format(

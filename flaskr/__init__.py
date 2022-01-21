@@ -6,7 +6,7 @@ from flaskr.api import post_api, featured_api, image_api
 from . import auth
 from . import config as cfg
 from . import cli
-from simplesearch.searchengine import SearchEngine
+from stefansearch.engine.search_engine import SearchEngine
 
 
 def create_app():
