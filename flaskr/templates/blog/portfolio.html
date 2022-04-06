@@ -4,109 +4,130 @@
 {% block content %}
 <h1>Portfolio</h1>
 <hr/>
-<p><em>For my resume, please see my <a href="https://www.linkedin.com/in/stefan-kussmaul/">LinkedIn profile</a></em></p>
+
+<p><em>I received my BS in Computer Science at the University of Massachusetts Amherst, and am currently in the final year of my Master's in Software Engineering at the Technical University of Munich. This page is all about the projects I've done for fun or for school; please see <a href="https://www.linkedin.com/in/stefan-kussmaul/">my LinkedIn profile</a> for information about my professional experience.</em></p>
+<p><em>I have made almost all of my code open source. Unfortunately, some projects were closed source.</em></p>
 
 <div id="stefan-on-software" class="mb-3">
-    <h5>Stefan on Software (2017-)</h5>
-    <ul>
-        <li>I learned the Python Flask framework and HTML/Bootstrap to develop this website.</li>
-        <li>I also wrote <a href="https://github.com/Stefan4472/simple-search-engine">a search engine</a> and a <a href="https://github.com/Stefan4472/site-analytics">web traffic API</a> to go along with it.</li>
-        <li><a href="/post/project-overview-stefanonsoftware">Read more</a> or <a href="https://github.com/Stefan4472/Stefans-Blog">see the code</a>.</li>
-    </ul>
+    <h4>Stefan on Software (2017-)</h4>
+    <p>I've been working on this website on and off since 2017, when I decided to try making something with <strong>Python Flask</strong>. I developed the site layout with <strong>Bootstrap</strong>, which makes it possible to adjust how the website is displayed based on the size of the screen. I'm no UX designer, but I do my best to make this site reasonably easy on the eyes.</p>
+    <p>I host this website on PythonAnywhere and post articles via an API I developed. I write posts in Markdown, which then gets rendered to HTML as part of that upload process. I also wrote <a href="https://github.com/Stefan4472/simple-search-engine">a search engine</a> and a <a href="https://github.com/Stefan4472/site-analytics">web service to analyze site traffic</a> to go along with it.</p>
+    <p><a href="/post/project-overview-stefanonsoftware">Read the blog post</a> or <a href="https://github.com/Stefan4472/Stefans-Blog">see the code</a>.</p>
+</div>
+
+<div id="site-analytics" class="mb-3">
+    <h4>Site Analytics (2020-2022)</h4>
+    <p>Site Analytics is a <strong>Python Flask</strong> service I developed to record and analyze the web traffic I receive on this website. I use <strong>PostgreSQL</strong> for data storage and <strong>SQLAlchemy</strong> as an ORM</p>
+    <p>The service uses an API to record traffic, and a separate API to query results. Using the Query API, I posted an analysis of more than 30,000 requests received by my site over the past two years. I was able to do interesting things like see the geographic distribution of "bots" viewing my site and determine the operating systems used by people viewing my site</p>
+    <p><a href="/post/ephemeral-cache">Read the blog post</a> or <a href="https://gitlab.db.in.tum.de/sk-tum/ephemeral-cache">see the code</a>.</p>
+    <figure class="figure text-center">
+        <img src="{{ url_for('static', filename='portfolio/site-analytics.jpg') }}" class="figure-img img-fluid">
+        <figcaption>Global heatmap of bot activity on this website</figcaption>
+    </figure>
+    </p>
+</div>
+
+<div id="ephemeral-cache" class="mb-3">
+    <h4>Benchmarking Caching Technologies for Ephemeral Workloads (2022)</h4>
+    <p>I did a research project at the Technical University of Munich to test the performance of various caching technologies for workloads of ephemeral data. I developed a <strong>C++</strong> benchmarking program capable of simulating various workloads, and tested four different technologies on a compute cluster using <strong>Docker</strong>. I wrote a paper about the results.</p>
+    <p><a href="/post/ephemeral-cache">Read the blog post</a> or <a href="https://gitlab.db.in.tum.de/sk-tum/ephemeral-cache">see the code</a>.</p>
+    <figure class="figure text-center">
+        <img src="{{ url_for('static', filename='portfolio/ephemeral-cache.jpg') }}" class="figure-img img-fluid">
+        <figcaption>Plot of the measured throughput for the four technologies I tested.</figcaption>
+    </figure>
 </div>
 
 <div id="bfn-marketplace" class="mb-3">
-    <h5>BFN Marketplace (2020)</h5>
-    <ul>
-        <li>I led a group of students in developing a project staffing software solution for <a href="https://www.maibornwolff.de/en">MaibornWolff</a>, a Munich-based software consultancy.</li>
-        <li>Our product was very well received and brought into internal production at MaibornWolff.</li>
-        <li><a href="/post/bfn-marketplace">Read more</a>.</li>
-    </ul>
+    <h4>BFN Marketplace (2020)</h4>
+    <p>I led a group of students in developing a project staffing software solution for <a href="https://www.maibornwolff.de/en">MaibornWolff</a>, a Munich-based software consultancy. We developed our product using <strong>Java Spring</strong>, <strong>React</strong>, and <strong>Bootstrap</strong>. Our product was very well received and brought into internal use at MaibornWolff.</p>
+    <p><a href="/post/bfn-marketplace">Read the blog post</a>.</p>
     <figure class="figure text-center">
-        <img src="{{ url_for('static', filename='bfn-marketplace.png') }}" class="figure-img img-fluid">
+        <img src="{{ url_for('static', filename='portfolio/bfn-marketplace.jpg') }}" class="figure-img img-fluid">
+        <figcaption>A screenshot from the project staffing website we developed</figcaption>
     </figure>
 </div>
 
 <div id="bavarian-election-system" class="mb-3">
-    <h5>Bavarian Election System (2020)</h5>
-    <ul>
-        <li>Working with another student, I developed an electronic voting system for the Bavarian parliamentary elections.</li>
-        <li>This project gave me much experience in designing and implementing a sophisticated database application.</li>
-        <li><a href="/post/building-an-electronic-election-system">Read more</a> or <a href="https://github.com/Stefan4472/bayerische-landtagswahl">see the code</a>.</li>
-    </ul>
+    <h4>Bavarian Election System (2020)</h4>
+    <p>Working with another student, I developed an electronic voting system for the Bavarian parliamentary elections. We developed our backend with <strong>Python Flask</strong> and <strong>PostgreSQL</strong>, performed load-testing with <strong>Locust</strong>, and wrote our frontend with <strong>React</strong>. This project gave me much experience in designing and implementing a sophisticated database application.</p>
+    <p><a href="/post/building-an-electronic-election-system">Read the blog post</a> or <a href="https://github.com/Stefan4472/bayerische-landtagswahl">see the code</a>.</p>
     <figure class="figure text-center">
-        <img src="{{ url_for('static', filename='election-system.jpg') }}" class="figure-img img-fluid">
+        <img src="{{ url_for('static', filename='portfolio/election-system.jpg') }}" class="figure-img img-fluid">
+        <figcaption>A screenshot of our homepage, which shows the calculated allocation of seats in German Parliament.</figcaption>
     </figure>
 </div>
 
 <div id="portfolio-viewer" class="mb-3">
-    <h5>Portfolio Analyzer (2020)</h5>
-    <ul>
-        <li>I wrote a Python program that can analyze and compare an arbitrary number of user-defined stock portfolios over time.</li>
-        <li>The program scrapes stock data from <a href="https://finance.yahoo.com/">Yahoo! Finance</a>.</li>
-        <li><a href="/post/my-first-attempt-at-investing">Read more</a> or <a href="https://github.com/Stefan4472/portfolio-analyzer">see the code</a>.</li>
-    </ul>
+    <h4>Portfolio Analyzer (2020)</h4>
+    <p>Following the March 2020 stock market crash, I became very interested in investing. I wrote a <strong>Python</strong> program to analyze and compare an arbitrary number of user-defined stock portfolios over time. The program scrapes stock data from <a href="https://finance.yahoo.com/">Yahoo! Finance</a>.</p>
+    <p><a href="/post/my-first-attempt-at-investing">Read the blog post</a> or <a href="https://github.com/Stefan4472/portfolio-analyzer">see the code</a>.</p>
     <figure class="figure text-center">
-        <img src="{{ url_for('static', filename='portfolio-analyzer.jpg') }}" class="figure-img img-fluid">
+        <img src="{{ url_for('static', filename='portfolio/portfolio-analyzer.jpg') }}" class="figure-img img-fluid">
+        <figcaption>A portfolio comparison plot I generated using my program.</figcaption>
+    </figure>
+</div>
+
+<div id="how-to-train-your-robot" class="mb-3">
+    <h4>How to Train Your Robot (2019)</h4>
+    <p>For my Honor's Thesis at UMass, I investigated using Reinforcement learning techniques to develop sophisticated hierarchical robot behavior. I developed on a robot simulator in <strong>C</strong></p>
+    <p>Read the blog post</p>
+    <figure class="figure text-center">
+        <img src="{{ url_for('static', filename='portfolio/how-to-train-your-robot.gif') }}" class="figure-img img-fluid">
+        <figcaption>Screen recording of a virtual robot I programmed to find the ball, grab it, and move it.</figcaption>
     </figure>
 </div>
 
 <div id="duckietown-robot" class="mb-3">
-    <h5>DuckieTown Robot (2019)</h5>
-    <ul>
-        <li>Working with four other students, I led the development of an autonomous-driving robot.</li>
-        <li>I wrote all low-level motor control code (Arduino) and much of the driving logic.</li>
-        <li><a href="/post/project-overview-duckietown-robot">Read more</a> or <a href="https://github.com/Stefan4472/Duckytown-Robot">see the code</a>.</li>
-    </ul>
+    <h4>DuckieTown Robot (2019)</h4>
+    <p>Working with four other students, I led the development of an autonomous-driving robot. I was responsible for writing all low-level motor control code in <strong>Arduino</strong>. I also wrote the communications bus and much of the driving logic in <strong>Python</strong>. Our project won the competition for being best in the class, and completed the "driving course" with only a single point deduction!</p>
+    <p><a href="/post/project-overview-duckietown-robot">Read the blog post</a> or <a href="https://github.com/Stefan4472/Duckytown-Robot">see the code</a>.</p>
     <figure class="figure text-center">
-        <img src="{{ url_for('static', filename='duckietown-robot.gif') }}" class="figure-img img-fluid">
+        <img src="{{ url_for('static', filename='portfolio/duckietown-robot.gif') }}" class="figure-img img-fluid">
         <figcaption class="figure-caption">Our robot (with pirate flag) completing a turn.</figcaption>
     </figure>
 </div>
 
 <div id="spaceships-online" class="mb-3">
-    <h5>Spaceships Online (2018)</h5>
-    <ul>
-        <li>I learned Javascript and NodeJS to write an online multiplayer shooting game.</li>
-        <li>I read articles about game networking and learned enough to implement an authoritative game backend from scratch.</li>
-        <li><a href="/post/project-overview-spaceships-online">Read more</a> or <a href="https://github.com/Stefan4472/SpaceshipsOnline">see the code</a>.</li>
+    <h4>Spaceships Online (2018)</h4>
+    <p>Curious about online games, I learned <strong>Javascript</strong> and used <strong>NodeJS</strong> to write an online multiplayer shooting game. I read articles about game networking and learned enough to implement an authoritative game backend from scratch. Unfortunately, I didn't finish the project, but I plan to come back to it!</p>
+    <p><a href="/post/project-overview-spaceships-online">Read the blog post</a> or <a href="https://github.com/Stefan4472/SpaceshipsOnline">see the code</a>.</p>
     </ul>
     <figure class="figure text-center">
-        <img src="{{ url_for('static', filename='spaceships-online-gif.gif') }}" class="figure-img img-fluid">
+        <img src="{{ url_for('static', filename='portfolio/spaceships-online.gif') }}" class="figure-img img-fluid">
+        <figcaption>Screen recording from the game, which shows my Spaceship flying around.</figcaption>
     </figure>
 </div>
 
 <div id="activity-log" class="mb-3">
-    <h5>ActivityLog (2018)</h5>
-    <ul>
-        <li>I developed a productivity app for Android with features for logging and analyzing time spent on different activities.</li>
-        <li><a href="https://github.com/Stefan4472/ActivityLog">See the code</a>.</li>
-    </ul>
+    <h4>ActivityLog (2018)</h4>
+    <p>Back when I was developing a lot in <strong>Android</strong>, I created a productivity app with features for logging and analyzing time spent on different activities.</p>
+    <p><a href="https://github.com/Stefan4472/ActivityLog">See the code</a>.</p>
     <figure class="figure text-center">
-        <img src="{{ url_for('static', filename='activity-log-screenshot-1.jpg') }}" class="figure-img img-fluid" style="max-width: 12rem; height: auto;">
+        <img src="{{ url_for('static', filename='portfolio/activity-log.jpg') }}" class="figure-img img-fluid" style="max-width: 12rem; height: auto;">
+        <figcaption>A screenshot from the app I developed.</figcaption>
     </figure>
 </div>
 
 <div id="c-adventure" class="mb-3">
-    <h5>C++ Adventure (2017-2018)</h5>
+    <h4>C++ Adventure (2017-2018)</h4>
     <ul>
         <li>I learned C++ and used the <a href="http://www.libsdl.org/">SDL media library</a> to design and write a two-dimensional Pokemon-style game.</li>
         <li>I developed AI for non-playing characters, interactive items, a GUI system, and efficient game state serialization.</li>
         <li><a href="/post/project-overview-c++-adventure">Read more</a> or <a href="https://github.com/Stefan4472/TestC-Game">see the code</a>.</li>
     </ul>
     <figure class="figure text-center">
-        <img src="{{ url_for('static', filename='c++-adventure-gif.gif') }}" class="figure-img img-fluid">
+        <img src="{{ url_for('static', filename='portfolio/cpp-adventure.gif') }}" class="figure-img img-fluid">
     </figure>
 </div>
 
 <div id="spaceships" class="mb-3">
-    <h5>Spaceships (2015-2017)</h5>
+    <h4>Spaceships (2015-2017)</h4>
     <ul>
         <li>I learned Android programming and wrote an arcade game inspired by Space Invader.</li>
         <li><a href="/post/project-overview-spaceships">Read more</a> or <a href="https://github.com/Stefan4472/Spaceships">see the code</a>.</li>
     </ul>
     <figure class="figure text-center">
-        <img src="{{ url_for('static', filename='spaceships-gif.gif') }}" class="figure-img img-fluid">
+        <img src="{{ url_for('static', filename='portfolio/spaceships.gif') }}" class="figure-img img-fluid">
     </figure>
 </div>
 
