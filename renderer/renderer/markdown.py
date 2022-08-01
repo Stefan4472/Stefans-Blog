@@ -12,14 +12,11 @@ Functions for rendering and handling post text, which consists of Markdown
 and custom XML tags.
 """
 
-class CustomTag(enum.Enum):
-    IMAGE = 'x-image'
-    CODE = 'x-code'
-
 
 IMAGE_TAG = 'x-image'
 CODE_TAG = 'x-code'
 CUSTOM_TAGS = [IMAGE_TAG, CODE_TAG]
+
 # Note: this will not support tags such as "<x-code/>". Each tag needs an open and a close.
 MATCH_TAG_OPEN = re.compile(f'<({"|".join(CUSTOM_TAGS)})[^>]*>')
 MATCH_TAG_CLOSE = re.compile(f'</({"|".join(CUSTOM_TAGS)})>')
@@ -152,21 +149,3 @@ def find_images(post_markdown: str) -> typing.List[str]:
     for image_elem in soup.find_all('x-image'):
         paths.append(image_elem.findChildren('path', recursive=False)[0].contents[0].replace('"', ''))
     return paths
-
-
-def replace_image(post_markdown: str, old_path: str, new_path: str) -> str:
-    """
-    Replace all instances of `old_path` in an <x-image> with `new_path`.
-
-    This is pretty inefficient because it will re-parse the text each time.
-    But it's good enough for now.
-
-    TODO: just use find-replace on the image filename. BS4 unfortunately causes problems when parsing code bits
-    """
-    soup = bs4.BeautifulSoup(post_markdown, features='html.parser')
-    for image_elem in soup.find_all('x-image'):
-        path_tag = image_elem.findChildren('path', recursive=False)[0]
-        # TODO: THIS DELETES THE `URL_FOR` ATTRIBUTE
-        if path_tag.contents[0] == old_path:
-            path_tag.string.replace_with(new_path)
-    return str(soup)

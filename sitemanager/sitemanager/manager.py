@@ -75,8 +75,9 @@ def upload_post(
             # Upload image and get its online filename
             print('Uploading image {}...'.format(full_path))
             new_filename = service.upload_image(full_path)
-            # Update Markdown in-memomry to use the new filename
-            markdown = md.replace_image(markdown, filename, new_filename)
+            print(filename, new_filename)
+            # Update Markdown to use the new filename TODO: the naive find-and-replace is risky!
+            markdown = markdown.replace(filename, new_filename)
 
     # Use PUT if post already exists, else POST
     if config.slug in manifest.posts:
@@ -87,6 +88,7 @@ def upload_post(
         service.create_post(new_config)
 
     print('Uploading Markdown...')
+    print(markdown)
     service.upload_markdown(config.slug, markdown)
 
 

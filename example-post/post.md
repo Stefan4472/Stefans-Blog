@@ -19,7 +19,7 @@ Note that there are four separate animations in that one image--each row is a fo
 
 Let's write a class that'll provide Spritesheet functionality. We'll give it our whole spritesheet image, tell it how many frames are in the image, and then be able to play the frames back one by one. ([See the full code here](https://github.com/Stefan4472/Blog-ExampleCode/tree/master/gamedev-from-scratch/3-spritesheets/simple-spritesheet))
 
-```java
+<x-code language="java">
 import java.awt.image.BufferedImage;
 
 // Spritesheet that loops and displays each frame once
@@ -54,13 +54,13 @@ public class Spritesheet {
         return frameHeight;
     }
 }
-```
+</x-code>
 
 The class has a very simple interface: all we need to do is call ```next()``` to get the next frame in the sequence. Each frame is displayed once, and the sequence loops once we get to the end.
 
 To demonstrate what this looks like in action, let's write a JFrame class to play back the frames of the animation. We'll be using a few Swing GUI commands you may be unfamiliar with. The most important part is the ActionListener we create, which basically tells the screen to redraw itself every 33 milliseconds.
 
-```java
+<x-code language="java">
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -99,11 +99,11 @@ public class SpritesheetDemo extends JFrame {
         ((Graphics2D) g).drawImage(spritesheet.next(), null, 0, 30);
     }
 }
-```
+</x-code>
 
 If we create a Main class, we can then run SpritesheetDemo.
 
-```java
+<x-code language="java">
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -128,7 +128,7 @@ public class Main {
         }
     }
 }
-```
+</x-code>
 
 <x-image>
 	<path>spritesheet_demo1.gif</path>
@@ -141,7 +141,7 @@ In the Spritesheet constructor, we'll change the ```numFrames``` parameter to ``
 
 Our ```next()``` method will look a little different: first we're going to increment subIndex. Then, we'll check if subIndex is equal to the number of times we wanted to show the frame at ```frameIndex```--in this case, we need to move on to the next frame in the series. ([See the full code here](https://github.com/Stefan4472/Blog-ExampleCode/tree/master/gamedev-from-scratch/3-spritesheets/timed-spritesheet))
 
-```java
+<x-code language="java">
 import java.awt.image.BufferedImage;
 
 // A spritesheet that can show sub-frames for varying lengths
@@ -181,17 +181,17 @@ public class Spritesheet {
         return height;
     }
 }
-```
+</x-code>
 
 We'll also need to modify ```main()``` to provide the frameCounts.
 
-```java
+<x-code language="java">
 public static void main(String[] args) {
     int[] frame_counts = { 4, 6, 10, 3 };
     Spritesheet spritesheet = new Spritesheet(loadImage("walking_front.png"), frame_counts);
     SpritesheetDemo demo = new SpritesheetDemo(spritesheet);
 }
-```
+</x-code>
 
 <x-image>
 	<path>spritesheet_demo2.gif</path>

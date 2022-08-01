@@ -11,7 +11,7 @@ import flaskr.models.relations as relations
 from flaskr.models.image import Image
 from flaskr.models.tag import Tag
 import flaskr.api.constants as constants
-import renderer.markdown as md2
+import renderer.markdown
 
 
 # Regex used to match a HEX color for the `title_color` field
@@ -140,7 +140,7 @@ class Post(db.Model):
             or img.id == self.banner_id
             or img.id == self.thumbnail_id]
         # Look up images referenced in the Markdown and ensure they exist
-        for image_name in md2.find_images(markdown_text):
+        for image_name in renderer.markdown.find_images(markdown_text):
             found_image = Image.query.filter_by(filename=image_name).first()
             if found_image:
                 self.images.append(found_image)
@@ -150,7 +150,7 @@ class Post(db.Model):
 
         # Render HTML to check for errors
         try:
-            md2.render_string(markdown_text)
+            renderer.markdown.render_string(markdown_text)
         except Exception as e:
             raise ValueError(f'Error processing Markdown: {e}')
 
@@ -169,12 +169,12 @@ class Post(db.Model):
     def render_html(self) -> str:
         """Retrieve the Markdown file containing the post's contents and render to HTML."""
         with open(self.get_markdown_path(), encoding='utf-8', errors='strict') as f:
-            markdown = f.read()
-            # Resolve image URLs. TODO: THIS IS REALLY INEFFICIENT. COULD ALSO ITERATE OVER THE POST'S IMAGES
-            for image_name in md2.find_images(markdown):
+            markdown = f.read()  # TODO: this is very inefficient. Fix!
+            # Resolve image URLs
+            for image_name in renderer.markdown.find_images(markdown):
                 found_image = Image.query.filter_by(filename=image_name).first()
-                markdown = md2.replace_image(markdown, image_name, found_image.get_url())
-            html = md2.render_string(markdown)
+                markdown = markdown.replace(image_name, found_image.get_url())
+            html = renderer.markdown.render_string(markdown)
 
             # Render as a template to allow expanding `url_for()` calls (for example)
             return flask.render_template_string(html)
