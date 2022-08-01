@@ -39,3 +39,16 @@ def test_find_images(example_markdown):
     actual = md2.find_images(example_markdown)
     expected = ['vintage-film-reel.jpg', 'example-draw-square.jpg', 'example-moving-square.gif', 'example-changing-square.gif']
     assert actual == expected
+
+
+def test_render_code():
+    """Test that <> strings are correctly rendered."""
+    str = '''
+<x-code language="c++">
+unordered_map<ItemType, list<InvCoordinate>> mainInvMappings;
+unordered_map<ItemType, list<InvCoordinate>> hotbarMappings;
+</x-code>'''
+    expected = '''<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span>unordered_map<span style="color: #666666">&lt;</span>ItemType,<span style="color: #bbbbbb"> </span>list<span style="color: #666666">&lt;</span>InvCoordinate<span style="color: #666666">&gt;&gt;</span><span style="color: #bbbbbb"> </span>mainInvMappings;<span style="color: #bbbbbb"></span>
+unordered_map<span style="color: #666666">&lt;</span>ItemType,<span style="color: #bbbbbb"> </span>list<span style="color: #666666">&lt;</span>InvCoordinate<span style="color: #666666">&gt;&gt;</span><span style="color: #bbbbbb"> </span>hotbarMappings;<span style="color: #bbbbbb"></span>
+</pre></div>'''
+    assert md2.render_string(str).strip() == expected

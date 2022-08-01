@@ -1,8 +1,10 @@
 import pathlib
 import typing
+import re
 import markdown2
 import bs4
 import pygments
+import enum
 from pygments.lexers import get_lexer_by_name
 from pygments.formatters import HtmlFormatter
 """
@@ -10,37 +12,73 @@ Functions for rendering and handling post text, which consists of Markdown
 and custom XML tags.
 """
 
+class CustomTag(enum.Enum):
+    IMAGE = 'x-image'
+    CODE = 'x-code'
+
+
+IMAGE_TAG = 'x-image'
+CODE_TAG = 'x-code'
+CUSTOM_TAGS = [IMAGE_TAG, CODE_TAG]
+# Note: this will not support tags such as "<x-code/>". Each tag needs an open and a close.
+MATCH_TAG_OPEN = re.compile(f'<({"|".join(CUSTOM_TAGS)})[^>]*>')
+MATCH_TAG_CLOSE = re.compile(f'</({"|".join(CUSTOM_TAGS)})>')
+
 
 def render_string(post_text: str) -> str:
     """
     Render the provided text into HTML. This will also render custom tags.
 
-    Returns the HTML as a string.
+    Rendering proceeds in two stages. First, the custom tags are found and
+    individually rendered into HTML. The resulting "preprocessed" text is
+    then run through the Markdown-to-HTML renderer, which will ignore
+    the custom generated HTML.
+
+    Returns the rendered HTML as a string.
     """
-    # Collect rendered segments in a list, which will be joined at the end.
-    # This is far more efficient than repeated concatenation.
+    prev_index = 0
     segments: typing.List[str] = []
-    soup = bs4.BeautifulSoup(post_text, features='html.parser')
-    # Loop over top-level tags
-    for tag in soup.contents:
-        # Ignore blank lines
-        if str(tag).isspace():
-            continue
-        # No tag: render text as Markdown by default
-        elif tag.name == None:
-            segments.append(_render_markdown(str(tag)))
-        # Found an `<x-image>` tag
-        elif tag.name == 'x-image':
-            segments.append(_render_image(tag) + '\n')
-        # Found an `<x-code>` tag
-        elif tag.name == 'x-code':
-            segments.append(_render_code(tag))
-    return '\n'.join(segments)
+    # Note: unfortunately we can't use BeautifulSoup here because it can cause
+    # problems with x-code elements, which may contain "<" and ">".
+    # We need to maintain access to the raw strings.
+    for match_open in re.finditer(MATCH_TAG_OPEN, post_text):
+        tag_name = match_open.group(1)
+        close_start, close_end = _find_closing_tag(tag_name, post_text, match_open.end())
+        raw_segment = post_text[match_open.start():close_end]
+
+        # Run BeautifulSoup *on the segment* for parsing the XML
+        element = bs4.BeautifulSoup(raw_segment, features='html.parser').contents[0]
+        if tag_name == IMAGE_TAG:
+            rendered_segment = _render_image(element) + '\n'
+        elif tag_name == CODE_TAG:
+            raw_contents = post_text[match_open.end():close_start]
+            rendered_segment = _render_code(element, raw_contents)
+        else:
+            raise ValueError(f'Unsupported tag "{tag_name}". This is a programmer error')
+
+        segments.append(post_text[prev_index:match_open.start()])
+        segments.append(rendered_segment)
+        prev_index = close_end
+
+    segments.append(post_text[prev_index:])
+    # Filter out empty strings
+    processed = '\n'.join([s for s in segments if s and s != '\n'])
+
+    # Run the Markdown renderer over the processed result
+    return markdown2.markdown(processed)
 
 
-def _render_markdown(text: str) -> str:
-    """Render the provided Markown text to HTML."""
-    return markdown2.markdown(text)
+def _find_closing_tag(tag_name: str, text: str, pos: int) -> typing.Tuple[int, int]:
+    """
+    Find the closing tag for `tag_name` in `text` starting at `pos`.
+
+    Returns a tuple containing (start, end) of the closing tag, indexed in `text`.
+    """
+    # Search for the next closing tag after the current open
+    match_close = re.search(MATCH_TAG_CLOSE, text[pos:])
+    if not match_close or match_close.group(1) != tag_name:
+        raise ValueError(f'An {tag_name} tag is not closed')
+    return (pos+match_close.start(), pos+match_close.end())
 
 
 def _render_image(image_elem: bs4.element.Tag) -> str:
@@ -88,10 +126,9 @@ def _create_figure_html(url: str, caption: str = None, alt: str = '') -> str:
         )
 
 
-def _render_code(code_elem: bs4.element.Tag) -> str:
+def _render_code(code_elem: bs4.element.Tag, raw_contents: str) -> str:
     """Render custom <x-code> element into an HTML string."""
     language = code_elem['language'] if code_elem.has_attr('language') else None
-    contents = code_elem.contents[0]
     try:
         # Use `TextLexer` as default if no language specified
         lexer = get_lexer_by_name(language if language else 'text')
@@ -100,7 +137,7 @@ def _render_code(code_elem: bs4.element.Tag) -> str:
     # TODO: COULD PROVIDE A GLOBAL SETTING FOR THE 'STYLE' TO USE (see https://pygments.org/styles/)
     # https://pygments.org/docs/formatters/#HtmlFormatter
     formatter = HtmlFormatter(noclasses=True)
-    return pygments.highlight(contents.strip(), lexer, formatter)
+    return pygments.highlight(raw_contents.strip(), lexer, formatter)
 
 
 def find_images(post_markdown: str) -> typing.List[str]:
@@ -123,6 +160,8 @@ def replace_image(post_markdown: str, old_path: str, new_path: str) -> str:
 
     This is pretty inefficient because it will re-parse the text each time.
     But it's good enough for now.
+
+    TODO: just use find-replace on the image filename. BS4 unfortunately causes problems when parsing code bits
     """
     soup = bs4.BeautifulSoup(post_markdown, features='html.parser')
     for image_elem in soup.find_all('x-image'):
