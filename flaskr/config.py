@@ -14,6 +14,11 @@ class Config:
     # Settings for site-analytics API
     TRAFFIC_API: typing.Optional[str] = None
     TRAFFIC_KEY: typing.Optional[str] = None
+    # Settings for Email List, currently only supporting SendInBlue
+    # API Key
+    EMAIL_KEY: typing.Optional[str] = None
+    # List ID
+    EMAIL_LIST_ID: typing.Optional[int] = None
     # Note: for SQLite, URI must start with `sqlite:///`
     SQLALCHEMY_DATABASE_URI: str = 'sqlite:///'
     SQLALCHEMY_TRACK_MODIFICATIONS: bool = False
@@ -34,5 +39,7 @@ class Config:
             Config.get_env_path('SECRET_KEY') or '',
             TRAFFIC_API=os.environ.get('TRAFFIC_API') or '',
             TRAFFIC_KEY=os.environ.get('TRAFFIC_KEY') or '',
+            EMAIL_KEY=os.environ.get('EMAIL_KEY') or '',
+            EMAIL_LIST_ID=int(os.environ.get('EMAIL_LIST_ID')) or None,
             SQLALCHEMY_DATABASE_URI='sqlite:///' + str(db_path),
         )

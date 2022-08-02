@@ -2,6 +2,7 @@ import flask
 from flask import request, Response
 import marshmallow
 from flaskr.contracts.register_email import RegisterEmailContract
+from flaskr.email_provider import EmailProvider
 
 
 # Blueprint under which all views will be assigned
@@ -17,4 +18,6 @@ def register_email():
     except marshmallow.exceptions.ValidationError as e:
         return Response(status=400, response='Invalid parameters: {}'.format(e))
 
-    return flask.jsonify({'success': True, 'message': 'Success!'})
+    provider = EmailProvider()
+    success = provider.register_email(contract.address)
+    return flask.Response(status=200 if success else 500)
