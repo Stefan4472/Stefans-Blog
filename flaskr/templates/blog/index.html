@@ -147,4 +147,7 @@ window.onresize = onWindowSizeChanged;
 <div class="clearfix">
 	<a href="{{ url_for('blog.posts_page') }}" class="float-right">See All Posts ></a>
 </div>
+
+{% include "blog/register_email.html" %}
+
 {% endblock %}

@@ -14,7 +14,7 @@ def register_email():
     """Register a new email address for the email list."""
     try:
         contract = RegisterEmailContract.from_json(request.get_json())
-        print(f'Got contract {contract}')
+        # print(f'Got contract {contract}')
     except marshmallow.exceptions.ValidationError as e:
         return Response(status=400, response='Invalid parameters: {}'.format(e))
 
