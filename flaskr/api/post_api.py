@@ -14,7 +14,7 @@ from flaskr.models.tag import Tag
 from flaskr.contracts.create_post import CreatePostContract
 from flaskr.contracts.update_post import UpdatePostContract
 from flaskr.contracts.patch_post import PatchPostContract
-from flaskr.email_provider import EmailProvider
+from flaskr.email_provider import get_email_provider
 # TODO: Should have a set of Tag endpoints too
 # TODO: SETUP TESTING FRAMEWORK
 # TODO: log all SQLAlchemy errors
@@ -91,9 +91,10 @@ def create_post():
         db.session.add(post)
         db.session.commit()
 
-        if contract.send_email:
-            email_provider = EmailProvider()
-            email_provider.broadcast_new_post(post)
+        if contract.send_email and current_app.config['EMAIL_CONFIGURED']:
+            get_email_provider().broadcast_new_post(post)
+        elif contract.send_email:
+            print('WARN: send_email=True but no email is configured in this app')
 
         return Response(status=200)
     except ValueError as e:

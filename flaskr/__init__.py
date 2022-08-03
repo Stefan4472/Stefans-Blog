@@ -19,7 +19,9 @@ def create_app():
     instance_path.mkdir(exist_ok=True)
 
     # Load config variables
+    # TODO: I'd prefer to have my own, typed config object here. E.g. app.my_config: Config
     app.config.from_object(cfg.Config.load_from_env(instance_path))
+    app.config['EMAIL_CONFIGURED'] = app.config['EMAIL_KEY'] and app.config['EMAIL_LIST_ID'] != ''
 
     # Init SQL Alchemy
     db.init_app(app)
