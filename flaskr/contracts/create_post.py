@@ -18,6 +18,8 @@ class CreatePostContract:
     publish: typing.Optional[bool]
     feature: typing.Optional[bool]
     title_color: typing.Optional[str]
+    # Whether to send an email alert to subscribers
+    send_email: bool
 
     @staticmethod
     def get_schema() -> 'CreatePostSchema':
@@ -86,6 +88,11 @@ class CreatePostSchema(msh.Schema):
         load_default=None,
         data_key=constants.KEY_TITLE_COLOR,
         validate=msh.validate.Regexp(constants.COLOR_REGEX),
+    )
+    send_email = msh.fields.Boolean(
+        required=False,
+        load_default=True,
+        data_key=constants.KEY_SEND_EMAIL
     )
 
     @msh.post_load

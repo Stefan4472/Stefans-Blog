@@ -11,7 +11,7 @@ KEY_IMAGES = 'images'
 KEY_PUBLISH = 'publish'
 KEY_FEATURE = 'feature'
 KEY_TITLE_COLOR = 'title_color'
-
+KEY_SEND_EMAIL = 'send_email'
 
 # Expected data format for JSON
 DATE_FORMAT = "%m/%d/%y"

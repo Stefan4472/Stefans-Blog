@@ -21,6 +21,7 @@ def upload_post_from_dir(
         publish: bool,
         feature: typing.Optional[bool],
         upload_images: bool,
+        send_email: bool,
 ):
         # Get paths to the Markdown and config files
         path = pathlib.Path(path)
@@ -36,7 +37,7 @@ def upload_post_from_dir(
             markdown = f.read()
 
         upload_post(
-            config, markdown, allow_update, upload_images, path, host, key,
+            config, markdown, allow_update, upload_images, send_email, path, host, key,
         )
 
         # Write out config (may have been modified)
@@ -48,6 +49,7 @@ def upload_post(
         markdown: str,
         allow_update: bool,
         upload_images: bool,
+        send_email: bool,
         base_path: pathlib.Path,
         host: str,
         key: str,
@@ -85,7 +87,7 @@ def upload_post(
         service.update_post(new_config)
     else:
         print('Creating post...')
-        service.create_post(new_config)
+        service.create_post(new_config, send_email)
 
     print('Uploading Markdown...')
     print(markdown)

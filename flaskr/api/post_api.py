@@ -91,9 +91,9 @@ def create_post():
         db.session.add(post)
         db.session.commit()
 
-        # TODO: if email_alert == True
-        email_provider = EmailProvider()
-        email_provider.broadcast_new_post(post)
+        if contract.send_email:
+            email_provider = EmailProvider()
+            email_provider.broadcast_new_post(post)
 
         return Response(status=200)
     except ValueError as e:

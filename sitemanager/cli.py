@@ -20,6 +20,7 @@ def cli():
 @click.option('--publish', type=bool, default=True, help='Whether to publish the post once upload is finished')
 @click.option('--feature', type=bool, help='Whether to mark the post as "featured" once upload is finished')
 @click.option('--upload_images', type=bool, default=True, help='Whether to upload the images referenced in the post')
+@click.option('--send_email', type=bool, help='Whether to send a notification email to subscribers')
 def upload_post(
         path: str,
         host: str,
@@ -28,9 +29,10 @@ def upload_post(
         publish: bool,
         feature: bool,
         upload_images: bool,
+        send_email: bool,
 ):
     manager.upload_post_from_dir(
-        path, host, key, allow_update, publish, feature, upload_images,
+        path, host, key, allow_update, publish, feature, upload_images, send_email
     )
     click.echo('Done')
 
