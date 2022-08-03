@@ -14,6 +14,7 @@ from flaskr.models.tag import Tag
 from flaskr.contracts.create_post import CreatePostContract
 from flaskr.contracts.update_post import UpdatePostContract
 from flaskr.contracts.patch_post import PatchPostContract
+from flaskr.email_provider import EmailProvider
 # TODO: Should have a set of Tag endpoints too
 # TODO: SETUP TESTING FRAMEWORK
 # TODO: log all SQLAlchemy errors
@@ -89,6 +90,11 @@ def create_post():
         )
         db.session.add(post)
         db.session.commit()
+
+        # TODO: if email_alert == True
+        email_provider = EmailProvider()
+        email_provider.broadcast_new_post(post)
+
         return Response(status=200)
     except ValueError as e:
         return Response(status=400, response=str(e))
@@ -221,7 +227,7 @@ def delete_post(slug: str):
     if not post:
         return Response(status=404)
     post.run_delete_logic()
-    post.delete()
+    db.session.delete(post)
     db.session.commit()
     return Response(status=200)
 
