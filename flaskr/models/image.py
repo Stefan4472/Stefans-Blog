@@ -85,8 +85,8 @@ class Image(db.Model):
     def get_path(self) -> pathlib.Path:
         return pathlib.Path(flask.current_app.static_folder) / self.filename
 
-    def get_url(self) -> str:
-        return flask.url_for('static', filename=self.filename)
+    def get_url(self, external: bool = True) -> str:
+        return flask.url_for('static', filename=self.filename, _external=external)
 
     def to_dict(self) -> dict:
         """Return dictionary representation that can be used to create JSON."""

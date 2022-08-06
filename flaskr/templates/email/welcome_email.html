@@ -1,8 +1,9 @@
-{% include "email/header.html" %}
+{% extends "email/base_template.html" %}
+{% block content %}
 
 <h1>Welcome to StefanOnSoftware</h1>
 <p>This is just an email to confirm that you've joined the StefanOnSoftware email list.</p>
-<p>See you soon!</p>
-<p>Stefan</p>
+<p style="margin-bottom: 0;">See you soon!</p>
+<p style="margin-top: 0;">Stefan</p>
 
-{% include "email/footer.html" %}
+{% endblock %}

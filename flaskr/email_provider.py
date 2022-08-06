@@ -17,7 +17,6 @@ class EmailProvider:
 
     TODO: better exception handling
     TODO: update Requirements.txt
-    TODO: better email styling and content
     """
     def __init__(self, api_key: str, list_id: int):
         self._config = sib_api_v3_sdk.Configuration()
@@ -99,11 +98,9 @@ class EmailProvider:
 
         email_html = render_template(
             'email/new_post_email.html',
-            # header_image=url_for('static', filename='site-banner.jpg', _external=True),
-            header_url='https://www.stefanonsoftware.com/static/site-banner.JPG',
+            header_url=post.get_banner_image().get_url(external=True),
             post=post,
         )
-        print(email_html)
 
         # Note: here is how you would set the "scheduled_at" time directly in the API call:
         # send_time = datetime.datetime.now(datetime.timezone.utc)

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style type="text/css">
+    {% include "email/style.css" %}
+    </style>
+</head>
+<body>
+    {% include "email/header.html" %}
+    <div class="content">
+    {% block content %}{% endblock %}
+    </div>
+    {% include "email/footer.html" %}
+</body>
+</html>

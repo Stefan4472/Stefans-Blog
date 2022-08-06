@@ -1,8 +1,9 @@
 {# Note: {{contact.email}} and {{unsubscribe}} are Sendinblue template parameters, so we escape them.#}
-<hr>
-<h3>StefanOnSoftware</h3>
-<p><a href="https://www.stefanonsoftware.com">www.stefanonsoftware.com</a></p>
-<p>This email was sent to <a href="{% raw %}{{ contact.EMAIL }}{% endraw %}}">{% raw %}{{ contact.EMAIL }}{% endraw %}</a></p>
-<!--<p>This email was sent to <a href="mailto:{{ recipient_address }}">{{ recipient_address }}</a></p>-->
-<p>You've received it because you're subscribed to our newsletter.</p>
-<p><a href="{% raw %}{{ unsubscribe }}{% endraw %}">Unsubscribe</a></p>
+<div id="footer">
+    <p><strong>StefanOnSoftware</strong></p>
+    <p><a href="https://www.stefanonsoftware.com">www.stefanonsoftware.com</a></p>
+    <p>This email was sent to <a href="{% raw %}{{ contact.EMAIL }}{% endraw %}}">{% raw %}{{ contact.EMAIL }}{% endraw %}</a></p>
+    <!--<p>This email was sent to <a href="mailto:{{ recipient_address }}">{{ recipient_address }}</a></p>-->
+    <p>You've received it because you're subscribed to our newsletter.</p>
+    <p><a href="{% raw %}{{ unsubscribe }}{% endraw %}">Unsubscribe</a></p>
+</div>
