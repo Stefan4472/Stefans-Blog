@@ -12,15 +12,17 @@ BLUEPRINT = flask.Blueprint('email', __name__, url_prefix='/api/v1/email')
 @BLUEPRINT.route('/register', methods=['POST'])
 def register_email():
     """Register a new email address for the email list."""
+    if not current_app.config['EMAIL_CONFIGURED']:
+        print('WARN: email is not configured')
+        return flask.Response(status=500, response='Email has not been configured by the web administrator')
+
     try:
         contract = RegisterEmailContract.from_json(request.get_json())
-        # print(f'Got contract {contract}')
     except marshmallow.exceptions.ValidationError as e:
-        return Response(status=400, response='Invalid parameters: {}'.format(e))
+        return Response(status=400, response='Invalid email address')
 
-    if current_app.config['EMAIL_CONFIGURED']:
-        success = get_email_provider().register_email(contract.address)
-        return flask.Response(status=200 if success else 500)
-
-    print('WARN: email is not configured in this app')
-    return flask.Response(status=500)
+    try:
+        get_email_provider().register_email(contract.address)
+        return flask.Response(status=200)
+    except ValueError as e:
+        return flask.Response(status=500, response=str(e))

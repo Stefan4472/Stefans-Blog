@@ -5,6 +5,7 @@ from sib_api_v3_sdk.rest import ApiException
 from flaskr.models.post import Post
 
 
+# TODO: better failure handling. The problem is, I don't know under what conditions the Sendinblue API will fail
 class EmailProvider:
     """
     Provides functionality for the site's email list. Uses the Sendinblue API.
@@ -14,8 +15,6 @@ class EmailProvider:
 
     Note: see here for information on Sendinblue template parameters
     https://help.sendinblue.com/hc/en-us/articles/360000946299-About-Sendinblue-Template-Language
-
-    TODO: better exception handling
     TODO: update Requirements.txt
     """
     def __init__(self, api_key: str, list_id: int):
@@ -23,9 +22,18 @@ class EmailProvider:
         self._config.api_key['api-key'] = api_key
         self._list_id = list_id
 
-    def register_email(self, address: str) -> bool:
+    def register_email(self, address: str):
         """
-        Register a new email address to the subscriber list. Returns whether successful.
+        Register a new email address to the subscriber list.
+        May raise ValueError.
+        """
+        self._create_contact(address)
+        self._send_welcome_email(address)
+
+    def _create_contact(self, address: str):
+        """
+        Add the specified email address to the contact list.
+        May raise ValueError.
 
         See https://developers.sendinblue.com/reference/createcontact
         """
@@ -37,22 +45,16 @@ class EmailProvider:
                 list_ids=[self._list_id],
             ))
         except ApiException as e:
-            print(f'Exception when calling ContactsApi->create_contact: {e}')
-            return False
-        try:
-            self._send_welcome_email(address)
-        except ApiException as e:
-            return False
+            raise ValueError('Error creating contact')
 
     def _send_welcome_email(self, address: str):
         """
         Send a transactional "welcome" email to the specified address.
-        May throw ApiException!
+        May raise ValueError.
 
         See https://developers.sendinblue.com/reference/sendtransacemail
         """
         api = TransactionalEmailsApi(ApiClient(self._config))
-
         # Render the email in HTML
         email_html = render_template(
             'email/welcome_email.html',
@@ -61,34 +63,30 @@ class EmailProvider:
             header_url='https://www.stefanonsoftware.com/static/site-banner.JPG',
             recipient=address,
         )
+        try:
+            api_response = api.send_transac_email(SendSmtpEmail(
+                to=[{"email": address}],
+                reply_to={"email": "stefan@stefanonsoftware.com", "name": "Stefan Kussmaul"},
+                html_content=email_html,
+                sender={"name": "Stefan Kussmaul", "email": "stefan@stefanonsoftware.com"},
+                subject='Welcome to the StefanOnSoftware Email List!',
+            ))
+        except ApiException as e:
+            raise ValueError('Error sending welcome email')
 
-        api_response = api.send_transac_email(SendSmtpEmail(
-            to=[{"email": address}],
-            reply_to={"email": "stefan@stefanonsoftware.com", "name": "Stefan Kussmaul"},
-            html_content=email_html,
-            sender={"name": "Stefan Kussmaul", "email": "stefan@stefanonsoftware.com"},
-            subject='Welcome to the StefanOnSoftware Email List!',
-        ))
-        print(api_response)
-
-    def broadcast_new_post(self, post: Post) -> bool:
-        """Creates and sends an email campaign notifying subscribers of the new post."""
+    def broadcast_new_post(self, post: Post):
+        """
+        Creates and sends an email campaign notifying subscribers of
+        the new post. May raise ValueError.
+        """
         print('Broadcasting email campaign!')
-        try:
-            campaign_id = self._create_campaign(post)
-        except ApiException as e:
-            raise ValueError()
-
-        try:
-            self._send_campaign(campaign_id)
-            return True
-        except ApiException as e:
-            raise ValueError()
+        campaign_id = self._create_campaign(post)
+        self._send_campaign(campaign_id)
 
     def _create_campaign(self, post: Post) -> int:
         """
         Create a campaign notifying subscribers of the given post.
-        Returns the campaign ID. May throw ApiException!
+        Returns the campaign ID. May raise ValueError.
 
         See https://developers.sendinblue.com/reference/createemailcampaign-1
         """
@@ -105,24 +103,30 @@ class EmailProvider:
         # Note: here is how you would set the "scheduled_at" time directly in the API call:
         # send_time = datetime.datetime.now(datetime.timezone.utc)
         # CreateEmailCampaign.scheduled_at = send_time.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z',
-        api_response = api_instance.create_email_campaign(sib_api_v3_sdk.CreateEmailCampaign(
-            tag='New Post',
-            sender={"name": 'Stefan Kussmaul', "email": 'stefan@stefanonsoftware.com'},
-            name=f'New Post - {post.title}',
-            html_content=email_html,
-            subject='A new post from StefanOnSoftware!',
-            reply_to='stefan@stefanonsoftware.com',
-            recipients={'listIds': [current_app.config['EMAIL_LIST_ID']]},
-        ))
-        print(api_response)
-        return api_response.id
+        try:
+            api_response = api_instance.create_email_campaign(sib_api_v3_sdk.CreateEmailCampaign(
+                tag='New Post',
+                sender={"name": 'Stefan Kussmaul', "email": 'stefan@stefanonsoftware.com'},
+                name=f'New Post - {post.title}',
+                html_content=email_html,
+                subject='A new post from StefanOnSoftware!',
+                reply_to='stefan@stefanonsoftware.com',
+                recipients={'listIds': [current_app.config['EMAIL_LIST_ID']]},
+            ))
+            print(api_response)
+            return api_response.id
+        except ApiException:
+            raise ValueError('Error creating campaign')
 
     def _send_campaign(self, campaign_id: int):
-        """Send the specified campaign now. May throw ApiException!"""
+        """Send the specified campaign now. May raise ValueError."""
         configuration = sib_api_v3_sdk.Configuration()
         configuration.api_key['api-key'] = current_app.config['EMAIL_KEY']
         api_instance = sib_api_v3_sdk.EmailCampaignsApi(sib_api_v3_sdk.ApiClient(configuration))
-        api_instance.send_email_campaign_now(campaign_id)
+        try:
+            api_instance.send_email_campaign_now(campaign_id)
+        except ApiException:
+            raise ValueError('Error sending campaign')
 
 
 def get_email_provider() -> EmailProvider:
