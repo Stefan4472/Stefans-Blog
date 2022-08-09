@@ -70,8 +70,10 @@ def create_post():
     except marshmallow.exceptions.ValidationError as e:
         return Response(status=400, response='Invalid parameters: {}'.format(e))
 
+    current_app.logger.debug(f'Request to create post with slug={contract.slug}')
     if Post.query.filter_by(slug=contract.slug).first():
         msg = 'A post with the given slug already exists'
+        current_app.logger.debug(msg)
         return Response(response=msg, status=400)
 
     try:
@@ -90,18 +92,20 @@ def create_post():
         )
         db.session.add(post)
         db.session.commit()
+        current_app.logger.info(f'Created post with slug={post.slug}')
+    except sqlalchemy.exc.SQLAlchemyError as e:
+        current_app.logger.error(f'Error creating database record: {e}')
+        return Response(status=500, response='Internal database error')
 
+    try:
         if contract.send_email and current_app.config['EMAIL_CONFIGURED']:
             get_email_provider().broadcast_new_post(post)
         elif contract.send_email:
-            print('WARN: send_email=True but no email is configured in this app')
-
-        return Response(status=200)
+            current_app.logger.warn('send_email=True but no email service is configured')
     except ValueError as e:
+        current_app.logger.error(f'Error while sending email notification: {e}')
         return Response(status=400, response=str(e))
-    except sqlalchemy.exc.SQLAlchemyError as e:
-        print(e)
-        return Response(status=500, response='Internal database error')
+    return Response(status=200)
 
 
 @BLUEPRINT.route('/<string:slug>', methods=['PUT'])
@@ -133,10 +137,13 @@ def update_post(slug: str):
             post.title_color = contract.title_color
         post.tags = get_or_create_tags(contract.tags)
         db.session.commit()
+        current_app.logger.info(f'Updated post with slug={post.slug}')
         return Response(status=200)
-    except ValueError as e:
+    except ValueError as e:  # TODO: not sure what can trigger this
+        current_app.logger.error(f'ValueError while updating post with slug={post.slug}: {e}')
         return Response(status=400, response=str(e))
     except sqlalchemy.exc.SQLAlchemyError as e:
+        current_app.logger.error(f'Database error while updating post with slug={post.slug}: {e}')
         return Response(status=500, response='Internal database error')
 
 
@@ -174,10 +181,13 @@ def patch_post(slug: str):
         if contract.title_color:
             post.set_title_color(contract.title_color)
         db.session.commit()
+        current_app.logger.info(f'Patched post with slug={post.slug}')
         return Response(status=200)
     except ValueError as e:
+        current_app.logger.error(f'ValueError while updating post with slug={post.slug}: {e}')
         return Response(status=400, response=str(e))
     except sqlalchemy.exc.SQLAlchemyError as e:
+        current_app.logger.error(f'Database error while updating post with slug={post.slug}: {e}')
         return Response(status=500, response='Internal database error')
 
 
@@ -203,9 +213,11 @@ def upload_markdown(slug: str):
         return Response(status=400, response=str(e))
     try:
         db.session.commit()
+        current_app.logger.debug(f'Updated markdown for post with slug={post.slug}')
+        return Response(status=200)
     except sqlalchemy.exc.SQLAlchemyError as e:
+        current_app.logger.error(f'Database error while updating markdown for post with slug={post.slug}: {e}')
         return Response(status=500, response='Internal database error')
-    return Response(status=200)
 
 
 @BLUEPRINT.route('/<string:slug>/markdown', methods=['GET'])
@@ -230,6 +242,7 @@ def delete_post(slug: str):
     post.run_delete_logic()
     db.session.delete(post)
     db.session.commit()
+    current_app.logger.info(f'Deleted post with slug={slug}')
     return Response(status=200)
 
 
