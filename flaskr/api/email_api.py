@@ -13,7 +13,7 @@ BLUEPRINT = flask.Blueprint('email', __name__, url_prefix='/api/v1/email')
 def register_email():
     """Register a new email address for the email list."""
     if not current_app.config['EMAIL_CONFIGURED']:
-        print('WARN: email is not configured')
+        current_app.logger.warn('Received call to /register, but email is not configured')
         return flask.Response(status=500, response='Email has not been configured by the web administrator')
 
     try:

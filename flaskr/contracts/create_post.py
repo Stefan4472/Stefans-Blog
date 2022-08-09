@@ -90,8 +90,8 @@ class CreatePostSchema(msh.Schema):
         validate=msh.validate.Regexp(constants.COLOR_REGEX),
     )
     send_email = msh.fields.Boolean(
-        required=False,
-        load_default=True,
+        required=True,
+        allow_none=False,
         data_key=constants.KEY_SEND_EMAIL
     )
 

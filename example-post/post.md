@@ -200,7 +200,7 @@ public static void main(String[] args) {
 
 That's all I'll be showing in this tutorial, but here's a small list of features you could implement that I've found very useful in the past:
 - Turn looping on/off. If looping is off, and the animation is on its last frame, calling ```next()``` should throw an exception (e.g. IndexOutOfBoundsException)
-- If looping can be turend off, you'll need a ```hasNext()``` method that returns whether calling ```next()``` is allowed. This would be true until the last frame of the animation.
+- If looping can be turned off, you'll need a ```hasNext()``` method that returns whether calling ```next()``` is allowed. This would be true until the last frame of the animation.
 - A ```restart()``` method that goes back to the first frame.
 - A ```hasPlayed()``` method that returns True if the animation has played through at least once.
 

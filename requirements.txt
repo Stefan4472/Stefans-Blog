@@ -29,6 +29,7 @@ pysftp==0.2.9
 python-dotenv==0.17.1
 randomcolor==0.4.4.5
 requests==2.25.1
+sib-api-v3-sdk==7.5.0
 six==1.15.0
 soupsieve==2.3.1
 SQLAlchemy==1.4.22

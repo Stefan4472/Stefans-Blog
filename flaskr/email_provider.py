@@ -15,7 +15,6 @@ class EmailProvider:
 
     Note: see here for information on Sendinblue template parameters
     https://help.sendinblue.com/hc/en-us/articles/360000946299-About-Sendinblue-Template-Language
-    TODO: update Requirements.txt
     """
     def __init__(self, api_key: str, list_id: int):
         self._config = sib_api_v3_sdk.Configuration()
@@ -27,8 +26,10 @@ class EmailProvider:
         Register a new email address to the subscriber list.
         May raise ValueError.
         """
+        current_app.logger.debug('Registering an email address')
         self._create_contact(address)
         self._send_welcome_email(address)
+        current_app.logger.debug('Email has been registered successfully')
 
     def _create_contact(self, address: str):
         """
@@ -45,6 +46,7 @@ class EmailProvider:
                 list_ids=[self._list_id],
             ))
         except ApiException as e:
+            current_app.logger.error(f'Error creating contact: {e}')
             raise ValueError('Error creating contact')
 
     def _send_welcome_email(self, address: str):
@@ -64,7 +66,7 @@ class EmailProvider:
             recipient=address,
         )
         try:
-            api_response = api.send_transac_email(SendSmtpEmail(
+            api.send_transac_email(SendSmtpEmail(
                 to=[{"email": address}],
                 reply_to={"email": "stefan@stefanonsoftware.com", "name": "Stefan Kussmaul"},
                 html_content=email_html,
@@ -72,6 +74,7 @@ class EmailProvider:
                 subject='Welcome to the StefanOnSoftware Email List!',
             ))
         except ApiException as e:
+            current_app.logger.error(f'Error sending transactional email: {e}')
             raise ValueError('Error sending welcome email')
 
     def broadcast_new_post(self, post: Post):
@@ -79,9 +82,10 @@ class EmailProvider:
         Creates and sends an email campaign notifying subscribers of
         the new post. May raise ValueError.
         """
-        print('Broadcasting email campaign!')
+        current_app.logger.info(f'Broadcasting email campaign for post with slug {post.slug}')
         campaign_id = self._create_campaign(post)
         self._send_campaign(campaign_id)
+        current_app.logger.info(f'Email campaign has been scheduled for delivery. id={campaign_id}')
 
     def _create_campaign(self, post: Post) -> int:
         """
@@ -113,9 +117,10 @@ class EmailProvider:
                 reply_to='stefan@stefanonsoftware.com',
                 recipients={'listIds': [current_app.config['EMAIL_LIST_ID']]},
             ))
-            print(api_response)
+            current_app.logger.debug(f'Email campaign created with id={api_response.id}')
             return api_response.id
-        except ApiException:
+        except ApiException as e:
+            current_app.logger.error(f'Error creating campaign: {e}')
             raise ValueError('Error creating campaign')
 
     def _send_campaign(self, campaign_id: int):
@@ -125,7 +130,9 @@ class EmailProvider:
         api_instance = sib_api_v3_sdk.EmailCampaignsApi(sib_api_v3_sdk.ApiClient(configuration))
         try:
             api_instance.send_email_campaign_now(campaign_id)
-        except ApiException:
+            current_app.logger.debug('Campaign has been sent')
+        except ApiException as e:
+            current_app.logger.error(f'Error sending campaign: {e}')
             raise ValueError('Error sending campaign')
 
 
