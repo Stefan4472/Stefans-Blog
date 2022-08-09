@@ -9,20 +9,49 @@
     </div>
 </div>
 
+<!-- Adapted from https://getbootstrap.com/docs/4.2/components/toasts/ -->
+<!-- Container for toasts that popup when the user register their email. -->
+<div class="d-flex justify-content-end">
+    <div id="toast-email-success" class="toast" data-delay="2000">
+        <div class="toast-header">
+            <span style="height: 1rem; width: 1rem; border-radius: 50%; background-color: #5cb85c;"></span>
+            <strong class="mr-auto" style="margin-left: 1rem;">Success!</strong>
+            <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="toast-body">
+            You have successfully subscribed to the email list
+        </div>
+    </div>
+    <div id="toast-email-failure" class="toast" data-delay="2000">
+        <div class="toast-header">
+            <span style="height: 1rem; width: 1rem; border-radius: 50%; background-color: #d9534f;"></span>
+            <strong class="mr-auto" style="margin-left: 1rem;">Error</strong>
+            <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="toast-body">
+            There was a problem registering your email address: <span id="email-error"></span>
+        </div>
+    </div>
+</div>
+
 <script>
 // Trigger AJAX request to Email API when user presses the Submit button
 $('#email_submit').on('click', function(event) {
     let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
-        console.log('Got response');
         if (xhr.readyState !== XMLHttpRequest.DONE) {
             return;
         }
         if (xhr.status === 200) {
-            alert('Success!');
-            // $('#email_address').val('');
+            $('#toast-email-success').toast('show');
+            $('#email_address').val('');
         } else {
-            alert('Error: ' + xhr.responseText);
+            $('#email-error').text(xhr.responseText);
+            $('#toast-email-failure').toast('show');
         }
 
     };
