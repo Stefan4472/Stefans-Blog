@@ -16,8 +16,7 @@ class ManagerService:
 
     def create_post(self, config: PostConfig, send_email: bool):
         config_json = config.to_json()
-        if send_email:
-            config_json['send_email'] = send_email
+        config_json['send_email'] = send_email
         res = requests.post(
             f'{self.base_url}/api/v1/posts',
             json=config_json,
