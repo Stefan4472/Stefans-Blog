@@ -10,6 +10,8 @@ from pygments.formatters import HtmlFormatter
 """
 Functions for rendering and handling post text, which consists of Markdown
 and custom XML tags.
+
+TODO: needs significant cleanup and clear documentation.
 """
 
 
@@ -50,6 +52,7 @@ def render_string(post_text: str) -> str:
         elif tag_name == CODE_TAG:
             raw_contents = post_text[match_open.end():close_start]
             rendered_segment = _render_code(element, raw_contents)
+            print(rendered_segment)
         else:
             raise ValueError(f'Unsupported tag "{tag_name}". This is a programmer error')
 
@@ -134,7 +137,8 @@ def _render_code(code_elem: bs4.element.Tag, raw_contents: str) -> str:
     # TODO: COULD PROVIDE A GLOBAL SETTING FOR THE 'STYLE' TO USE (see https://pygments.org/styles/)
     # https://pygments.org/docs/formatters/#HtmlFormatter
     formatter = HtmlFormatter(noclasses=True)
-    return pygments.highlight(raw_contents.strip(), lexer, formatter)
+    # Render pygments within a Jinja "raw" block to avoid inadvertent template evaluation
+    return r'<div>{% raw %}' + pygments.highlight(raw_contents.strip(), lexer, formatter).strip() + r'{% endraw %}</div>'
 
 
 def find_images(post_markdown: str) -> typing.List[str]:

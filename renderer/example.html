@@ -12,7 +12,7 @@
 
 <p>We'll be using Java Swing, which is a library for writing GUIs. We'll be using the simplest setup possible--a single window, called a JFrame, which we'll draw our animations on. (<a href="https://github.com/Stefan4472/Blog-ExampleCode/tree/master/gamedev-from-scratch/2-animation/draw-square/src">See the full code here</a>)</p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">javax.swing.*</span>;
+<div>{% raw %}<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">javax.swing.*</span>;
 <span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">java.awt.*</span>;
 
 <span style="color: #408080; font-style: italic">// Creates a JFrame window and draws a Blue square to it</span>
@@ -38,7 +38,7 @@
         g.<span style="color: #7D9029">fillRect</span>(<span style="color: #666666">50</span>, <span style="color: #666666">50</span>, <span style="color: #666666">50</span>, <span style="color: #666666">50</span>);  <span style="color: #408080; font-style: italic">// draw square with top-left coordinate at (50, 50) and width/height of 50 px</span>
     }
 }
-</pre></div>
+</pre></div>{% endraw %}</div>
 
 <p>In this code the DrawSquare class is an extended JFrame, so we're basically just modifying a few features from the standard JFrame window class. We set the size to constants we defined (<code>SCREEN_W</code> and <code>SCREEN_H</code>), do some other GUI setup, and override the <code>paint()</code> method, which specifies how to draw the window.</p>
 
@@ -46,12 +46,12 @@
 
 <p>Now let's add a very simple main class to show the window:</p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Main</span> {
+<div>{% raw %}<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Main</span> {
     <span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">static</span> <span style="color: #B00040">void</span> <span style="color: #0000FF">main</span>(String<span style="color: #666666">[]</span> args) {
         <span style="color: #008000; font-weight: bold">new</span> DrawSquare();
     }
 }
-</pre></div>
+</pre></div>{% endraw %}</div>
 
 <p>If we compile the code and run Main, we'll see the following screen:</p>
 
@@ -63,7 +63,7 @@
 
 <p>Let's add code that will trigger the screen to redraw every 33 milliseconds (~30 FPS), and each time the screen redraws, let's draw the square a few pixels to the right. (<a href="https://github.com/Stefan4472/Blog-ExampleCode/tree/master/gamedev-from-scratch/2-animation/draw-moving-square/src">See the full code here</a>)</p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">javax.swing.*</span>;
+<div>{% raw %}<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">javax.swing.*</span>;
 <span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">java.awt.*</span>;
 <span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">java.awt.event.ActionEvent</span>;
 <span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">java.awt.event.ActionListener</span>;
@@ -113,18 +113,18 @@
         g.<span style="color: #7D9029">fillRect</span>(square_x, <span style="color: #666666">50</span>, <span style="color: #666666">50</span>, <span style="color: #666666">50</span>);  <span style="color: #408080; font-style: italic">// draw square with correct coordinate and width/height of 50 px</span>
     }
 }
-</pre></div>
+</pre></div>{% endraw %}</div>
 
 <p>We use the Timer to trigger regular, repeated calls to <code>update()</code> and <code>paint()</code>. In <code>update()</code>, we add 5 to the square's last coordinate (stored in the <code>square_x</code> variable). In <code>paint()</code>, we fill the entire window with white (as a way to reset the screen from the last frame) and draw the square at its new location. This way, as we run <code>update()</code> and <code>paint()</code> 30 times a second, the square moves fluidly to the right.</p>
 
 <p>We also have to modify <code>main()</code> with the new class name ("DrawMovingSquare").</p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Main</span> {
+<div>{% raw %}<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Main</span> {
     <span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">static</span> <span style="color: #B00040">void</span> <span style="color: #0000FF">main</span>(String<span style="color: #666666">[]</span> args) {
         <span style="color: #008000; font-weight: bold">new</span> DrawMovingSquare();
     }
 }
-</pre></div>
+</pre></div>{% endraw %}</div>
 
 <figure class="figure text-center">    <img src="example-moving-square.gif" class="figure-img img-fluid img-thumbnail rounded" alt=""></figure>
 
@@ -140,7 +140,7 @@
 
 <p>We'll also add some code to change the square color each frame. To keep it simple, we'll fluctuate between white and black. We'll use one integer (<code>color_int</code>) that will cycle gradually from 0 to 255. Each frame, we'll add <code>color_change</code> to <code>color_int</code>, and set the drawing color's RGB to <code>(color_int, color_int, color_int)</code>. We'll reverse <code>color_change</code> direction at the bounds (0 and 255). (<a href="https://github.com/Stefan4472/Blog-ExampleCode/tree/master/gamedev-from-scratch/2-animation/draw-changing-square/src">See the full code here</a>)</p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">javax.swing.*</span>;
+<div>{% raw %}<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">javax.swing.*</span>;
 <span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">java.awt.*</span>;
 <span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">java.awt.event.ActionEvent</span>;
 <span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">java.awt.event.ActionListener</span>;
@@ -214,16 +214,16 @@
         g.<span style="color: #7D9029">fillRect</span>(square_x, <span style="color: #666666">50</span>, square_w, square_w);  <span style="color: #408080; font-style: italic">// draw square with correct coordinate and width/height</span>
     }
 }
-</pre></div>
+</pre></div>{% endraw %}</div>
 
 <p>Finally, let's update <code>main()</code> again.</p>
 
-<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Main</span> {
+<div>{% raw %}<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Main</span> {
     <span style="color: #008000; font-weight: bold">public</span> <span style="color: #008000; font-weight: bold">static</span> <span style="color: #B00040">void</span> <span style="color: #0000FF">main</span>(String<span style="color: #666666">[]</span> args) {
         <span style="color: #008000; font-weight: bold">new</span> DrawChangingSquare();
     }
 }
-</pre></div>
+</pre></div>{% endraw %}</div>
 
 <figure class="figure text-center">    <img src="example-changing-square.gif" class="figure-img img-fluid img-thumbnail rounded" alt=""></figure>
 
