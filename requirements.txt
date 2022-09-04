@@ -20,7 +20,7 @@ importlib-metadata==4.6.0
 itsdangerous==1.1.0
 Jinja2==2.11.3
 MarkupSafe==1.1.1
-paramiko==2.7.2
+paramiko==2.10.1
 Pillow==9.0.0
 pycparser==2.20
 Pygments==2.10.0
