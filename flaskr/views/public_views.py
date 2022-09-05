@@ -1,9 +1,12 @@
 import flask
 import werkzeug.exceptions
 from sqlalchemy import desc
+from werkzeug.security import check_password_hash
+from flask_login import login_user, logout_user
 from flaskr import site_logger
 from flaskr.models.post import Post
 from flaskr.models.tag import Tag
+from flaskr.models.user import User
 from flaskr.config import Keys
 
 
@@ -146,15 +149,17 @@ def login():
 
 @BLUEPRINT.route('/login', methods=['POST'])
 def login_auth():
-    print(flask.request.form)
     email = flask.request.form.get('email')
     password = flask.request.form.get('password')
-    remember = True if flask.request.form.get('remember') else False
+    remember = bool(flask.request.form.get('remember'))
 
-    # TODO: on success, go to private page
-    return flask.redirect(flask.url_for('blog.login'))
+    # Ensure user exists and check password
+    user = User.query.filter_by(email=email).first()
+    if not user or not check_password_hash(user.password, password):
+        # Error: reload the login page
+        return flask.redirect(flask.url_for('blog.login'))
 
-
-@BLUEPRINT.route('/logout')
-def logout():
-    return flask.Response(status=200)
+    # Success: login and redirect to internal page
+    login_user(user, remember=remember)
+    flask.current_app.logger.debug(f'User {email} logged in')
+    return flask.redirect(flask.url_for('internal.landing'))
