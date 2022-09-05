@@ -1,6 +1,7 @@
 import typing
 from flask import current_app
 from flask_login import LoginManager, UserMixin
+from .config import Keys
 '''
 Functionality for API authentication.
 
@@ -20,5 +21,5 @@ def load_user(request) -> typing.Optional[UserMixin]:
     Example: http://gouthamanbalaraman.com/blog/minimal-flask-login-example.html
     """
     token = str(request.headers.get('Authorization'))
-    secret = str(current_app.config['SECRET_KEY'])
+    secret = str(current_app.config[Keys.SECRET_KEY])
     return UserMixin() if token == secret else None

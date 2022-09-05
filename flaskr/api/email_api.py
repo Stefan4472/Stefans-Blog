@@ -3,6 +3,7 @@ from flask import request, Response, current_app
 import marshmallow
 from flaskr.contracts.register_email import RegisterEmailContract
 from flaskr.email_provider import get_email_provider
+from flaskr.config import Keys
 
 
 # Blueprint under which all views will be assigned
@@ -12,7 +13,7 @@ BLUEPRINT = flask.Blueprint('email', __name__, url_prefix='/api/v1/email')
 @BLUEPRINT.route('/register', methods=['POST'])
 def register_email():
     """Register a new email address for the email list."""
-    if not current_app.config['EMAIL_CONFIGURED']:
+    if not current_app.config[Keys.USE_EMAIL_LIST]:
         current_app.logger.warn('Received call to /register, but email is not configured')
         return flask.Response(status=500, response='Email has not been configured by the web administrator')
 

@@ -4,6 +4,7 @@ from sqlalchemy import desc
 from flaskr import site_logger
 from flaskr.models.post import Post
 from flaskr.models.tag import Tag
+from flaskr.config import Keys
 
 
 # Blueprint under which all views will be assigned
@@ -40,7 +41,7 @@ def posts_page(page: int = 1):
         .order_by(desc(Post.publish_date))\
         .paginate(
             page,
-            flask.current_app.config['PAGINATE_POSTS_PER_PAGE'],
+            flask.current_app.config[Keys.PAGINATE_POSTS_PER_PAGE],
             error_out=False,
         )
     return flask.render_template(

@@ -27,23 +27,7 @@ Install the required packages:
 pip install -r requirements.txt
 ```
 
-The following environment variables can be set to configure the Flask instance:
-```
-FLASK_APP=.
-FLASK_ENV=development
-# Secret key used to authenticate API requests
-SECRET_KEY='x123456'
-# Url to the traffic API (optional)
-TRAFFIC_API=''
-# Secret key used for the traffic API (optional)
-TRAFFIC_KEY=''
-# Settings for Email List, currently only supporting SendInBlue
-# API Key
-EMAIL_KEY=''
-# Email List ID
-EMAIL_LIST_ID=0
-```
-I recommend pasting that exact string into a new file `flaskr/.flaskenv`. These will be set as environment variables when `flask` is run. Take a look at those values before running the site. The `SECRET_KEY` should of course be changed in production.
+There is a range of configuration values that can be set. See `flaskr/config.py` for more information. I recommend using a `.flaskenv` file and using absolute paths.
 
 ## Usage
 

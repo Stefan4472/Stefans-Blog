@@ -3,6 +3,7 @@ import requests
 import functools
 import typing
 from flask import request, current_app
+from .config import Keys
 
 
 def log_visit():
@@ -13,23 +14,23 @@ def log_visit():
     # see https://stackoverflow.com/questions/3759981/get-ip-address-of-visitors-using-flask-for-python
     ip_addr = request.environ.get('HTTP_X_FORWARDED_FOR', request.environ['REMOTE_ADDR'])
     user_agent = request.environ['HTTP_USER_AGENT']
-    with open(current_app.config['LOG_PATH'], 'a') as log_file:
+    with open(current_app.config[Keys.TRAFFIC_LOG_PATH], 'a') as log_file:
         log_file.write('{},{},{},{}\n'.format(timestamp, url, ip_addr, user_agent))
 
-    # Send data to the site-traffic analyzer
-    if current_app.config['TRAFFIC_API']:
-        params = {
-            'url': request.path,
-            'ip_addr': ip_addr,
-            'user_agent': request.environ['HTTP_USER_AGENT'],
-            'secret': current_app.config['TRAFFIC_KEY'],
-        }
-
+    if current_app.config[Keys.USE_SITE_ANALYTICS]:
+        # Send data to site-analytics
         try:
-            # requests.post('http://skussmaul.pythonanywhere.com/report_traffic', params=params)
-            requests.post(current_app.config['TRAFFIC_API'], params=params)
+            requests.post(
+                current_app.config[Keys.TRAFFIC_API],
+                params={
+                    'url': request.path,
+                    'ip_addr': ip_addr,
+                    'user_agent': request.environ['HTTP_USER_AGENT'],
+                    'secret': current_app.config[Keys.TRAFFIC_KEY],
+                },
+            )
         except requests.exceptions.ConnectionError as e:
-            pass
+            current_app.logger.error('Couldn\'t connect to SiteAnalytics')
 
 
 def logged_visit(f: typing.Callable):

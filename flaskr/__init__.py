@@ -18,9 +18,6 @@ def create_app(config: cfg.Config = None):
     my_config.check_validity()
     app.config.update(my_config.to_dict())
 
-    print(app.config)
-    print(app.instance_path)
-
     # Create the instance folder if it doesn't already exist
     instance_path = pathlib.Path(app.instance_path)
     instance_path.mkdir(exist_ok=True)
@@ -38,7 +35,7 @@ def create_app(config: cfg.Config = None):
     app.add_url_rule('/', endpoint='index')
 
     # Init search engine
-    app.search_engine = SearchEngine(app.config['SEARCH_INDEX_PATH'])
+    app.search_engine = SearchEngine(app.config[cfg.Keys.SEARCH_INDEX_PATH])
 
     # Register click commands
     app.cli.add_command(cli.reset_site)

@@ -3,9 +3,11 @@ import sib_api_v3_sdk
 from sib_api_v3_sdk import ApiClient, ContactsApi, CreateContact, TransactionalEmailsApi, SendSmtpEmail
 from sib_api_v3_sdk.rest import ApiException
 from flaskr.models.post import Post
+from .config import Keys
 
 
 # TODO: better failure handling. The problem is, I don't know under what conditions the Sendinblue API will fail
+# TODO: still a few places that don't use self._config and self._list_id
 class EmailProvider:
     """
     Provides functionality for the site's email list. Uses the Sendinblue API.
@@ -95,7 +97,7 @@ class EmailProvider:
         See https://developers.sendinblue.com/reference/createemailcampaign-1
         """
         configuration = sib_api_v3_sdk.Configuration()
-        configuration.api_key['api-key'] = current_app.config['EMAIL_KEY']
+        configuration.api_key['api-key'] = current_app.config[Keys.EMAIL_KEY]
         api_instance = sib_api_v3_sdk.EmailCampaignsApi(sib_api_v3_sdk.ApiClient(configuration))
 
         email_html = render_template(
@@ -115,7 +117,7 @@ class EmailProvider:
                 html_content=email_html,
                 subject='A new post from StefanOnSoftware!',
                 reply_to='stefan@stefanonsoftware.com',
-                recipients={'listIds': [current_app.config['EMAIL_LIST_ID']]},
+                recipients={'listIds': [current_app.config[Keys.EMAIL_LIST_ID]]},
             ))
             current_app.logger.debug(f'Email campaign created with id={api_response.id}')
             return api_response.id
@@ -126,7 +128,7 @@ class EmailProvider:
     def _send_campaign(self, campaign_id: int):
         """Send the specified campaign now. May raise ValueError."""
         configuration = sib_api_v3_sdk.Configuration()
-        configuration.api_key['api-key'] = current_app.config['EMAIL_KEY']
+        configuration.api_key['api-key'] = current_app.config[Keys.EMAIL_KEY]
         api_instance = sib_api_v3_sdk.EmailCampaignsApi(sib_api_v3_sdk.ApiClient(configuration))
         try:
             api_instance.send_email_campaign_now(campaign_id)
@@ -142,11 +144,11 @@ def get_email_provider() -> EmailProvider:
 
     Throws ValueError if the current app is not configured for sending emails.
     """
-    if not current_app.config['EMAIL_CONFIGURED']:
+    if not current_app.config[Keys.USE_EMAIL_LIST]:
         raise ValueError('App has not been configured to use the email API')
     if 'email_provider' not in g:
         g.email_provider = EmailProvider(
-            current_app.config['EMAIL_KEY'],
-            current_app.config['EMAIL_LIST_ID'],
+            current_app.config[Keys.EMAIL_KEY],
+            current_app.config[Keys.EMAIL_LIST_ID],
         )
     return g.email_provider

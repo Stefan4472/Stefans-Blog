@@ -2,12 +2,16 @@ import os
 import typing
 import dataclasses as dc
 from pathlib import Path
-from enum import Enum
 from typing import Dict
 
 
-class Keys(Enum):
-    """Keys used to reference config values."""
+class Keys:
+    """
+    Strings used to reference config values.
+
+    Use the string values when setting environment variables
+    or when accessing `flask.current_app.config`.
+    """
     SECRET_KEY = 'SECRET_KEY'
     SQLALCHEMY_DATABASE_URI = 'SQLALCHEMY_DATABASE_URI'
     TRAFFIC_LOG_PATH = 'TRAFFIC_LOG_PATH'
@@ -24,8 +28,14 @@ class Keys(Enum):
 
 @dc.dataclass
 class Config:
-    """Stores configuration variables for the Flask app."""
-    # TODO: provide instance path as a config variable?
+    """
+    Stores configuration variables for the Flask app.
+
+    Use `to_dict()` when populating `flask.current_app.config`. This
+    will ensure that the keys are properly set.
+
+    Can be used to read from environment variables using `load_from_env()`.
+    """
     # App secret key
     secret_key: str
     # URI used by SQLAlchemy to connect to the database.
@@ -57,7 +67,10 @@ class Config:
     paginate_posts_per_page = 8
 
     def check_validity(self):
-        """Run checks to ensure """
+        """
+        Run basic checks to ensure there are no obvious problems in the config.
+        Raises ValueError in case of a problem.
+        """
         if not self.secret_key:
             raise ValueError(f'{Keys.SECRET_KEY} is unset')
         if self.use_email_list and not (self.email_key and self.email_list_id):
@@ -66,6 +79,7 @@ class Config:
             raise ValueError(f'{Keys.USE_SITE_ANALYTICS} = True but {Keys.TRAFFIC_KEY} and {Keys.TRAFFIC_API} are not both configured')
 
     def to_dict(self) -> Dict:
+        """Return parameters as a dictionary."""
         return {
             Keys.SECRET_KEY: self.secret_key,
             Keys.SQLALCHEMY_DATABASE_URI: self.sql_alchemy_database_uri,
@@ -105,22 +119,3 @@ class Config:
             Path(os.environ[Keys.SEARCH_INDEX_PATH]),
             **kwargs,
         )
-
-        # if Keys.USE_SITE_ANALYTICS in os.environ:
-        #     config.USE_SITE_ANALYTICS = os.environ[Keys.USE_SITE_ANALYTICS]
-        # if Keys.USE_EMAIL_LIST in os.environ:
-        #     config.USE_EMAIL_LIST = os.environ[Keys.USE_EMAIL_LIST]
-        # if Keys.TRAFFIC_API in os.environ:
-        #     config.TRAFFIC_API = os.environ[Keys.TRAFFIC_API]
-        # if Keys.TRAFFIC_KEY in os.environ:
-        #     config.TRAFFIC_KEY = os.environ[Keys.TRAFFIC_KEY]
-        # if Keys.EMAIL_KEY in os.environ:
-        #     config.EMAIL_KEY = os.environ[Keys.EMAIL_KEY]
-        # if Keys.EMAIL_LIST_ID in os.environ:
-        #     config.EMAIL_LIST_ID = os.environ[Keys.EMAIL_LIST_ID]
-        # if Keys.SQLALCHEMY_TRACK_MODIFICATIONS in os.environ:
-        #     config.SQLALCHEMY_TRACK_MODIFICATIONS = os.environ[Keys.SQLALCHEMY_TRACK_MODIFICATIONS]
-        # if Keys.PAGINATE_POSTS_PER_PAGE in os.environ:
-        #     config.PAGINATE_POSTS_PER_PAGE = os.environ[Keys.PAGINATE_POSTS_PER_PAGE]
-        #
-        # return config

@@ -15,6 +15,7 @@ from flaskr.contracts.create_post import CreatePostContract
 from flaskr.contracts.update_post import UpdatePostContract
 from flaskr.contracts.patch_post import PatchPostContract
 from flaskr.email_provider import get_email_provider
+from flaskr.config import Keys
 # TODO: Should have a set of Tag endpoints too
 # TODO: SETUP TESTING FRAMEWORK
 # TODO: log all SQLAlchemy errors
@@ -98,7 +99,7 @@ def create_post():
         return Response(status=500, response='Internal database error')
 
     try:
-        if contract.send_email and current_app.config['EMAIL_CONFIGURED']:
+        if contract.send_email and current_app.config[Keys.USE_EMAIL_LIST]:
             get_email_provider().broadcast_new_post(post)
         elif contract.send_email:
             current_app.logger.warn('send_email=True but no email service is configured')
