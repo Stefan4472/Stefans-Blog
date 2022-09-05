@@ -9,6 +9,7 @@ You must initialize `login_manager` on app start!
 `login_manager.init_app()`
 '''
 login_manager = LoginManager()
+login_manager.login_view = 'blog.login'
 
 
 @login_manager.request_loader

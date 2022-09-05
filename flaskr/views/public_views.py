@@ -137,3 +137,24 @@ def changelog_page():
 def error_page(error):
     """Show the 404 error page."""
     return flask.render_template('blog/404.html'), 404
+
+
+@BLUEPRINT.route('/login', methods=['GET'])
+def login():
+    return flask.render_template('blog/login.html')
+
+
+@BLUEPRINT.route('/login', methods=['POST'])
+def login_auth():
+    print(flask.request.form)
+    email = flask.request.form.get('email')
+    password = flask.request.form.get('password')
+    remember = True if flask.request.form.get('remember') else False
+
+    # TODO: on success, go to private page
+    return flask.redirect(flask.url_for('blog.login'))
+
+
+@BLUEPRINT.route('/logout')
+def logout():
+    return flask.Response(status=200)
