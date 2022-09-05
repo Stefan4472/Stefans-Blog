@@ -39,5 +39,6 @@ def create_app(config: cfg.Config = None):
 
     # Register click commands
     app.cli.add_command(cli.reset_site)
+    app.cli.add_command(cli.add_user)
 
     return app
