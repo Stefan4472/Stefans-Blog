@@ -1,13 +1,14 @@
 from flask import current_app, render_template, url_for, g
 import sib_api_v3_sdk
-from sib_api_v3_sdk import ApiClient, ContactsApi, CreateContact, TransactionalEmailsApi, SendSmtpEmail
+from sib_api_v3_sdk import (
+    ApiClient, ContactsApi, CreateContact, TransactionalEmailsApi, SendSmtpEmail, EmailCampaignsApi, CreateEmailCampaign
+)
 from sib_api_v3_sdk.rest import ApiException
 from flaskr.models.post import Post
 from .config import Keys
 
 
 # TODO: better failure handling. The problem is, I don't know under what conditions the Sendinblue API will fail
-# TODO: still a few places that don't use self._config and self._list_id
 class EmailProvider:
     """
     Provides functionality for the site's email list. Uses the Sendinblue API.
@@ -22,6 +23,10 @@ class EmailProvider:
         self._config = sib_api_v3_sdk.Configuration()
         self._config.api_key['api-key'] = api_key
         self._list_id = list_id
+
+    def _make_client(self) -> ApiClient:
+        """Make and return an ApiClient instance using configured values."""
+        return ApiClient(self._config)
 
     def register_email(self, address: str):
         """
@@ -40,7 +45,7 @@ class EmailProvider:
 
         See https://developers.sendinblue.com/reference/createcontact
         """
-        api = ContactsApi(ApiClient(self._config))
+        api = ContactsApi(self._make_client())
         try:
             api.create_contact(CreateContact(
                 email=address,
@@ -58,7 +63,7 @@ class EmailProvider:
 
         See https://developers.sendinblue.com/reference/sendtransacemail
         """
-        api = TransactionalEmailsApi(ApiClient(self._config))
+        api = TransactionalEmailsApi(self._make_client())
         # Render the email in HTML
         email_html = render_template(
             'email/welcome_email.html',
@@ -96,28 +101,24 @@ class EmailProvider:
 
         See https://developers.sendinblue.com/reference/createemailcampaign-1
         """
-        configuration = sib_api_v3_sdk.Configuration()
-        configuration.api_key['api-key'] = current_app.config[Keys.EMAIL_KEY]
-        api_instance = sib_api_v3_sdk.EmailCampaignsApi(sib_api_v3_sdk.ApiClient(configuration))
-
+        api = EmailCampaignsApi(self._make_client())
         email_html = render_template(
             'email/new_post_email.html',
             header_url=post.get_banner_image().get_url(external=True),
             post=post,
         )
-
         # Note: here is how you would set the "scheduled_at" time directly in the API call:
         # send_time = datetime.datetime.now(datetime.timezone.utc)
         # CreateEmailCampaign.scheduled_at = send_time.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z',
         try:
-            api_response = api_instance.create_email_campaign(sib_api_v3_sdk.CreateEmailCampaign(
+            api_response = api.create_email_campaign(CreateEmailCampaign(
                 tag='New Post',
                 sender={"name": 'Stefan Kussmaul', "email": 'stefan@stefanonsoftware.com'},
                 name=f'New Post - {post.title}',
                 html_content=email_html,
                 subject='A new post from StefanOnSoftware!',
                 reply_to='stefan@stefanonsoftware.com',
-                recipients={'listIds': [current_app.config[Keys.EMAIL_LIST_ID]]},
+                recipients={'listIds': [self._list_id]},
             ))
             current_app.logger.debug(f'Email campaign created with id={api_response.id}')
             return api_response.id
@@ -127,11 +128,9 @@ class EmailProvider:
 
     def _send_campaign(self, campaign_id: int):
         """Send the specified campaign now. May raise ValueError."""
-        configuration = sib_api_v3_sdk.Configuration()
-        configuration.api_key['api-key'] = current_app.config[Keys.EMAIL_KEY]
-        api_instance = sib_api_v3_sdk.EmailCampaignsApi(sib_api_v3_sdk.ApiClient(configuration))
+        api = EmailCampaignsApi(self._make_client())
         try:
-            api_instance.send_email_campaign_now(campaign_id)
+            api.send_email_campaign_now(campaign_id)
             current_app.logger.debug('Campaign has been sent')
         except ApiException as e:
             current_app.logger.error(f'Error sending campaign: {e}')
