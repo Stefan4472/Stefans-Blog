@@ -2,7 +2,7 @@ import flask
 import werkzeug.exceptions
 from sqlalchemy import desc
 from werkzeug.security import check_password_hash
-from flask_login import login_user, logout_user
+from flask_login import login_user, current_user
 from flaskr import site_logger
 from flaskr.models.post import Post
 from flaskr.models.tag import Tag
@@ -144,6 +144,8 @@ def error_page(error):
 
 @BLUEPRINT.route('/login', methods=['GET'])
 def login():
+    if current_user.is_authenticated:
+        return flask.redirect(flask.url_for('internal.landing'))
     return flask.render_template('blog/login.html')
 
 
