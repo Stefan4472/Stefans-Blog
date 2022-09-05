@@ -9,21 +9,24 @@ from . import cli
 from stefansearch.engine.search_engine import SearchEngine
 
 
-def create_app():
+def create_app(config: cfg.Config = None):
     """Create and configure the Flask app."""
     app = flask.Flask(__name__)
-    auth.login_manager.init_app(app)
+
+    # Use provided config or load from environment variables
+    my_config = config if config else cfg.Config.load_from_env()
+    my_config.check_validity()
+    app.config.update(my_config.to_dict())
+
+    print(app.config)
+    print(app.instance_path)
 
     # Create the instance folder if it doesn't already exist
     instance_path = pathlib.Path(app.instance_path)
     instance_path.mkdir(exist_ok=True)
 
-    # Load config variables
-    # TODO: I'd prefer to have my own, typed config object here. E.g. app.my_config: Config
-    app.config.from_object(cfg.Config.load_from_env(instance_path))
-    app.config['EMAIL_CONFIGURED'] = app.config['EMAIL_KEY'] and app.config['EMAIL_LIST_ID'] != ''
-
-    # Init SQL Alchemy
+    # Init extensions
+    auth.login_manager.init_app(app)
     db.init_app(app)
 
     # Register blueprints
@@ -34,7 +37,7 @@ def create_app():
     app.register_blueprint(email_api.BLUEPRINT)
     app.add_url_rule('/', endpoint='index')
 
-    # Init search engine and manifest
+    # Init search engine
     app.search_engine = SearchEngine(app.config['SEARCH_INDEX_PATH'])
 
     # Register click commands
