@@ -147,7 +147,7 @@ def get_email_provider() -> EmailProvider:
         raise ValueError('App has not been configured to use the email API')
     if 'email_provider' not in g:
         g.email_provider = EmailProvider(
-            current_app.config[Keys.EMAIL_KEY],
+            current_app.config[Keys.EMAIL_API_KEY],
             current_app.config[Keys.EMAIL_LIST_ID],
         )
     return g.email_provider

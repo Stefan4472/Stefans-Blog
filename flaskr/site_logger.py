@@ -21,12 +21,12 @@ def log_visit():
         # Send data to site-analytics
         try:
             requests.post(
-                current_app.config[Keys.TRAFFIC_API],
+                current_app.config[Keys.SITE_ANALYTICS_URL],
                 params={
                     'url': request.path,
                     'ip_addr': ip_addr,
                     'user_agent': request.environ['HTTP_USER_AGENT'],
-                    'secret': current_app.config[Keys.TRAFFIC_KEY],
+                    'secret': current_app.config[Keys.SITE_ANALYTICS_KEY],
                 },
             )
         except requests.exceptions.ConnectionError as e:
