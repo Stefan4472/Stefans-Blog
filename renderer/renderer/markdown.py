@@ -52,7 +52,6 @@ def render_string(post_text: str) -> str:
         elif tag_name == CODE_TAG:
             raw_contents = post_text[match_open.end():close_start]
             rendered_segment = _render_code(element, raw_contents)
-            print(rendered_segment)
         else:
             raise ValueError(f'Unsupported tag "{tag_name}". This is a programmer error')
 

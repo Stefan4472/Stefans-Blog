@@ -9,14 +9,14 @@ from sitemanager.postconfig import read_config_file, write_config_file
 import renderer.markdown as md
 """Multi-step functionality using `ManagerService`."""
 # TODO: HANDLE POSSIBLE EXCEPTIONS
-# TODO: THE DIFFING/SYNCING STUFF? WOULD BE FUN TO IMPLEMENT BUT NOT USEFUL
 
 
 # TODO: this has too many arguments. Provide an `Options` dataclass?
 def upload_post_from_dir(
         path: pathlib.Path,
         host: str,
-        key: str,
+        email: str,
+        password: str,
         allow_update: bool,
         publish: bool,
         feature: typing.Optional[bool],
@@ -37,7 +37,7 @@ def upload_post_from_dir(
             markdown = f.read()
 
         upload_post(
-            config, markdown, allow_update, upload_images, send_email, path, host, key,
+            config, markdown, allow_update, upload_images, send_email, path, host, email, password
         )
 
         # Write out config (may have been modified)
@@ -52,9 +52,10 @@ def upload_post(
         send_email: bool,
         base_path: pathlib.Path,
         host: str,
-        key: str,
+        email: str,
+        password: str,
 ):
-    service = ManagerService(host, key)
+    service = ManagerService(host, email, password)
     manifest = service.get_manifest()
 
     # Check `allow_update` condition before we do a lot of work
@@ -77,7 +78,6 @@ def upload_post(
             # Upload image and get its online filename
             print('Uploading image {}...'.format(full_path))
             new_filename = service.upload_image(full_path)
-            print(filename, new_filename)
             # Update Markdown to use the new filename TODO: the naive find-and-replace is risky!
             markdown = markdown.replace(filename, new_filename)
 
@@ -90,22 +90,4 @@ def upload_post(
         service.create_post(new_config, send_email)
 
     print('Uploading Markdown...')
-    print(markdown)
     service.upload_markdown(config.slug, markdown)
-
-
-# def apply_diff(self, diff: SiteDiff):
-#     for create_slug in diff.create_posts:
-#         self.create_post(create_slug)
-#     for delete_slug in diff.delete_posts:
-#         self.delete_post(delete_slug)
-#     for post_diff in diff.post_diffs:
-#         if post_diff.write_html:
-#             print('Uploading HTML')
-#             self.upload_html(post_diff.slug, post_diff.write_html)
-#         for upload in post_diff.write_images:
-#             print('Uploading {}'.format(upload))
-#             self.upload_image(post_diff.slug, upload)
-#         for delete in post_diff.delete_images:
-#             print('Deleting {}'.format(delete))
-#             self.delete_image(post_diff.slug, delete)
