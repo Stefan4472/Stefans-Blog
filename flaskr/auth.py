@@ -1,6 +1,7 @@
 import typing
 from flask import current_app, request, redirect, url_for, abort
 from flask_login import LoginManager, UserMixin
+from werkzeug.security import check_password_hash
 from flaskr.models.user import User
 from flaskr.config import Keys
 '''
@@ -11,6 +12,15 @@ You must initialize `login_manager` on app start!
 '''
 login_manager = LoginManager()
 login_manager.login_view = 'blog.login'
+
+
+def verify_login(email: str, password: str) -> User:
+    # Ensure user exists and check password
+    user = User.query.filter_by(email=email).first()
+    if not user or not check_password_hash(user.password, password):
+        current_app.logger.info(f'Verification failed for email={email}')
+        raise ValueError('Invalid email or password')
+    return user
 
 
 @login_manager.unauthorized_handler
@@ -25,17 +35,23 @@ def unauthorized():
 @login_manager.request_loader
 def request_loader(request) -> typing.Optional[UserMixin]:
     """
-    Handles verification of API requests.
+    Handles verification of API requests via HTTP Basic Authentication.
 
-    Verify that the 'Authorization' header equals our secret key.
-    Returns an empty `UserMixin` on success.
-
-    Docs: https://flask-login.readthedocs.io/en/latest/#installation
-    Example: http://gouthamanbalaraman.com/blog/minimal-flask-login-example.html
+    The request must contain an 'Authorization' header. The value of the
+    header should be the "[email]:[password]" of the user making the
+    request.
     """
-    token = str(request.headers.get('Authorization'))
-    secret = str(current_app.config[Keys.SECRET_KEY])
-    return UserMixin() if token == secret else None
+    if 'Authorization' not in request.headers:
+        return None
+    if ':' not in request.headers['Authorization']:
+        return None
+    colon_index = request.headers['Authorization'].index(':')
+    email = request.headers['Authorization'][:colon_index]
+    password = request.headers['Authorization'][colon_index+1:]
+    try:
+        return verify_login(email, password)    
+    except ValueError:
+        return None
 
 
 @login_manager.user_loader

@@ -8,6 +8,7 @@ from flaskr.models.post import Post
 from flaskr.models.tag import Tag
 from flaskr.models.user import User
 from flaskr.config import Keys
+from flaskr.auth import verify_login
 
 
 # Blueprint under which all views will be assigned
@@ -155,9 +156,9 @@ def login_auth():
     password = flask.request.form.get('password')
     remember = bool(flask.request.form.get('remember'))
 
-    # Ensure user exists and check password
-    user = User.query.filter_by(email=email).first()
-    if not user or not check_password_hash(user.password, password):
+    try:
+        user = verify_login(email, password)
+    except ValueError:
         # Error: reload the login page
         return flask.redirect(flask.url_for('blog.login'))
 
