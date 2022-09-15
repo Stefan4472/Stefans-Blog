@@ -1,0 +1,620 @@
+openapi: 3.0.0
+info:
+  title: StefanOnSoftware API
+  version: 0.1.0
+  description: |
+    This API is used to manage the StefanOnSoftware website.
+
+servers:
+  - url: https://www.stefanonsoftware.com
+    description: The production server.
+
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+
+  schemas:
+    User:
+      type: object
+      description: A registered user who has login access
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          description: Unique integer ID assigned to this user
+        name:
+          type: string
+          description: Name of the user
+    Post:
+      type: object
+      description: All information about a post
+      required:
+        - id
+        - created_by
+        - last_modified
+      properties:
+        id:
+          type: integer
+          description: Unique integer ID assigned to this post
+        created_by:
+          $ref: '#/components/schemas/User'
+          description: The user who created (and therefore owns) this post
+        last_modified:
+          type: string
+          format: datetime
+          description: Timestamp at which this post was last modified
+        slug:
+          type: string
+          description: Unique "slug" used to make the URL for this post
+        title:
+          type: string
+          description: Title of the post
+        byline:
+          type: string
+          description: A short summary of the post
+        publish_date:
+          type: string
+          format: datetime
+          description: Timestamp at which this post was published. Will be null if the post has not been published
+        featured_image:
+          type: string
+          description: ID of the featured image
+        banner_image:
+          type: string
+          description: ID of the banner image
+        thumbnail_image:
+          type: string
+          description: ID of the thumbnail image
+        tags:
+          type: array
+          description: Tags associated with this post.
+          items:
+            $ref: '#/components/schemas/Tag'
+        is_featured:
+          type: boolean
+          description: Whether this post is currently featured
+        is_published:
+          type: boolean
+          description: Whether this post is currently published
+    Tag:
+      type: object
+      description: A tag used to categorize posts
+      required:
+        - id
+        - slug
+        - description
+        - color
+      properties:
+        id:
+          type: integer
+          description: Unique integer ID used to identify this tag
+        slug:
+          type: string
+          description: Unique string used to derive the URL for this tag
+        description:
+          type: string
+          description: A short description used to help readers understand it
+        color:
+          type: string
+          description: Hex color used when displaying the tag in format \#XXXXXX
+          pattern: '^#{A-F}6$'
+    File:
+      type: object
+      description: Data about a file stored on the webserver
+      required:
+        - id
+        - upload_name
+        - upload_date
+        - uploaded_by
+        - url
+        - filetype
+        - hash
+        - size
+      properties:
+        id:
+          type: string
+          description: UUID used to identify this file
+        upload_name:
+          type: string
+          description: Original filename used when uploading this file
+        upload_date:
+          type: string
+          format: datetime
+        uploaded_by:
+          $ref: '#/components/schemas/User'
+          description: The user who uploaded this file
+        filetype:
+          type: string
+          description: General type of the file
+          enum: [IMAGE, VIDEO, DOCUMENT]
+        filename:
+          type: string
+          description: Filename, as stored on the webserver
+        url:
+          type: string
+          description: URL this file can be accessed under on the webserver
+        size:
+          type: integer
+          description: Size of the file, in bytes
+        hash:
+          type: string
+          description: MD5 hash of the file contents
+
+  parameters:
+    QueryLimit:
+      name: limit
+      in: query
+      description: Limits the number of items on a page
+      schema:
+        type: integer
+    QueryOffset:
+      name: offset
+      in: query
+      description: Specifies the page number of the artists to be displayed
+      schema:
+        type: integer
+    PostId:
+      name: post_id
+      in: path
+      required: true
+      schema:
+        type: string
+    TagId:
+      name: tag_id
+      in: path
+      required: true
+      schema:
+        type: string
+
+  responses:
+    Error400:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+    Error401:
+      description: Authentication information is missing or invalid
+      headers:
+        WWW_Authenticate:
+          schema:
+            type: string
+
+security:
+  - BasicAuth: []
+
+paths:
+  /posts:
+    get:
+      description: Returns a list of all posts
+      tags:
+        - Post Management
+      parameters:
+        - name: is_featured
+          in: query
+          description: Specifies whether to only return posts that are featured
+          schema:
+            type: boolean
+        - name: is_published
+          in: query
+          description: Specifies whether to only return posts that are published
+          schema:
+            type: boolean
+        - $ref: '#/components/parameters/QueryLimit'
+        - $ref: '#/components/parameters/QueryOffset'
+      responses:
+        '200':
+          description: Successfully returned a list of posts.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+        '401':
+          $ref: '#/components/responses/Error401'
+
+    post:
+      description: Create a new post. It will be initialized with default values (i.e., empyt). Returns the unique ID of the created post
+      tags:
+        - Post Management
+      responses:
+        '200':
+          description: Successfully created a new post
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: ID of the created post
+        '401':
+          $ref: '#/components/responses/Error401'
+
+  /posts/{post_id}:
+    parameters:
+      - $ref: '#/components/parameters/PostId'
+
+    get:
+      description: Get information about a post
+      tags:
+        - Post Management
+      responses:
+        '200':
+          description: Returned information about the post
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '400':
+          $ref: '#/components/responses/Error400'
+
+    patch:
+      description: Change post metadata
+      tags:
+        - Post Management
+      parameters:
+        # Note: slug can only be changed if post has not been published yet
+        - name: slug
+          in: query
+          schema:
+            type: string
+        - name: title
+          in: query
+          schema:
+            type: string
+        - name: byline
+          in: query
+          schema:
+            type: string
+        - name: featured_image
+          in: query
+          schema:
+            type: string
+        - name: banner_image
+          in: query
+          schema:
+            type: string
+        - name: thumbnail_image
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Post metadata updated successfully
+        '400':
+          $ref: '#/components/responses/Error400'
+
+    delete:
+      description: Delete a post
+      tags:
+        - Post Management
+      responses:
+        '200':
+           description: Post deleted successfully
+        '400':
+          $ref: '#/components/responses/Error400'
+
+
+  /posts/{post_id}/content:
+    parameters:
+      - $ref: '#/components/parameters/PostId'
+
+    get:
+      description: Download the Markdown file of this post
+      tags:
+        - Post Management
+      responses:
+        '200':
+          description: Successfully returned the Markdown file
+          content:
+            text/plain:
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/Error400'
+
+    post:
+      description: Replace the Markdown file of this post
+      tags:
+        - Post Management
+      requestBody:
+        content:
+          text/markdown:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Markdown file was successfully set
+        '400':
+          $ref: '#/components/responses/Error400'
+        # TODO: unauthorized error
+
+
+  /posts/{post_id}/tags:
+    parameters:
+      - $ref: '#/components/parameters/PostId'
+    get:
+      description: Get all tags associated with this post
+      tags:
+        - Post Management
+      responses:
+        '200':
+          description: Returned all tag information
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+        '400':
+          $ref: '#/components/responses/Error400'
+    post:
+      description: Add one or more tags to this post
+      tags:
+        - Post Management
+      parameters:
+        - name: tag_id
+          in: query
+          description: TagIds to add
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: Added tag(s) successfully
+        '400':
+          $ref: '#/components/responses/Error400'
+        # TODO: unauthorized error
+
+  /posts/{post_id}/tags/{tag_id}:
+    parameters:
+      - $ref: '#/components/parameters/PostId'
+      - $ref: '#/components/parameters/TagId'
+    delete:
+      description: Remove one or more tags from this post
+      tags:
+        - Post Management
+      parameters:
+        - name: tag_id
+          in: query
+          description: TagIds to remove
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: Added tag(s) successfully
+        '400':
+          $ref: '#/components/responses/Error400'
+        # TODO: unauthorized error
+
+  /featured:
+    get:
+      description: Get a list of all featured posts
+      tags:
+        - Featured Posts
+      responses:
+        '200':
+          description: A list of all featured posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+        '400':
+          $ref: '#/components/responses/Error400'
+    post:
+      description: Make a post featured
+      tags:
+        - Featured Posts
+      parameters:
+        - name: post_id
+          in: query
+          description: ID of the post to make featured
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          $ref: '#/components/responses/Error400'
+
+  /featured/{post_id}:
+    parameters:
+      - $ref: '#/components/parameters/PostId'
+    delete:
+      description: Un-feature a post
+      tags:
+        - Featured Posts
+      responses:
+        '200':
+          description: Success
+        '400':
+          $ref: '#/components/responses/Error400'
+
+  /published:
+    get:
+      description: Get a list of all published posts
+      tags:
+        - Publishing
+      responses:
+        '200':
+          description: A list of all published posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+        '400':
+          $ref: '#/components/responses/Error400'
+    post:
+      description: Publish a post
+      tags:
+        - Publishing
+      parameters:
+        - name: post_id
+          in: query
+          description: ID of the post to publish
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          $ref: '#/components/responses/Error400'
+
+  /published/{post_id}:
+    parameters:
+      - $ref: '#/components/parameters/PostId'
+    delete:
+      description: Un-publish a post. This will break links!
+      tags:
+        - Publishing
+      responses:
+        '200':
+          description: Success
+        '400':
+          $ref: '#/components/responses/Error400'
+
+  /tags:
+    get:
+      description: Get all tags that have been created
+      tags:
+        - Tags
+      responses:
+        '200':
+          description: A list of all tags
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tag'
+        '400':
+          $ref: '#/components/responses/Error400'
+    post:
+      description: Create a new tag
+      tags:
+        - Tags
+      parameters:
+        - name: name
+          in: query
+          description: Name of the tag
+          schema:
+            type: string
+        - name: slug
+          in: query
+          required: false
+          description: Slug used to create a URL for the tag. Must be unique. Cannot be changed once created.
+          schema:
+            type: string
+        - name: description
+          in: query
+          description: Tag description
+          required: true
+          schema:
+            type: string
+        - name: color
+          in: query
+          description: Hex color for the tag. Will be randomly generated if none is provided
+          required: false
+          schema:
+            type: string
+            pattern: '^#{A-F}6$'
+      responses:
+        '200':
+          description: Success. Return ID of newly-created tag
+          content:
+            application/json:
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/Error400'
+
+  /tags/{tag_id}:
+    parameters:
+      - $ref: '#/components/parameters/TagId'
+    get:
+      description: Get information about this tag
+      tags:
+        - Tags
+      responses:
+        '200':
+          description: Return tag info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+        '400':
+          $ref: '#/components/responses/Error400'
+    patch:
+      description: Modify tag
+      tags:
+        - Tags
+      parameters:
+        - name: name
+          in: query
+          description: Name of the tag
+          schema:
+            type: string
+        - name: description
+          in: query
+          description: Tag description
+          required: true
+          schema:
+            type: string
+        - name: color
+          in: query
+          description: Hex color for the tag. Will be randomly generated if none is provided
+          required: false
+          schema:
+            type: string
+            pattern: '^#{A-F}6$'
+      responses:
+        '200':
+          description: Success
+        '400':
+          $ref: '#/components/responses/Error400'
+    delete:
+      description: Delete the tag. This will remove it from all posts that use it
+      tags:
+        - Tags
+      responses:
+        '200':
+          description: Deleted successfully.
+        '400':
+          $ref: '#/components/responses/Error400'
+
+  # /files:
+  #   get:
+  #     description: Get information about all files
+  #   post:
+  #     description: Upload a new file
+
+  # /files/{file_id}:
+  #   get:
+  #     description: Download a file
+  #   delete:
+  #     description: Delete a file. Will fail if it is referenced anywhere
+
+  # /files/{file_id}/references:
+  #   get:
+  #     description: Get a list of posts that this file is referenced from
+
+  # /files/{file_id}/metadata:
+  #   get:
+  #     description: Get metadata about the file
