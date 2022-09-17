@@ -3,11 +3,26 @@ info:
   title: StefanOnSoftware API
   version: 0.1.0
   description: |
-    This API is used to manage the StefanOnSoftware website.
-# TODO: examples, better status codes
+    This API is used to manage [the StefanOnSoftware blog](https://www.stefanonsoftware.com). Code for the StefanOnSoftware website is open-source and can be found [on Github](https://github.com/Stefan4472/Stefans-Blog).
+
+    ## Blog Posts
+    The main use of this API is to create, manage, and publish blog posts.
+
+    Posts begin in a private draft stage, and only become visible on the public website once they have been published. Once published, the post is available at a URL that uses its slug (e.g., 'www.stefanonsoftware.com/posts/\<slug>'). A published post can be "featured", which will lead to it being displayed on the landing page of the blog.
+
+    Posts are written and stored in Markdown documents, which are rendered to HTML on request.
+
+    Each post must specify three required images. The _featured_ image is displayed on the website landing page if the post is featured, and is also used as a page banner on narrow screens. The _banner_ image is used as a page banner on large screens. The _thumbnail_ image is a used when displaying the post in a listing, e.g. a search result. These images must comply with specific dimensions.
+
+    ## Tags
+    Posts can be categorized according to Tags, which serve to thematically group similar posts together and to pique readers' interest. The _tags_ API is used to create and manage tags.
+
+    ## Files
+    Posts almost always include multimedia such as images and videos. This media must be stored somewhere. The _files_ API is used by the author to upload files to the website, where they can be linked to from posts.
+
 servers:
-  - url: https://www.stefanonsoftware.com
-    description: The production server.
+  - url: https://www.stefanonsoftware.com/api/v1
+    description: Live public website.
 
 components:
   securitySchemes:
@@ -18,7 +33,7 @@ components:
   schemas:
     User:
       type: object
-      description: A registered user who has login access
+      description: A registered user
       required:
         - id
         - name
@@ -26,12 +41,14 @@ components:
         id:
           type: integer
           description: Unique integer ID assigned to this user
+          example: 10
         name:
           type: string
           description: Name of the user
-    Post:  # TODO: add file references
+          example: Stefan Kussmaul
+    Post:
       type: object
-      description: All information about a post
+      description: A post on the website.
       required:
         - id
         - created_by
@@ -39,72 +56,100 @@ components:
       properties:
         id:
           type: integer
-          description: Unique integer ID assigned to this post
+          description: Unique integer ID assigned to this post.
+          example: 15
+        # TODO: in which situations should it return ID, in which should it return the full object?
         created_by:
+          type: object
           $ref: '#/components/schemas/User'
-          description: The user who created (and therefore owns) this post
+          description: The user who created (and therefore owns) this post.
         last_modified:
           type: string
           format: datetime
-          description: Timestamp at which this post was last modified
+          description: Timestamp at which this post was last modified.
+          example: 2022-09-15T10:40:52Z
         slug:
           type: string
-          description: Unique "slug" used to make the URL for this post
+          description: Unique "slug" used to make the URL for this post on the public website. Cannot be changed while the post is published.
+          example: gamedev-spritesheets
         title:
           type: string
-          description: Title of the post
+          description: Title of the post.
+          example: How to implement Spritesheets
         byline:
           type: string
-          description: A short summary of the post
+          description: A short summary of the post that will be displayed when the post appears in a listing. It may also be used in the HTML description tag of the post on the public website, and when sending an email notification.
+          example: In this post we'll use Java to implement a Spritesheet class, with which we can play back hand-drawn animation sequences.
         publish_date:
           type: string
           format: datetime
-          description: Timestamp at which this post was published. Will be null if the post has not been published
+          description: Timestamp at which this post was published. Will be null if the post is not currently published.
+          example: 2022-09-10T17:22:12Z
         featured_image:
           type: string
-          description: ID of the featured image
+          description: fileId of the featured image. The featured image represents the post on the front page when it is "featured", and is also displayed at the top of the post when viewed on the public website under certain conditions (e.g., small screen size).
+          example: cd280bf9-b7bd-424e-ae56-4ea88120cfb9
         banner_image:
           type: string
-          description: ID of the banner image
+          description: fileId of the banner image. The banner image is displayed at the top of the post when viewed on the public website.
+          example: 83fe542d-3fbb-475b-b667-62f37cc6574e
         thumbnail_image:
           type: string
-          description: ID of the thumbnail image
+          description: fileId of the thumbnail image. The thumbnail image is displayed when the post appears in a listing (e.g. search result) on the public website.
+          example: 1f536f1b-cb44-41e2-be18-c89140d0f02c
         tags:
           type: array
-          description: Tags associated with this post.
           items:
             $ref: '#/components/schemas/Tag'
+          description: Tags associated with this post.
         is_featured:
           type: boolean
-          description: Whether this post is currently featured
+          description: Whether this post is currently featured.
+          example: false
         is_published:
           type: boolean
-          description: Whether this post is currently published
+          description: Whether this post is currently published.
+          example: true
+        file_references:
+          type: array
+          items:
+            type: string
+          description: FileIds that are "referenced" from this post. This includes the featured, banner, and thumbnail images, as well as any images displayed on the website.
+          example: cd280bf9-b7bd-424e-ae56-4ea88120cfb9, 83fe542d-3fbb-475b-b667-62f37cc6574e, 1f536f1b-cb44-41e2-be18-c89140d0f02c
     Tag:
       type: object
       description: A tag used to categorize posts
       required:
         - id
         - slug
+        - name
         - description
         - color
       properties:
         id:
           type: integer
-          description: Unique integer ID used to identify this tag
+          description: Unique integer ID assigned to this tag.
+          example: 23
         slug:
           type: string
-          description: Unique string used to derive the URL for this tag
+          description: Unique "slug" used to make the URL for this tag on the public website. Cannot be changed.
+          example: data-analysis
+        name:
+          type: string
+          description: Human-readable name used when displaying the tag on the website
+          example: Data Analysis
         description:
           type: string
-          description: A short description used to help readers understand it
+          description: A short description used to help readers understand the tag.
+          example: Posts that have to do with data analysis and visualization.
         color:
           type: string
-          description: Hex color used when displaying the tag in format \#XXXXXX
+          description: Hex color used when displaying the tag
           pattern: '^#[0-9a-fA-F]{6}$'
+          example: '#FFFFFF'
     File:
       type: object
-      description: Data about a file stored on the webserver
+      description: A file stored on the webserver
       required:
         - id
         - upload_name
@@ -117,82 +162,112 @@ components:
       properties:
         id:
           type: string
-          description: UUID used to identify this file
+          description: UUID used to identify this file.
+          example: 1f536f1b-cb44-41e2-be18-c89140d0f02c
         upload_name:
           type: string
-          description: Original filename used when uploading this file
+          description: Original filename used when uploading this file.
+          example: java_screenshot.jpg
         upload_date:
           type: string
           format: datetime
+          description: Timestamp at which this file was uploaded.
+          example: 2022-09-01T17:22:12Z
         uploaded_by:
           $ref: '#/components/schemas/User'
-          description: The user who uploaded this file
+          description: The user who uploaded this file.
         filetype:
           type: string
-          description: General type of the file
           enum: [IMAGE, VIDEO, DOCUMENT]
+          description: General type of the file (determined by server during upload).
+          example: IMAGE
         filename:
           type: string
-          description: Filename, as stored on the webserver
+          description: Filename, as stored on the webserver.
+          example: 1f536f1b-cb44-41e2-be18-c89140d0f02c.jpg
         url:
           type: string
-          description: URL this file can be accessed under on the webserver
+          description: URL that this file can be accessed under on the public website.
+          example: https://www.stefanonsoftware.com/static/1f536f1b-cb44-41e2-be18-c89140d0f02c.jpg
         size:
           type: integer
-          description: Size of the file, in bytes
+          description: Size of the file, in bytes.
+          example: 330060
         hash:
           type: string
-          description: MD5 hash of the file contents
+          description: MD5 hash of the file contents.
+          example: d7e1fcfe6aae23c19e69511c48e37a73
 
   parameters:
     QueryLimit:
       name: limit
       in: query
-      description: Limits the number of items on a page
+      description: Limits the number of items returned per page
       schema:
         type: integer
     QueryOffset:
       name: offset
       in: query
-      description: Specifies the page number of the artists to be displayed
+      description: Specifies the page number of items to return
       schema:
         type: integer
     PostId:
       name: post_id
       in: path
       required: true
+      description: Unique postId assigned to a post
       schema:
         type: string
     TagId:
       name: tag_id
       in: path
       required: true
+      description: Unique tagId assigned to a tag
       schema:
         type: string
     FileId:
       name: file_id
       in: path
       required: true
+      description: Unique fileId assigned to a file
       schema:
         type: string
 
   responses:
-    Error400:
-      description: Invalid request
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-    Error401:
-      description: Authentication information is missing or invalid
+    ErrUnauthorized:
+      description: Authentication information is missing or invalid.
       headers:
         WWW_Authenticate:
           schema:
             type: string
-
+    ErrNoSuchPost:
+      description: No post with the specified ID exists
+      content:
+        application/json:
+          schema:
+            type: string
+            example: No post with the specified ID exists
+    ErrNoSuchTag:
+      description: No tag with the specified ID exists
+      content:
+        application/json:
+          schema:
+            type: string
+            example: No tag with the specified ID exists
+    ErrNoSuchFile:
+      description: No file with the specified ID exists
+      content:
+        application/json:
+          schema:
+            type: string
+            example: No file with the specified ID exists
+    ErrNoPermissionToModifyPost:
+      description: The user does not have permission to modify the desired post
+      content:
+        application/json:
+          schema:
+            type: string
+            example: You do not have permission to modify the specified post
 security:
   - BasicAuth: []
 
@@ -213,7 +288,7 @@ tags:
 paths:
   /posts:
     get:
-      description: Returns a list of all posts
+      description: Get post information, applying optional filters and paging.
       tags:
         - posts
       parameters:
@@ -231,7 +306,7 @@ paths:
         - $ref: '#/components/parameters/QueryOffset'
       responses:
         '200':
-          description: Successfully returned a list of posts.
+          description: Returned a list of posts.
           content:
             application/json:
               schema:
@@ -239,26 +314,28 @@ paths:
                 items:
                   $ref: '#/components/schemas/Post'
         '401':
-          $ref: '#/components/responses/Error401'
+          $ref: '#/components/responses/ErrUnauthorized'
 
     post:
-      description: Create a new post. It will be initialized with default values (i.e., empyt). Returns the unique ID of the created post
+      description: Create a new post. It will be initialized with default values. Returns the unique ID of the created post.
       tags:
         - posts
       responses:
-        '200':
+        '201':
           description: Successfully created a new post
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Post'
+                type: object
+                properties:
+                  post_id:
+                    type: string
         '401':
-          $ref: '#/components/responses/Error401'
+          $ref: '#/components/responses/ErrUnauthorized'
 
   /posts/{post_id}:
     parameters:
       - $ref: '#/components/parameters/PostId'
-
     get:
       description: Get information about a post
       tags:
@@ -270,15 +347,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Post'
-        '400':
-          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/ErrUnauthorized'
+        '404':
+          $ref: '#/components/responses/ErrNoSuchPost'
 
     patch:
-      description: Change post metadata
+      description: Change post metadata. The slug can only be changed if the post has not been published yet. Can also fail if an image is set that does not meet the specifications. Only the user who created the post can change it.
       tags:
         - posts
       parameters:
-        # Note: slug can only be changed if post has not been published yet
         - name: slug
           in: query
           schema:
@@ -305,56 +383,85 @@ paths:
             type: string
       responses:
         '200':
-          description: Post metadata updated successfully
+          description: Changed metadata and returned the updated post.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
         '400':
-          $ref: '#/components/responses/Error400'
-
+          description: One or more parameters break the rules.
+          content:
+            application/json:
+              schema:
+                type: string
+                example: Specified thumbnail_image has wrong dimensions
+        '401':
+          $ref: '#/components/responses/ErrUnauthorized'
+        '403':
+          $ref: '#/components/responses/ErrNoPermissionToModifyPost'
+        '404':
+          $ref: '#/components/responses/ErrNoSuchPost'
     delete:
       description: Delete a post
       tags:
         - posts
       responses:
-        '200':
-           description: Post deleted successfully
-        '400':
-          $ref: '#/components/responses/Error400'
-
+        '204':
+           description: Post was deleted
+        '401':
+          $ref: '#/components/responses/ErrUnauthorized'
+        '403':
+          $ref: '#/components/responses/ErrNoPermissionToModifyPost'
+        '404':
+          $ref: '#/components/responses/ErrNoSuchPost'
 
   /posts/{post_id}/content:
     parameters:
       - $ref: '#/components/parameters/PostId'
-
     get:
       description: Download the Markdown file of this post
       tags:
         - posts
       responses:
         '200':
-          description: Successfully returned the Markdown file
+          description: Returned the Markdown file
           content:
+            # TODO: what format to return? Binary? Text? Will be a markdown file
             text/plain:
               schema:
                 type: string
-        '400':
-          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/ErrUnauthorized'
+        '404':
+          $ref: '#/components/responses/ErrNoSuchPost'
 
     post:
-      description: Replace the Markdown file of this post
+      description: Upload the Markdown file of this post, overwriting whichever file had been there previously.
       tags:
         - posts
       requestBody:
         content:
-          text/markdown:
+          # TODO: is this the right format? Should it accept binary or plain text?
+          text/plain:
             schema:
               type: string
               format: binary
       responses:
-        '200':
+        '204':
           description: Markdown file was successfully set
         '400':
-          $ref: '#/components/responses/Error400'
-        # TODO: unauthorized error
-
+          description: There is a problem with the markdown file
+          content:
+            application/json:
+              schema:
+                type: string
+                example: Error rendering Markdown file
+        '401':
+          $ref: '#/components/responses/ErrUnauthorized'
+        '403':
+          $ref: '#/components/responses/ErrNoPermissionToModifyPost'
+        '404':
+          $ref: '#/components/responses/ErrNoSuchPost'
 
   /posts/{post_id}/tags:
     parameters:
@@ -371,34 +478,48 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Post'
-        '400':
-          $ref: '#/components/responses/Error400'
+                  $ref: '#/components/schemas/Tag'
+        '401':
+          $ref: '#/components/responses/ErrUnauthorized'
+        '404':
+          $ref: '#/components/responses/ErrNoSuchPost'
+
     post:
-      description: Add one or more tags to this post
+      description: Add one or more tags to this post. If any invalid tagIds are specified, the whole operation will fail.
       tags:
         - posts
       parameters:
         - name: tag_id
           in: query
-          description: TagIds to add
+          description: TagIds to add to the post
           schema:
             type: array
             items:
               type: string
       responses:
-        '200':
-          description: Added tag(s) successfully
+        '204':
+          description: All tags were added successfully
         '400':
-          $ref: '#/components/responses/Error400'
-        # TODO: unauthorized error
+          description: One or more tagIds were invalid. Returned a list of invalid tagIds.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '401':
+          $ref: '#/components/responses/ErrUnauthorized'
+        '403':
+          $ref: '#/components/responses/ErrNoPermissionToModifyPost'
+        '404':
+          $ref: '#/components/responses/ErrNoSuchPost'
 
   /posts/{post_id}/tags/{tag_id}:
     parameters:
       - $ref: '#/components/parameters/PostId'
       - $ref: '#/components/parameters/TagId'
     delete:
-      description: Remove one or more tags from this post
+      description: Remove one or more tags from this post. If any invalid tagIds are specified, the whole operation will fail. If a tagId is specified that is not actually tagged on the post, it will be silently ignored.
       tags:
         - posts
       parameters:
@@ -410,11 +531,22 @@ paths:
             items:
               type: string
       responses:
-        '200':
-          description: Added tag(s) successfully
+        '204':
+          description: Removed tag(s) successfully
         '400':
-          $ref: '#/components/responses/Error400'
-        # TODO: unauthorized error
+          description: One or more tagIds were invalid. Returned a list of invalid tagIds.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '401':
+          $ref: '#/components/responses/ErrUnauthorized'
+        '403':
+          $ref: '#/components/responses/ErrNoPermissionToModifyPost'
+        '404':
+          $ref: '#/components/responses/ErrNoSuchPost'
 
   /featured:
     get:
@@ -423,15 +555,16 @@ paths:
         - featured
       responses:
         '200':
-          description: A list of all featured posts
+          description: Returned a list of all featured posts
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Post'
-        '400':
-          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/ErrUnauthorized'
+
     post:
       description: Make a post featured
       tags:
@@ -443,10 +576,19 @@ paths:
           schema:
             type: string
       responses:
-        '200':
-          description: Success
+        '204':
+          description: The post was featured
         '400':
-          $ref: '#/components/responses/Error400'
+          description: The specified post is not published, and therefore cannot be featured.
+          content:
+            application/json:
+              schema:
+                type: string
+                example: The specified post is not published, and therefore cannot be featured.
+        '401':
+          $ref: '#/components/responses/ErrUnauthorized'
+        '404':
+          $ref: '#/components/responses/ErrNoSuchPost'
 
   /featured/{post_id}:
     parameters:
@@ -456,27 +598,39 @@ paths:
       tags:
         - featured
       responses:
-        '200':
-          description: Success
+        '204':
+          description: The post was unfeatured
         '400':
-          $ref: '#/components/responses/Error400'
+          description: The specified post is not featured
+          content:
+            application/json:
+              schema:
+                type: string
+                example: The specified post is not featured
+        '401':
+          $ref: '#/components/responses/ErrUnauthorized'
+        '404':
+          $ref: '#/components/responses/ErrNoSuchPost'
 
   /published:
     get:
-      description: Get a list of all published posts
+      parameters:
+        - $ref: '#/components/parameters/QueryLimit'
+        - $ref: '#/components/parameters/QueryOffset'
+      description: Get a list of published posts
       tags:
         - published
       responses:
         '200':
-          description: A list of all published posts
+          description: Returned a list of published posts according to the query parameters
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Post'
-        '400':
-          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/ErrUnauthorized'
     post:
       description: Publish a post
       tags:
@@ -488,23 +642,30 @@ paths:
           schema:
             type: string
       responses:
-        '200':
-          description: Success
-        '400':
-          $ref: '#/components/responses/Error400'
+        '204':
+          description: The post was published
+        '401':
+          $ref: '#/components/responses/ErrUnauthorized'
+        '404':
+          $ref: '#/components/responses/ErrNoSuchPost'
 
   /published/{post_id}:
     parameters:
       - $ref: '#/components/parameters/PostId'
     delete:
-      description: Un-publish a post. This will break links!
+      description: Un-publish a post. This may lead to broken links!
       tags:
         - published
       responses:
-        '200':
-          description: Success
+        '204':
+          description: The post was unpublished
+        # TODO: should this return an error? If the post wasn't published in the first place, the user's goal is already met
         '400':
-          $ref: '#/components/responses/Error400'
+          description: The post was not published
+        '401':
+          $ref: '#/components/responses/ErrUnauthorized'
+        '404':
+          $ref: '#/components/responses/ErrNoSuchPost'
 
   /tags:
     get:
@@ -520,8 +681,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Tag'
-        '400':
-          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/ErrUnauthorized'
     post:
       description: Create a new tag
       tags:
@@ -552,14 +713,16 @@ paths:
             type: string
             pattern: '^#[0-9a-fA-F]{6}$'
       responses:
-        '200':
-          description: Success. Return ID of newly-created tag
+        '201':
+          description: Tag was created and returned.
           content:
             application/json:
               schema:
-                type: string
+                $ref: '#/components/schemas/Tag'
         '400':
-          $ref: '#/components/responses/Error400'
+          description: Error in query parameters or the slug is not unique
+        '401':
+          $ref: '#/components/responses/ErrUnauthorized'
 
   /tags/{tag_id}:
     parameters:
@@ -570,13 +733,15 @@ paths:
         - tags
       responses:
         '200':
-          description: Return tag info
+          description: Returned tag info
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Tag'
-        '400':
-          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/ErrUnauthorized'
+        '404':
+          $ref: '#/components/responses/ErrNoSuchTag'
     patch:
       description: Modify tag
       tags:
@@ -602,9 +767,17 @@ paths:
             pattern: '^#[0-9a-fA-F]{6}$'
       responses:
         '200':
-          description: Success
+          description: Changed the tag and returned the updated tag
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
         '400':
-          $ref: '#/components/responses/Error400'
+          description: Error in query parameters or the slug is not unique
+        '401':
+          $ref: '#/components/responses/ErrUnauthorized'
+        '404':
+          $ref: '#/components/responses/ErrNoSuchTag'
     delete:
       description: Delete the tag. This will remove it from all posts that use it
       tags:
@@ -612,12 +785,14 @@ paths:
       responses:
         '200':
           description: Deleted successfully.
-        '400':
-          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/ErrUnauthorized'
+        '404':
+          $ref: '#/components/responses/ErrNoSuchTag'
 
   /files:
     get:
-      description: Get information about all files
+      description: Get a list of files
       tags:
         - files
       parameters:
@@ -632,10 +807,11 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/File'
-        '400':
-          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/ErrUnauthorized'
     post:
       description: Upload a new file
+      # TODO: how to indicate situations in which the file has already been uploaded?
       tags:
         - files
       requestBody:
@@ -645,12 +821,14 @@ paths:
               type: string
               format: binary
       responses:
-        '200':
-          description: Successfully uploaded. Return information about the file.
+        '201':
+          description: File was uploaded. Returned information about the file.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/File'
+        '401':
+          $ref: '#/components/responses/ErrUnauthorized'
 
   /files/{file_id}:
     parameters:
@@ -661,55 +839,68 @@ paths:
         - files
       responses:
           '200':
-            description: Successfully returned the Markdown file
+            description: File was delivered
             content:
               text/plain:
                 schema:
                   type: string
                   format: binary
-          '400':
-            $ref: '#/components/responses/Error400'
+          '401':
+            $ref: '#/components/responses/ErrUnauthorized'
+          '404':
+            $ref: '#/components/responses/ErrNoSuchFile'
     delete:
-      description: Delete a file. Will fail if it is referenced anywhere
+      description: Delete a file. Will fail if the file is referenced from any posts.
       tags:
         - files
       responses:
         '200':
-          description: File was successfully created
+          description: File was successfully deleted
         '400':
-          $ref: '#/components/responses/Error400'
-
+          description: File had references and could not be deleted
+        '401':
+          $ref: '#/components/responses/ErrUnauthorized'
+        '404':
+            $ref: '#/components/responses/ErrNoSuchFile'
   /files/{file_id}/references:
     parameters:
       - $ref: '#/components/parameters/FileId'
     get:
-      description: Get a list of posts that this file is referenced from. References are either the images linked to the post, or images in the post.
+      description: Get a list of post IDs that this file is referenced from. References are the images linked from a post.
       tags:
         - files
       responses:
         '200':
-          description: References
+          description: Returned a list of postIds
           content:
             application/json:
               schema:
                 type: array
                 items:
                   type: string
+        '401':
+          $ref: '#/components/responses/ErrUnauthorized'
+        '404':
+            $ref: '#/components/responses/ErrNoSuchFile'
 
   /files/{file_id}/metadata:
     parameters:
       - $ref: '#/components/parameters/FileId'
     get:
-      description: Get metadata about the file
+      description: Get file metadata
       tags:
         - files
       responses:
         '200':
-          description: Metadata about the file
+          description: Returned file metadata
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/File'
+        '401':
+          $ref: '#/components/responses/ErrUnauthorized'
+        '404':
+            $ref: '#/components/responses/ErrNoSuchFile'
 
   # Note: the actual endpoint does not have authentication set up. Should it?
   /registrations:
@@ -725,4 +916,6 @@ paths:
         required: true
       responses:
         '200':
-          description: Email address was added successfully
+          description: Successfully added email address to the mailing list
+        '400':
+          description: Invalid email address format
