@@ -18,7 +18,7 @@ info:
     Posts can be categorized according to Tags, which serve to thematically group similar posts together and to pique readers' interest. The _tags_ API is used to create and manage tags.
 
     ## Files
-    Posts almost always include multimedia such as images and videos. This media must be stored somewhere. The _files_ API is used by the author to upload files to the website, where they can be linked to from posts.
+    Posts almost always include multimedia such as images and videos. This media must be stored somewhere. The _files_ API is used by the author to upload files to the website, where they can then be used in posts.
 
 servers:
   - url: https://www.stefanonsoftware.com/api/v1
@@ -519,96 +519,23 @@ paths:
       - $ref: '#/components/parameters/PostId'
       - $ref: '#/components/parameters/TagId'
     delete:
-      description: Remove one or more tags from this post. If any invalid tagIds are specified, the whole operation will fail. If a tagId is specified that is not actually tagged on the post, it will be silently ignored.
+      description: Remove the specified tag from this post.
       tags:
         - posts
-      parameters:
-        - name: tag_id
-          in: query
-          description: TagIds to remove
-          schema:
-            type: array
-            items:
-              type: string
       responses:
         '204':
-          description: Removed tag(s) successfully
+          description: Removed tag successfully
         '400':
-          description: One or more tagIds were invalid. Returned a list of invalid tagIds.
+          description: Specified tag does not exist or is not used in the post
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
+                type: string
+                example: Specified tag does not exist or is not used in the post
         '401':
           $ref: '#/components/responses/ErrUnauthorized'
         '403':
           $ref: '#/components/responses/ErrNoPermissionToModifyPost'
-        '404':
-          $ref: '#/components/responses/ErrNoSuchPost'
-
-  /featured:
-    get:
-      description: Get a list of all featured posts
-      tags:
-        - featured
-      responses:
-        '200':
-          description: Returned a list of all featured posts
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Post'
-        '401':
-          $ref: '#/components/responses/ErrUnauthorized'
-
-    post:
-      description: Make a post featured
-      tags:
-        - featured
-      parameters:
-        - name: post_id
-          in: query
-          description: ID of the post to make featured
-          schema:
-            type: string
-      responses:
-        '204':
-          description: The post was featured
-        '400':
-          description: The specified post is not published, and therefore cannot be featured.
-          content:
-            application/json:
-              schema:
-                type: string
-                example: The specified post is not published, and therefore cannot be featured.
-        '401':
-          $ref: '#/components/responses/ErrUnauthorized'
-        '404':
-          $ref: '#/components/responses/ErrNoSuchPost'
-
-  /featured/{post_id}:
-    parameters:
-      - $ref: '#/components/parameters/PostId'
-    delete:
-      description: Un-feature a post
-      tags:
-        - featured
-      responses:
-        '204':
-          description: The post was unfeatured
-        '400':
-          description: The specified post is not featured
-          content:
-            application/json:
-              schema:
-                type: string
-                example: The specified post is not featured
-        '401':
-          $ref: '#/components/responses/ErrUnauthorized'
         '404':
           $ref: '#/components/responses/ErrNoSuchPost'
 
@@ -659,9 +586,77 @@ paths:
       responses:
         '204':
           description: The post was unpublished
-        # TODO: should this return an error? If the post wasn't published in the first place, the user's goal is already met
         '400':
-          description: The post was not published
+          description: The post was not published in the first place
+          content:
+            application/json:
+              schema:
+                type: string
+                example: The specified post could not be unpublished because it was not published to begin with
+        '401':
+          $ref: '#/components/responses/ErrUnauthorized'
+        '404':
+          $ref: '#/components/responses/ErrNoSuchPost'
+
+  /featured:
+    get:
+      description: Get a list of all featured posts. Because only a few posts should ever be featured at any given time, this endpoint does not support paging.
+      tags:
+        - featured
+      responses:
+        '200':
+          description: Returned a list of all featured posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+        '401':
+          $ref: '#/components/responses/ErrUnauthorized'
+
+    post:
+      description: Make a post featured
+      tags:
+        - featured
+      parameters:
+        - name: post_id
+          in: query
+          description: ID of the post to make featured
+          schema:
+            type: string
+      responses:
+        '204':
+          description: The post was featured
+        '400':
+          description: The specified post is not published, and therefore cannot be featured.
+          content:
+            application/json:
+              schema:
+                type: string
+                example: The specified post is not published, and therefore cannot be featured.
+        '401':
+          $ref: '#/components/responses/ErrUnauthorized'
+        '404':
+          $ref: '#/components/responses/ErrNoSuchPost'
+
+  /featured/{post_id}:
+    parameters:
+      - $ref: '#/components/parameters/PostId'
+    delete:
+      description: Un-feature a post
+      tags:
+        - featured
+      responses:
+        '204':
+          description: The post was unfeatured
+        '400':
+          description: The specified post cannot be unfeatured because it is is not featured to begin with
+          content:
+            application/json:
+              schema:
+                type: string
+                example: The specified post cannot be unfeatured because it is is not featured to begin with
         '401':
           $ref: '#/components/responses/ErrUnauthorized'
         '404':
@@ -669,7 +664,7 @@ paths:
 
   /tags:
     get:
-      description: Get all tags that have been created
+      description: Get all tags that have been created. There are not expected to be more than 10-20 tags used on a website; therefore, this endpoint does not support paging.
       tags:
         - tags
       responses:
@@ -691,12 +686,13 @@ paths:
         - name: name
           in: query
           description: Name of the tag
+          required: true
           schema:
             type: string
         - name: slug
           in: query
-          required: false
           description: Slug used to create a URL for the tag. Must be unique. Cannot be changed once created.
+          required: true
           schema:
             type: string
         - name: description
@@ -707,8 +703,7 @@ paths:
             type: string
         - name: color
           in: query
-          description: Hex color for the tag. Will be randomly generated if none is provided
-          required: false
+          description: Hex color for the tag. Will be randomly generated by the backend if none is provided
           schema:
             type: string
             pattern: '^#[0-9a-fA-F]{6}$'
@@ -721,6 +716,11 @@ paths:
                 $ref: '#/components/schemas/Tag'
         '400':
           description: Error in query parameters or the slug is not unique
+          content:
+            application/json:
+              schema:
+                type: string
+                example: The desired slug is not unique
         '401':
           $ref: '#/components/responses/ErrUnauthorized'
 
@@ -733,7 +733,7 @@ paths:
         - tags
       responses:
         '200':
-          description: Returned tag info
+          description: Returned tag
           content:
             application/json:
               schema:
@@ -743,7 +743,7 @@ paths:
         '404':
           $ref: '#/components/responses/ErrNoSuchTag'
     patch:
-      description: Modify tag
+      description: Modify a tag
       tags:
         - tags
       parameters:
@@ -755,13 +755,11 @@ paths:
         - name: description
           in: query
           description: Tag description
-          required: true
           schema:
             type: string
         - name: color
           in: query
           description: Hex color for the tag. Will be randomly generated if none is provided
-          required: false
           schema:
             type: string
             pattern: '^#[0-9a-fA-F]{6}$'
@@ -773,18 +771,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Tag'
         '400':
-          description: Error in query parameters or the slug is not unique
+          description: Error in query parameters
+          content:
+            application/json:
+              schema:
+                type: string
+                example: Invalid "color" provided
         '401':
           $ref: '#/components/responses/ErrUnauthorized'
         '404':
           $ref: '#/components/responses/ErrNoSuchTag'
     delete:
-      description: Delete the tag. This will remove it from all posts that use it
+      description: Delete the tag. The tag will be removed from all posts that use it
       tags:
         - tags
       responses:
-        '200':
-          description: Deleted successfully.
+        '204':
+          description: Tag was deleted
         '401':
           $ref: '#/components/responses/ErrUnauthorized'
         '404':
@@ -800,7 +803,7 @@ paths:
         - $ref: '#/components/parameters/QueryOffset'
       responses:
         '200':
-          description: Return a list of file metadata
+          description: Returned a list of file metadata
           content:
             application/json:
               schema:
@@ -810,19 +813,40 @@ paths:
         '401':
           $ref: '#/components/responses/ErrUnauthorized'
     post:
-      description: Upload a new file
-      # TODO: how to indicate situations in which the file has already been uploaded?
+      description: Upload a new file. The server stores the hash of every uploaded file. It can therefore detect if a file already exists on the server, in which case it will not store a duplicate. Please specify the content type when uploading.
       tags:
         - files
       requestBody:
         content:
-          application/*:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+          application/pdf:
+            schema:
+              type: string
+              format: binary
+          image/jpeg:
+            schema:
+              type: string
+              format: binary
+          image/png:
+            schema:
+              type: string
+              format: binary
+          image/gif:
             schema:
               type: string
               format: binary
       responses:
+        '200':
+          description: File already exists on server. Returns the metadata of the existing file
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/File'
         '201':
-          description: File was uploaded. Returned information about the file.
+          description: File was uploaded. Returns the created metadata
           content:
             application/json:
               schema:
@@ -841,7 +865,7 @@ paths:
           '200':
             description: File was delivered
             content:
-              text/plain:
+              application/octet-stream:
                 schema:
                   type: string
                   format: binary
@@ -854,10 +878,16 @@ paths:
       tags:
         - files
       responses:
-        '200':
-          description: File was successfully deleted
+        '204':
+          description: File was deleted
         '400':
-          description: File had references and could not be deleted
+          description: File had references and could not be deleted. Returns a list of postIds that reference the file.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
         '401':
           $ref: '#/components/responses/ErrUnauthorized'
         '404':
@@ -866,12 +896,12 @@ paths:
     parameters:
       - $ref: '#/components/parameters/FileId'
     get:
-      description: Get a list of post IDs that this file is referenced from. References are the images linked from a post.
+      description: Get a list of postIds that this file is referenced from. References are the images linked from a post.
       tags:
         - files
       responses:
         '200':
-          description: Returned a list of postIds
+          description: Returned a list of referenced postIds
           content:
             application/json:
               schema:
@@ -915,7 +945,7 @@ paths:
           type: string
         required: true
       responses:
-        '200':
+        '204':
           description: Successfully added email address to the mailing list
         '400':
           description: Invalid email address format
