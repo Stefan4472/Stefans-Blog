@@ -6,7 +6,7 @@ from flaskr import db
 posts_to_tags = db.Table(
     'posts_to_tags',
     db.Column('post', db.Integer, db.ForeignKey('post.id')),
-    db.Column('tag', db.Integer, db.ForeignKey('tag.id')),
+    db.Column('tag', db.Integer, db.ForeignKey('tag.slug')),
 )
 
 

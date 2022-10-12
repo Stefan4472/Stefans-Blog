@@ -50,9 +50,6 @@ def get_posts():
     return jsonify({'posts': manifest})
 
 
-# Commit #1: Change create_post and the site_manager logic. Get it working
-# Commit #2: Add PUT (edit) and PATCH methods. Change `Post` model to require all args on creation
-# Commit #3: cleanup (especially sitemanager)
 @BLUEPRINT.route('', methods=['POST'])
 @login_required
 def create_post():
@@ -60,7 +57,7 @@ def create_post():
     Creates a post with the specified configuration and an empty Markdown
     text.
 
-    I wanted to make this endpoing also require a Markdown file upload,
+    I wanted to make this endpoint also require a Markdown file upload,
     but accepting JSON data *and* an uploaded file is tricky. That's
     why I split the Markdown out into its own sub-resource.
 
@@ -258,6 +255,7 @@ def get_or_create_tags(tags: typing.List[str]) -> typing.List[Tag]:
                 tag_obj = Tag(
                     slug=tag_slug,
                     name=tag_name,
+                    description='TODO!',
                     color=util.generate_random_color(),
                 )
                 db.session.add(tag_obj)

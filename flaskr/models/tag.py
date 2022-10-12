@@ -3,9 +3,9 @@ from flaskr import db
 
 class Tag(db.Model):
     __tablename__ = 'tag'
-    id = db.Column(db.Integer, primary_key=True)
-    slug = db.Column(db.String, nullable=False, unique=True)
+    slug = db.Column(db.String, primary_key=True)
     name = db.Column(db.String, nullable=False)
+    description = db.Column(db.String, nullable=False)
     # Note: checking for valid hex colors is left to the application
     color = db.Column(db.String, nullable=False)
 
