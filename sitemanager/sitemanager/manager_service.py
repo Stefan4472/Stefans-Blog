@@ -1,6 +1,7 @@
 import requests
 import pathlib
 import flask
+import base64
 import typing
 from sitemanager.manifest import Manifest, SiteDiff
 from sitemanager.postconfig import PostConfig
@@ -20,7 +21,9 @@ class ManagerService:
         self.password = password
 
     def _make_headers(self):
-        return {'Authorization': f'{self.email}:{self.password}'}
+        auth_string = f'{self.email}:{self.password}'
+        auth_binary = base64.b64encode(auth_string.encode())
+        return {'Authorization': 'Basic ' + auth_binary.decode()}
 
     def create_post(self, config: PostConfig, send_email: bool):
         config_json = config.to_json()

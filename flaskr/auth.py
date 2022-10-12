@@ -1,3 +1,4 @@
+import base64
 import typing
 from flask import current_app, request, redirect, url_for, abort
 from flask_login import LoginManager, UserMixin
@@ -43,11 +44,15 @@ def request_loader(request) -> typing.Optional[UserMixin]:
     """
     if 'Authorization' not in request.headers:
         return None
-    if ':' not in request.headers['Authorization']:
+    if not request.headers['Authorization'].startswith('Basic '):
         return None
-    colon_index = request.headers['Authorization'].index(':')
-    email = request.headers['Authorization'][:colon_index]
-    password = request.headers['Authorization'][colon_index+1:]
+    # Decode base-64, then decode the resulting bytes to a string
+    auth_string = base64.b64decode(request.headers['Authorization'][6:]).decode()
+    if ':' not in auth_string:
+        return None
+    colon_index = auth_string.index(':')
+    email = auth_string[:colon_index]
+    password = auth_string[colon_index+1:]
     try:
         return verify_login(email, password)    
     except ValueError:
