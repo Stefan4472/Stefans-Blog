@@ -39,3 +39,4 @@ Werkzeug==1.0.1
 zipp==3.4.1
 marshmallow==3.14.1
 markdown2==2.4.2
+pytest~=7.1.2

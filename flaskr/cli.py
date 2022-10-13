@@ -14,6 +14,7 @@ def reset_site():
     db.create_all()
     flask.current_app.search_engine.clear_all_data()
     flask.current_app.search_engine.commit()
+    click.echo('Reset site')
 
 
 @click.command('add_user')
@@ -43,3 +44,4 @@ def add_user(
     )
     db.session.add(user)
     db.session.commit()
+    click.echo('Created user')
