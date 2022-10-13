@@ -33,6 +33,10 @@ def create_tag():
     except marshmallow.exceptions.ValidationError as e:
         return Response(status=400, response='Invalid parameters: {}'.format(e))
 
+    tag = Tag.query.filter_by(slug=contract.slug).first()
+    if tag:
+        return Response(status=400, response='The desired slug is not unique')
+
     tag = Tag(
         slug=contract.slug,
         name=contract.name,
