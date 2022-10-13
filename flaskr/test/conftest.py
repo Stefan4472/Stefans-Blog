@@ -14,7 +14,7 @@ TEST_USERNAME = 'test@test.com'
 TEST_PASSWORD = '1234'
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture()
 def app() -> Flask:
     """Creates a Flask test client with database and test user configured."""
     # TODO: figure out a better system for the files. Would like to use tempfile. Any way to pass a file descriptor?
