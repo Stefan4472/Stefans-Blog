@@ -1,5 +1,6 @@
 from flask_login import UserMixin
 from flaskr import db
+from flaskr.contracts.data_schemas import UserContract
 
 
 class User(db.Model, UserMixin):
@@ -14,4 +15,11 @@ class User(db.Model, UserMixin):
     # User's full name (human readable) used for display purposes
     name = db.Column(db.String(30))
     # Files uploaded by this user
+    # TODO: check whether this will cause performance problems.
     files = db.relationship('File', back_populates='uploaded_by')
+
+    def make_contract(self) -> UserContract:
+        return UserContract(
+            id=self.id,
+            name=self.name,
+        )

@@ -1,3 +1,4 @@
+# TODO: wrap everything in a `Constants` class?
 KEY_TITLE = 'title'
 KEY_BYLINE = 'byline'
 KEY_SLUG = 'slug'
@@ -27,4 +28,7 @@ BANNER_SIZE = (1000, 175)
 THUMBNAIL_SIZE = (400, 400)
 # The size that images in posts cannot exceed.
 # Images that exceed this size will be thumbnail-ed to it.
-MAX_IMG_SIZE = (1200, 800)
+MAX_IMG_WIDTH = 1200
+MAX_IMG_HEIGHT = 800
+# TODO: rename `MAX_IMG_DIM`?
+MAX_IMG_SIZE = (MAX_IMG_WIDTH, MAX_IMG_HEIGHT)

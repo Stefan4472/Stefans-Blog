@@ -1,11 +1,14 @@
 from enum import Enum
+from pathlib import Path
+from flask import current_app, url_for
 from flaskr import db
+from flaskr.contracts.data_schemas import UserContract, FileContract
 
 
 class FileType(Enum):
     """General file types used to classify uploaded files."""
     Image = 'IMAGE'
-    Video = 'VIDEO'
+    # Video = 'VIDEO'
     Document = 'DOCUMENT'
 
 
@@ -30,4 +33,23 @@ class File(db.Model):
     # Size of the file, in bytes
     size = db.Column(db.Integer, nullable=False)
     # MD5 hash of the file contents
-    hash = db.Column(db.String, unique=True, nullable=False)
+    hash = db.Column(db.String, unique=True, nullable=False, index=True)
+
+    def get_path(self) -> Path:
+        return Path(current_app.static_folder) / self.filename
+
+    def make_url(self, external: bool = True) -> str:
+        return url_for('static', filename=self.filename, _external=external)
+
+    def make_contract(self) -> FileContract:
+        return FileContract(
+            id=self.id,
+            upload_name=self.upload_name,
+            upload_date=self.upload_date,
+            uploaded_by=self.uploaded_by.make_contract(),
+            filetype=self.filetype,
+            filename=self.filename,
+            url=self.make_url(),
+            size=self.size,
+            hash=self.hash,
+        )
