@@ -1,14 +1,10 @@
 import flask
-import datetime as dt
 from flask import request, Response, current_app, jsonify
 from flask_login import login_required, current_user
-import werkzeug.exceptions
-import werkzeug.utils
 from flaskr.database import db
-from flaskr.models.image import Image
-import flaskr.api.util as util
 from flaskr.models.file import File
 import flaskr.file_manager as file_manager
+# TODO: "references" endpoint
 
 BLUEPRINT = flask.Blueprint('files', __name__, url_prefix='/api/v1/files')
 
@@ -17,7 +13,7 @@ BLUEPRINT = flask.Blueprint('files', __name__, url_prefix='/api/v1/files')
 @login_required
 def get_files():
     """Get files that have been uploaded."""
-    return jsonify(f.make_contract().to_json() for f in File.query.all())
+    return jsonify([f.make_contract().make_json() for f in File.query.all()])
 
 
 @BLUEPRINT.route('/', methods=['POST'])
@@ -30,12 +26,8 @@ def upload_file():
         return Response('More than one file uploaded', status=400)
 
     try:
-        # Get the uploaded file from the request
         file = list(request.files.values())[0]
         created = file_manager.store_file(file, current_user)
-        print(created)
-        print(created.make_contract())
-        print(created.make_contract().make_json())
         return jsonify(created.make_contract().make_json()), 201
     except file_manager.InvalidExtension:
         return Response('Unsupported or missing file extension', status=400)
@@ -44,3 +36,39 @@ def upload_file():
     except Exception as e:
         current_app.logger.error(f'Unknown exception while storing file: {e}')
         return Response(status=500)
+
+
+@BLUEPRINT.route('/<string:file_id>', methods=['GET'])
+def download_file(file_id: str):
+    file = File.query.filter_by(id=file_id).first()
+    if not file:
+        return Response(status=404)
+    return flask.send_file(file.get_path())
+
+
+@BLUEPRINT.route('/<string:file_id>', methods=['DELETE'])
+def delete_file(file_id: str):
+    # TODO: reference-checking
+    file = File.query.filter_by(id=file_id).first()
+    if not file:
+        return Response(status=404)
+
+    try:
+        # Delete from filesystem
+        file.get_path().unlink()
+    except FileNotFoundError:
+        # Doesn't exist anymore... strange but doesn't matter at this point
+        current_app.logger.warning(f'Attempted to delete {file.get_path()}, which doesn\'t exist')
+
+    db.session.delete(file)
+    db.session.commit()
+    current_app.logger.debug(f'Deleted file with id={file_id}')
+    return Response(status=204)
+
+
+@BLUEPRINT.route('/<string:file_id>/metadata', methods=['GET'])
+def get_file_metadata(file_id: str):
+    file = File.query.filter_by(id=file_id).first()
+    if not file:
+        return Response(status=404)
+    return jsonify(file.make_contract().make_json())

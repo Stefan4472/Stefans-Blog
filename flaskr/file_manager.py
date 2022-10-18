@@ -6,7 +6,6 @@ import dataclasses as dc
 from flask import current_app
 from PIL import Image, UnidentifiedImageError
 from datetime import datetime
-from pathlib import Path
 from flaskr import db
 from flaskr.models.file import File, FileType
 from flaskr.models.user import User
@@ -23,6 +22,10 @@ class FileAlreadyExists(ValueError):
 
 
 class InvalidExtension(ValueError):
+    """
+    Exception thrown when a file has an extension that is not
+    supported by the server.
+    """
     def __init__(self, extension: str):
         self.extension = extension
 
