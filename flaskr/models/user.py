@@ -4,9 +4,14 @@ from flaskr import db
 
 class User(db.Model, UserMixin):
     """A registered user of the website."""
-    id = db.Column(db.Integer, primary_key=True)  # primary keys are required by SQLAlchemy
+    __tablename__ = 'user'
+    # Unique ID
+    id = db.Column(db.Integer, primary_key=True)
+    # User's email address
     email = db.Column(db.String(100), unique=True)
-    # Password hash
+    # User's *hashed* password
     password = db.Column(db.String(100))
-    # Full name (human readable)
+    # User's full name (human readable) used for display purposes
     name = db.Column(db.String(30))
+    # Files uploaded by this user
+    files = db.relationship('File', back_populates='uploaded_by')
