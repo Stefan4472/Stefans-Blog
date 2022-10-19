@@ -4,14 +4,17 @@ import pathlib
 import re
 import hashlib
 import shutil
-import typing
+from typing import Optional
 from sqlalchemy import asc, desc
 from flaskr import db
 import flaskr.models.relations as relations
 from flaskr.models.image import Image
+from flaskr.models.file import File
 from flaskr.models.tag import Tag
+from flaskr.models.user import User
 import flaskr.api.constants as constants
 import renderer.markdown
+from flaskr.contracts.data_schemas import PostContract
 
 
 # Regex used to match a HEX color for the `title_color` field
@@ -60,6 +63,36 @@ class Post(db.Model):
     #     # Note: this backref allows us to call Image.posts on an `Image` instance
     #     backref=db.backref('images', lazy='dynamic'),
     # )
+
+    @property
+    def featured_image(self) -> Optional[File]:
+        return File.query.filter_by(id=self.featured_id).first()
+
+    @property
+    def banner_image(self) -> Optional[File]:
+        return File.query.filter_by(id=self.banner_id).first()
+
+    @property
+    def thumbnail_image(self) -> Optional[File]:
+        return File.query.filter_by(id=self.thumbnail_id).first()
+
+    def make_contract(self) -> PostContract:
+        return PostContract(
+            id=self.id,
+            author=self.author.make_contract(),
+            last_modified=self.last_modified,
+            is_featured=self.is_featured,
+            is_published=self.is_published,
+            slug=self.slug,
+            title=self.title,
+            byline=self.byline,
+            publish_date=self.publish_date,
+            featured_image=self.featured_image if self.featured_id else None,
+            banner_image=self.banner_image if self.banner_id else None,
+            thumbnail_image=self.thumbnail_image if self.thumbnail_id else None,
+            tags=[t.make_contract() for t in self.tags],
+        )
+
 
     '''
     def __init__(

@@ -20,7 +20,7 @@ BLUEPRINT = Blueprint('tags', __name__, url_prefix='/api/v1/tags')
 @login_required
 def get_all_tags():
     """Get all tags that have been created."""
-    return jsonify([tag.to_json() for tag in Tag.query.all()])
+    return jsonify([tag.make_contract().make_json() for tag in Tag.query.all()])
 
 
 @BLUEPRINT.route('/', methods=['POST'])
@@ -45,7 +45,7 @@ def create_tag():
     )
     db.session.add(tag)
     db.session.commit()
-    return jsonify(tag.to_json()), 201
+    return jsonify(tag.make_contract().make_json()), 201
 
 
 @BLUEPRINT.route('/<string:tag>', methods=['GET'])
@@ -55,7 +55,7 @@ def get_single_tag(tag: str):
     tag = Tag.query.filter_by(slug=tag).first()
     if not tag:
         return Response(status=404)
-    return jsonify(tag.to_json())
+    return jsonify(tag.make_contract().make_json())
 
 
 @BLUEPRINT.route('/<string:tag>', methods=['POST'])
@@ -76,7 +76,7 @@ def update_tag(tag: str):
     tag.description = contract.description
     tag.color = contract.color
     db.session.commit()
-    return jsonify(tag.to_json()), 200
+    return jsonify(tag.make_contract().make_json()), 200
 
 
 @BLUEPRINT.route('/<string:tag>', methods=['DELETE'])

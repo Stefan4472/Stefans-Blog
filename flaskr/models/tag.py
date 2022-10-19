@@ -1,5 +1,6 @@
 from typing import Dict
 from flaskr import db
+from flaskr.contracts.data_schemas import TagContract
 
 
 class Tag(db.Model):
@@ -13,11 +14,10 @@ class Tag(db.Model):
     def __repr__(self):
         return 'Tag(slug={}, color={})'.format(self.slug, self.color)
 
-    # TODO: a better way to do serialization
-    def to_json(self) -> Dict:
-        return {
-            'slug': self.slug,
-            'name': self.name,
-            'description': self.description,
-            'color': self.color,
-        }
+    def make_contract(self) -> TagContract:
+        return TagContract(
+            slug=self.slug,
+            name=self.name,
+            description=self.description,
+            color=self.color,
+        )
