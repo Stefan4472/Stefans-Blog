@@ -1,9 +1,10 @@
 """Shared fixtures for pytest."""
 import pytest
 import os
-import pathlib
+import shutil
 import base64
 from flask import Flask
+from pathlib import Path
 from flask.testing import FlaskClient, FlaskCliRunner
 from typing import Dict
 from flaskr import create_app
@@ -18,8 +19,10 @@ TEST_PASSWORD = '1234'
 def app() -> Flask:
     """Creates a Flask test client with database and test user configured."""
     # TODO: figure out a better system for the files. Would like to use tempfile. Any way to pass a file descriptor?
-    log_path = pathlib.Path('test_log.txt')
-    index_path = pathlib.Path('test_index.json')
+    log_path = Path('test_log.txt')
+    index_path = Path('test_index.json')
+    instance_path = 'test-instance'
+    static_path = 'test-static'
 
     open(log_path, 'w+').close()
     # TODO: search engine needs to be fixed to allow empty files
@@ -31,6 +34,9 @@ def app() -> Flask:
         sql_alchemy_database_uri='sqlite:///:memory:',
         traffic_log_path=log_path,
         search_index_path=index_path,
+        rel_instance_path=instance_path,
+        rel_static_path=static_path,
+        testing=True,
     ))
     app.testing = True
 
@@ -43,6 +49,8 @@ def app() -> Flask:
 
     os.remove(log_path)
     os.remove(index_path)
+    shutil.rmtree(app.instance_path)
+    shutil.rmtree(app.static_folder)
 
 
 @pytest.fixture()

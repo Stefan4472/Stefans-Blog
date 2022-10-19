@@ -2,7 +2,7 @@ import os
 import typing
 import dataclasses as dc
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
 
 
 class Keys:
@@ -16,6 +16,9 @@ class Keys:
     SQLALCHEMY_DATABASE_URI = 'SQLALCHEMY_DATABASE_URI'
     TRAFFIC_LOG_PATH = 'TRAFFIC_LOG_PATH'
     SEARCH_INDEX_PATH = 'SEARCH_INDEX_PATH'
+    INSTANCE_PATH = 'INSTANCE_PATH'
+    STATIC_PATH = 'STATIC_PATH'
+    TESTING = 'TESTING'
     USE_SITE_ANALYTICS = 'USE_SITE_ANALYTICS'
     SITE_ANALYTICS_URL = 'SITE_ANALYTICS_URL'
     SITE_ANALYTICS_KEY = 'SITE_ANALYTICS_KEY'
@@ -35,6 +38,9 @@ class Config:
     will ensure that the keys are properly set.
 
     Can be used to read from environment variables using `load_from_env()`.
+
+    TODO: I think it would be preferable to derive log_path and search_index_path
+      using a relative path to the instance folder
     """
     # App secret key
     secret_key: str
@@ -45,6 +51,17 @@ class Config:
     traffic_log_path: Path
     # Path to the serialized search index file TODO: make optional(?)
     search_index_path: Path
+    # Path to the instance folder RELATIVE TO APP ROOT.
+    # Must not start with "/", which would lead to it being
+    # interpreted as an absolute path. Example: "test-instance"
+    rel_instance_path: str = None
+    # Path to the static folder RELATIVE TO APP ROOT.
+    # Must not start with "/". Example: "test-static"
+    rel_static_path: str = None
+
+    # Whether to run the app in "testing" mode
+    # https://flask.palletsprojects.com/en/2.2.x/config/#TESTING
+    testing: bool = False
 
     # Whether to use the SiteAnalytics API
     use_site_analytics: bool = False
@@ -77,6 +94,10 @@ class Config:
             raise ValueError(f'{Keys.USE_EMAIL_LIST} = True but {Keys.EMAIL_API_KEY} and {Keys.EMAIL_LIST_ID} are not both configured')
         if self.use_site_analytics and not (self.site_analytics_key and self.site_analytics_url):
             raise ValueError(f'{Keys.USE_SITE_ANALYTICS} = True but {Keys.SITE_ANALYTICS_KEY} and {Keys.SITE_ANALYTICS_URL} are not both configured')
+        if self.rel_instance_path and self.rel_instance_path.startswith('/'):
+            raise ValueError(f'{Keys.INSTANCE_PATH} must not start with "/"')
+        if self.rel_static_path and self.rel_static_path.startswith('/'):
+            raise ValueError(f'{Keys.STATIC_PATH} must not start with "/"')
 
     def to_dict(self) -> Dict:
         """Return parameters as a dictionary."""
@@ -85,6 +106,9 @@ class Config:
             Keys.SQLALCHEMY_DATABASE_URI: self.sql_alchemy_database_uri,
             Keys.TRAFFIC_LOG_PATH: self.traffic_log_path,
             Keys.SEARCH_INDEX_PATH: self.search_index_path,
+            Keys.INSTANCE_PATH: self.rel_instance_path,
+            Keys.STATIC_PATH: self.rel_static_path,
+            Keys.TESTING: self.testing,
             Keys.USE_SITE_ANALYTICS: self.use_site_analytics,
             Keys.USE_EMAIL_LIST: self.use_email_list,
             Keys.SITE_ANALYTICS_URL: self.site_analytics_url,
@@ -109,6 +133,7 @@ class Config:
 
         # Collect optional settings
         optional = [
+            Keys.INSTANCE_PATH, Keys.STATIC_PATH, Keys.TESTING,
             Keys.USE_SITE_ANALYTICS, Keys.USE_EMAIL_LIST, Keys.SITE_ANALYTICS_URL,
             Keys.SITE_ANALYTICS_KEY, Keys.EMAIL_API_KEY, Keys.EMAIL_LIST_ID,
             Keys.SQLALCHEMY_TRACK_MODIFICATIONS, Keys.PAGINATE_POSTS_PER_PAGE,
