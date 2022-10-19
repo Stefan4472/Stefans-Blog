@@ -39,8 +39,11 @@
 </div>
 
 <script>
-// Trigger AJAX request to Email API when user presses the Submit button
 $('#email_submit').on('click', function(event) {
+    // Disable the "Submit" button while waiting for response
+    $('#email_submit').prop('disabled', true);
+
+    // Trigger AJAX request to Email API when user presses the Submit button
     let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
         if (xhr.readyState !== XMLHttpRequest.DONE) {
@@ -53,7 +56,8 @@ $('#email_submit').on('click', function(event) {
             $('#email-error').text(xhr.responseText);
             $('#toast-email-failure').toast('show');
         }
-
+        // Re-enable the "Submit" button
+        $('#email_submit').prop('disabled', false);
     };
     xhr.open('POST', "{{ url_for('email.register_email') }}", true);
     xhr.setRequestHeader("Content-Type", "application/json");
