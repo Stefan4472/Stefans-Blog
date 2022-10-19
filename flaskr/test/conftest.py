@@ -1,10 +1,7 @@
 """Shared fixtures for pytest."""
 import pytest
-import os
-import shutil
 import base64
 from flask import Flask
-from pathlib import Path
 from flask.testing import FlaskClient, FlaskCliRunner
 from typing import Dict
 from flaskr import create_app
@@ -18,33 +15,22 @@ TEST_PASSWORD = '1234'
 @pytest.fixture()
 def app() -> Flask:
     """Creates a Flask test client with database and test user configured."""
-    log_path = Path('traffic.txt')
-    index_path = Path('index.json')
-
-    open(log_path, 'w+').close()
-    # TODO: search engine needs to be fixed to allow empty files
-    with open(index_path, 'w+') as f:
-        f.write('{"index": {}, "doc_data": {}}')
-
     app = create_app(SiteConfig(
         secret_key='1234',
         rel_instance_path='test-instance',
         rel_static_path='test-static',
         testing=True,
     ))
-    app.testing = True
 
-    res = app.test_cli_runner().invoke(args=['reset_site'])
+    res = app.test_cli_runner().invoke(args=['init_site'])
     assert res.exit_code == 0
     res = app.test_cli_runner().invoke(args=['add_user', 'Test User', TEST_USERNAME, f'--password={TEST_PASSWORD}'])
     assert res.exit_code == 0
 
     yield app
 
-    os.remove(log_path)
-    os.remove(index_path)
-    shutil.rmtree(app.instance_path)
-    shutil.rmtree(app.static_folder)
+    res = app.test_cli_runner().invoke(args=['delete_site'])
+    assert res.exit_code == 0
 
 
 @pytest.fixture()

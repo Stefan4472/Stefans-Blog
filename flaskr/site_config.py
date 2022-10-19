@@ -108,13 +108,6 @@ class SiteConfig:
         """Load config from environment variables."""
         if ConfigKeys.SECRET_KEY not in os.environ:
             raise ValueError(f'{ConfigKeys.SECRET_KEY} is not declared')
-        if ConfigKeys.SQLALCHEMY_DATABASE_URI not in os.environ:
-            raise ValueError(f'{ConfigKeys.SQLALCHEMY_DATABASE_URI} is not declared')
-        if ConfigKeys.TRAFFIC_LOG_PATH not in os.environ:
-            raise ValueError(f'{ConfigKeys.TRAFFIC_LOG_PATH} is not declared')
-        if ConfigKeys.SEARCH_INDEX_PATH not in os.environ:
-            raise ValueError(f'{ConfigKeys.SEARCH_INDEX_PATH} is not declared')
-
         # Collect optional settings
         optional = [
             ConfigKeys.INSTANCE_PATH, ConfigKeys.STATIC_PATH, ConfigKeys.TESTING,

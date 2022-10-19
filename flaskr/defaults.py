@@ -18,6 +18,7 @@ SEARCH_INDEX_REL_PATH = 'index.json'
 
 
 def make_defaults(instance_path: str) -> Dict:
+    """Create default file paths, based on the instance path of the app."""
     return {
         ConfigKeys.SQLALCHEMY_DATABASE_URI: 'sqlite:///' + os.path.join(instance_path, DATABASE_REL_PATH),
         ConfigKeys.SQLALCHEMY_TRACK_MODIFICATIONS: False,

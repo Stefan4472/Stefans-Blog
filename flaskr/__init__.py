@@ -30,14 +30,6 @@ def create_app(config: SiteConfig = None):
         app.static_folder = os.path.join(app.root_path, my_config.rel_static_path)
         app.logger.info(f'static_folder set to {app.static_folder}')
 
-    # TODO: create these folders when site is initialized
-    # Create the instance folder if it doesn't already exist
-    instance_path = Path(app.instance_path)
-    instance_path.mkdir(exist_ok=True)
-    # Create the static folder if it doesn't already exist
-    static_path = Path(app.static_folder)
-    static_path.mkdir(exist_ok=True)
-
     # Populate app.config with paths that are set by default
     app.config.update(defaults.make_defaults(app.instance_path))
 
@@ -60,7 +52,8 @@ def create_app(config: SiteConfig = None):
     app.search_engine = SearchEngine(app.config[ConfigKeys.SEARCH_INDEX_PATH])
 
     # Register click commands
-    app.cli.add_command(cli.reset_site)
+    app.cli.add_command(cli.init_site)
+    app.cli.add_command(cli.delete_site)
     app.cli.add_command(cli.add_user)
 
     return app
