@@ -3,7 +3,7 @@ import requests
 import functools
 import typing
 from flask import request, current_app
-from .config import Keys
+from .site_config import ConfigKeys
 
 
 def log_visit():
@@ -14,19 +14,19 @@ def log_visit():
     # see https://stackoverflow.com/questions/3759981/get-ip-address-of-visitors-using-flask-for-python
     ip_addr = request.environ.get('HTTP_X_FORWARDED_FOR', request.environ['REMOTE_ADDR'])
     user_agent = request.environ['HTTP_USER_AGENT']
-    with open(current_app.config[Keys.TRAFFIC_LOG_PATH], 'a') as log_file:
+    with open(current_app.config[ConfigKeys.TRAFFIC_LOG_PATH], 'a') as log_file:
         log_file.write('{},{},{},{}\n'.format(timestamp, url, ip_addr, user_agent))
 
-    if current_app.config[Keys.USE_SITE_ANALYTICS]:
+    if current_app.config[ConfigKeys.USE_SITE_ANALYTICS]:
         # Send data to site-analytics
         try:
             requests.post(
-                current_app.config[Keys.SITE_ANALYTICS_URL],
+                current_app.config[ConfigKeys.SITE_ANALYTICS_URL],
                 params={
                     'url': request.path,
                     'ip_addr': ip_addr,
                     'user_agent': request.environ['HTTP_USER_AGENT'],
-                    'secret': current_app.config[Keys.SITE_ANALYTICS_KEY],
+                    'secret': current_app.config[ConfigKeys.SITE_ANALYTICS_KEY],
                 },
             )
         except requests.exceptions.ConnectionError as e:

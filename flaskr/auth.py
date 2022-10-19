@@ -4,7 +4,6 @@ from flask import current_app, request, redirect, url_for, abort
 from flask_login import LoginManager, UserMixin
 from werkzeug.security import check_password_hash
 from flaskr.models.user import User
-from flaskr.config import Keys
 '''
 Functionality for API authentication.
 

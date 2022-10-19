@@ -8,7 +8,7 @@ from pathlib import Path
 from flask.testing import FlaskClient, FlaskCliRunner
 from typing import Dict
 from flaskr import create_app
-from flaskr.config import Config
+from flaskr.site_config import SiteConfig
 
 # Credentials used for the test instance
 TEST_USERNAME = 'test@test.com'
@@ -18,24 +18,18 @@ TEST_PASSWORD = '1234'
 @pytest.fixture()
 def app() -> Flask:
     """Creates a Flask test client with database and test user configured."""
-    # TODO: figure out a better system for the files. Would like to use tempfile. Any way to pass a file descriptor?
-    log_path = Path('test_log.txt')
-    index_path = Path('test_index.json')
-    instance_path = 'test-instance'
-    static_path = 'test-static'
+    log_path = Path('traffic.txt')
+    index_path = Path('index.json')
 
     open(log_path, 'w+').close()
     # TODO: search engine needs to be fixed to allow empty files
     with open(index_path, 'w+') as f:
         f.write('{"index": {}, "doc_data": {}}')
 
-    app = create_app(Config(
+    app = create_app(SiteConfig(
         secret_key='1234',
-        sql_alchemy_database_uri='sqlite:///:memory:',
-        traffic_log_path=log_path,
-        search_index_path=index_path,
-        rel_instance_path=instance_path,
-        rel_static_path=static_path,
+        rel_instance_path='test-instance',
+        rel_static_path='test-static',
         testing=True,
     ))
     app.testing = True

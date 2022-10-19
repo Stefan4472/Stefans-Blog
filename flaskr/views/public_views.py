@@ -7,7 +7,7 @@ from flaskr import site_logger
 from flaskr.models.post import Post
 from flaskr.models.tag import Tag
 from flaskr.models.user import User
-from flaskr.config import Keys
+from flaskr.site_config import ConfigKeys
 from flaskr.auth import verify_login
 
 
@@ -45,7 +45,7 @@ def posts_page(page: int = 1):
         .order_by(desc(Post.publish_date))\
         .paginate(
             page,
-            flask.current_app.config[Keys.PAGINATE_POSTS_PER_PAGE],
+            flask.current_app.config[ConfigKeys.PAGINATE_POSTS_PER_PAGE],
             error_out=False,
         )
     return flask.render_template(

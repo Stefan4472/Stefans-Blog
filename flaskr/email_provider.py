@@ -5,7 +5,7 @@ from sib_api_v3_sdk import (
 )
 from sib_api_v3_sdk.rest import ApiException
 from flaskr.models.post import Post
-from .config import Keys
+from .site_config import ConfigKeys
 
 
 # TODO: better failure handling. The problem is, I don't know under what conditions the Sendinblue API will fail
@@ -143,11 +143,11 @@ def get_email_provider() -> EmailProvider:
 
     Throws ValueError if the current app is not configured for sending emails.
     """
-    if not current_app.config[Keys.USE_EMAIL_LIST]:
+    if not current_app.config[ConfigKeys.USE_EMAIL_LIST]:
         raise ValueError('App has not been configured to use the email API')
     if 'email_provider' not in g:
         g.email_provider = EmailProvider(
-            current_app.config[Keys.EMAIL_API_KEY],
-            current_app.config[Keys.EMAIL_LIST_ID],
+            current_app.config[ConfigKeys.EMAIL_API_KEY],
+            current_app.config[ConfigKeys.EMAIL_LIST_ID],
         )
     return g.email_provider
