@@ -17,6 +17,8 @@ class User(db.Model, UserMixin):
     # Files uploaded by this user
     # TODO: check whether this will cause performance problems.
     files = db.relationship('File', back_populates='uploaded_by')
+    # Posts created by this user
+    posts = db.relationship('Post', back_populates='author')
 
     def make_contract(self) -> UserContract:
         return UserContract(

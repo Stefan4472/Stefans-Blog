@@ -22,36 +22,46 @@ COLOR_REGEX = re.compile('^#[0-9a-fA-F]{6}$')
 class Post(db.Model):
     __tablename__ = 'post'
     id = db.Column(db.Integer, primary_key=True)
-    slug = db.Column(db.String, unique=True, nullable=False)
-    title = db.Column(db.String, nullable=False)
-    byline = db.Column(db.String, nullable=False)
-    publish_date = db.Column(db.DateTime, nullable=False)
-    # Image IDs
-    featured_id = db.Column(db.String, nullable=False)
-    banner_id = db.Column(db.String, nullable=False)
-    thumbnail_id = db.Column(db.String, nullable=False)
-    # MD5 hash of the post's Markdown
-    hash = db.Column(db.String, nullable=False)
-    is_featured = db.Column(db.Boolean, nullable=False)
-    is_published = db.Column(db.Boolean, nullable=False)
-    # Note: checking for valid hex colors is left to the application
-    title_color = db.Column(db.String(length=7), nullable=False)
+    # ID of the user who created this post
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    # The user who created this post
+    author = db.relationship('User', back_populates='posts')
+    # Timestamp at which the post was last modified
+    last_modified = db.Column(db.DateTime, nullable=False)
+    # "slug" used to create a URL for this post
+    slug = db.Column(db.String, unique=True)
+    title = db.Column(db.String, unique=True)
+    # Short, engaging description of the post
+    byline = db.Column(db.String)
+    # Timestamp at which the post was published (if it was published)
+    publish_date = db.Column(db.DateTime)
 
-    # Tags (Many to Many)
+    # Images associated with the post
+    featured_id = db.Column(db.Integer, db.ForeignKey('file.id'))
+    banner_id = db.Column(db.Integer, db.ForeignKey('file.id'))
+    thumbnail_id = db.Column(db.Integer, db.ForeignKey('file.id'))
+
+    # Whether this post is featured
+    is_featured = db.Column(db.Boolean)
+    # Whether this post is published
+    is_published = db.Column(db.Boolean)
+
+    # Tags associated with this post (Many to Many)
     tags = db.relationship(
         'Tag',
         secondary=relations.posts_to_tags,
         # Note: this backref allows us to call Tag.posts on a `Tag` instance
         backref=db.backref('posts', lazy='dynamic'),
     )
-    # Images (Many to Many)
-    images = db.relationship(
-        'Image',
-        secondary=relations.posts_to_images,
-        # Note: this backref allows us to call Image.posts on an `Image` instance
-        backref=db.backref('images', lazy='dynamic'),
-    )
+    # Images (Many to Many)  TODO: file references
+    # images = db.relationship(
+    #     'Image',
+    #     secondary=relations.posts_to_images,
+    #     # Note: this backref allows us to call Image.posts on an `Image` instance
+    #     backref=db.backref('images', lazy='dynamic'),
+    # )
 
+    '''
     def __init__(
             self,
             slug: str,
@@ -125,11 +135,6 @@ class Post(db.Model):
         self.thumbnail_id = image.id
         if image not in self.images:
             self.images.append(image)
-
-    def set_title_color(self, color: str):
-        if not re.compile(constants.COLOR_REGEX).match(color):
-            raise ValueError('Improper HEX color (expects #[A-F]{6})')
-        self.title_color = color
 
     # TODO: honestly, the image stuff needs some real testing
     def set_markdown(self, markdown_text: str):
@@ -224,3 +229,4 @@ class Post(db.Model):
             self.publish_date,
             self.tags,
         )
+    '''

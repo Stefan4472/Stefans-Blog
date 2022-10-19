@@ -16,15 +16,13 @@ from flaskr.contracts.update_post import UpdatePostContract
 from flaskr.contracts.patch_post import PatchPostContract
 from flaskr.email_provider import get_email_provider
 from flaskr.site_config import ConfigKeys
-# TODO: Should have a set of Tag endpoints too
-# TODO: SETUP TESTING FRAMEWORK
-# TODO: log all SQLAlchemy errors
 
 
 # Blueprint under which all views will be assigned
 BLUEPRINT = Blueprint('posts', __name__, url_prefix='/api/v1/posts')
 
 
+'''
 @BLUEPRINT.route('/', methods=['GET'])
 @login_required
 def get_posts():
@@ -270,3 +268,4 @@ def get_image(filename: str) -> Image:
     if not image:
         raise ValueError(f'Specified image "{filename}" not found on server')
     return image
+'''
