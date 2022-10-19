@@ -1,6 +1,7 @@
 import werkzeug
 import hashlib
 import io
+import os
 import uuid
 import dataclasses as dc
 from flask import current_app
@@ -52,21 +53,20 @@ def store_file(file: werkzeug.datastructures.FileStorage, created_by: User) -> F
     if original_extension not in ALLOWED_EXTENSIONS:
         raise InvalidExtension(original_extension)
 
-    # Check if a file with the same hash already exists
+    # TODO: I don't know whether it's a good idea to directly modify the file.
+    #  It would be good to store the original, but serve a compressed or CDN version
+    # Process the file
     contents = io.BytesIO(file.read())
-    file_hash = hashlib.md5(contents.getbuffer()).hexdigest()
+    processed = _process_file(contents, original_extension)
+
+    # Check if a file with the same hash already exists
+    file_hash = hashlib.md5(processed.contents.getbuffer()).hexdigest()
     query = File.query.filter_by(hash=file_hash)
     if query.first():
         current_app.logger.debug(f'File is a duplicate of {query.first().id}')
         raise FileAlreadyExists(query.first())
 
-    # Process the file
-    # TODO: honestly, I don't think it's a good idea to directly modify the file. Would be good to keep the original, but serve a compressed version
-    processed = _process_file(contents, original_extension)
-
-    # Generate random UUID
     file_id = uuid.uuid4().hex
-    # Create file. Store ORIGINAL hash -> TODO: I don't like that. Shouldn't store original hash, it makes no sense. First, process, then check the hash (I guess)
     file = File(
         id=file_id,
         upload_name=file_name,
@@ -74,13 +74,13 @@ def store_file(file: werkzeug.datastructures.FileStorage, created_by: User) -> F
         uploaded_by=created_by,
         filetype=get_file_type(processed.extension),
         filename=file_id + processed.extension,
-        size=file.content_length,  # TODO: this is the ORIGINAL SIZE. And it's wrong
         hash=file_hash,
     )
 
     # Save to file system
     with open(file.get_path(), 'wb') as out:
         out.write(processed.contents.getbuffer())
+    file.size = os.path.getsize(file.get_path())
 
     db.session.add(file)
     db.session.commit()

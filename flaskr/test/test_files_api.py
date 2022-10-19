@@ -89,12 +89,13 @@ def test_upload_text(client: FlaskClient):
     assert response.json['filetype'] == 'DOCUMENT'
     assert response.json['upload_name'] == file.filename
     assert response.json['uploaded_by']['id'] == 1
-    # assert response.json['size'] == len(file.contents)
-    # assert response.json['hash'] == hashlib.md5(file.contents).hexdigest()
-    print(response.json['url'])
-    response2 = client.get(response.json['url'], headers=make_auth_headers())
-    assert response2.status == '200 OK'
-    # TODO: check that the file was served
+    assert response.json['size'] == len(file.contents)
+    assert response.json['hash'] == hashlib.md5(file.contents).hexdigest()
+
+    # Access the file via URL
+    response_get = client.get(response.json['url'], headers=make_auth_headers())
+    assert response_get.status == '200 OK'
+    assert list(response_get.response)[0] == file.contents
 
 
 def test_upload_jpg(client: FlaskClient):
@@ -104,7 +105,15 @@ def test_upload_jpg(client: FlaskClient):
     assert response.json['filetype'] == 'IMAGE'
     assert response.json['upload_name'] == file.filename
     assert response.json['uploaded_by']['id'] == 1
-    # TODO: we currently don't test hashing/size of uploaded images because they may be changed by the webserver (e.g. compressed)
+
+    # Access the file via URL and check that size and hash are correct
+    # Note: we can't test directly against the original file because it
+    # may have been changed during image processing.
+    response_get = client.get(response.json['url'], headers=make_auth_headers())
+    assert response_get.status == '200 OK'
+    stored_file = list(response_get.response)[0]
+    assert len(stored_file) == response.json['size']
+    assert response.json['hash'] == hashlib.md5(stored_file).hexdigest()
 
 
 def test_upload_png(client: FlaskClient):
@@ -115,10 +124,17 @@ def test_upload_png(client: FlaskClient):
     assert response.json['upload_name'] == file.filename
     assert response.json['uploaded_by']['id'] == 1
 
+    # Access the file via URL and double-check that size and hash are correct
+    response_get = client.get(response.json['url'], headers=make_auth_headers())
+    assert response_get.status == '200 OK'
+    stored_file = list(response_get.response)[0]
+    assert len(stored_file) == response.json['size']
+    assert response.json['hash'] == hashlib.md5(stored_file).hexdigest()
+
 
 def test_upload_duplicate(client: FlaskClient):
     """Upload the same file twice."""
-    file = get_example_file(ExampleFileType.Txt)
+    file = get_example_file(ExampleFileType.Png)
     response1 = upload_file(client, file)
     response2 = upload_file(client, file)
 
