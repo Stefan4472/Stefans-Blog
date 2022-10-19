@@ -34,6 +34,7 @@ def upload_file():
     except file_manager.FileAlreadyExists as e:
         return jsonify(e.duplicate.make_contract().make_json()), 200
     except Exception as e:
+        print(e.args)
         current_app.logger.error(f'Unknown exception while storing file: {e}')
         return Response(status=500)
 
@@ -48,21 +49,10 @@ def download_file(file_id: str):
 
 @BLUEPRINT.route('/<string:file_id>', methods=['DELETE'])
 def delete_file(file_id: str):
-    # TODO: reference-checking
     file = File.query.filter_by(id=file_id).first()
     if not file:
         return Response(status=404)
-
-    try:
-        # Delete from filesystem
-        file.get_path().unlink()
-    except FileNotFoundError:
-        # Doesn't exist anymore... strange but doesn't matter at this point
-        current_app.logger.warning(f'Attempted to delete {file.get_path()}, which doesn\'t exist')
-
-    db.session.delete(file)
-    db.session.commit()
-    current_app.logger.debug(f'Deleted file with id={file_id}')
+    file_manager.delete_file(file)
     return Response(status=204)
 
 

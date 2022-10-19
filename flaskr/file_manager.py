@@ -49,7 +49,6 @@ def store_file(file: werkzeug.datastructures.FileStorage, created_by: User) -> F
 
     # Validate file extension
     original_extension = get_extension(file_name)
-    print(original_extension)
     if original_extension not in ALLOWED_EXTENSIONS:
         raise InvalidExtension(original_extension)
 
@@ -89,6 +88,21 @@ def store_file(file: werkzeug.datastructures.FileStorage, created_by: User) -> F
     return file
 
 
+def delete_file(file: File):
+    """Delete the given file from the file system and the database."""
+    # TODO: fail if references exist
+    try:
+        # Delete from filesystem
+        file.get_path().unlink()
+    except FileNotFoundError:
+        # Doesn't exist anymore... strange but doesn't matter at this point
+        current_app.logger.warning(f'Attempted to delete {file.get_path()}, which doesn\'t exist')
+
+    db.session.delete(file)
+    db.session.commit()
+    current_app.logger.debug(f'Deleted file with id={file.id}')
+
+
 def get_extension(filename: str) -> str:
     if '.' not in filename:
         return ''
@@ -124,7 +138,7 @@ def _process_file(file: io.BytesIO, extension: str) -> ProcessedFile:
         image = image.convert('RGB')
         # Write out to buffer
         image_bytes = io.BytesIO()
-        image.save(image_bytes, format='JPG')
+        image.save(image_bytes, format='JPEG')
         return ProcessedFile(image_bytes, '.jpg')
     else:
         # Do nothing
