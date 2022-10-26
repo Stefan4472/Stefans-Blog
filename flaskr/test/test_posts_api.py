@@ -27,6 +27,13 @@ def create_post(
     )
 
 
+def get_post(client: FlaskClient, post_id: int) -> Response:
+    return client.get(
+        f'/api/v1/posts/{post_id}',
+        headers=make_auth_headers(),
+    )
+
+
 def is_post_json_valid(_json: Dict) -> bool:
     """Checks whether the *structure* of the returned post JSON is valid."""
     if 'id' not in _json: return False
@@ -105,3 +112,92 @@ def test_create_invalid_fileid(client: FlaskClient):
     assert create_post(client, featured_id='1234').status == '400 BAD REQUEST'
     assert create_post(client, banner_id='1234').status == '400 BAD REQUEST'
     assert create_post(client, thumbnail_id='1234').status == '400 BAD REQUEST'
+
+
+def test_get_all(client: FlaskClient):
+    res1 = create_post(client, slug='post-1', title='Post #1', byline='The first post')
+    res2 = create_post(client, slug='post-2', title='Post #2', byline='The second post')
+    res3 = create_post(client, slug='post-3', title='Post #3', byline='The third post')
+    res_get = client.get(
+        '/api/v1/posts/',
+        headers=make_auth_headers(),
+    )
+    assert res_get.status == '200 OK'
+    assert len(res_get.json) == 3
+    assert res1.json in res_get.json
+    assert res2.json in res_get.json
+    assert res3.json in res_get.json
+
+
+# TODO
+# def test_get_featured(client: FlaskClient):
+#
+# TODO
+# def test_get_published(client: FlaskClient):
+
+
+def test_get_single(client: FlaskClient):
+    res_create = create_post(client, slug='post-1', title='Post #1', byline='The first post')
+    res_get = get_post(client, res_create.json['id'])
+    assert res_get.status == '200 OK'
+    assert res_get.json == res_create.json
+
+
+def test_get_nonexistent(client: FlaskClient):
+    assert get_post(client, 1234).status == '404 NOT FOUND'
+
+
+def test_update(client: FlaskClient):
+    """Create, update, then retrieve."""
+    res_create = create_post(client)
+    post_id = res_create.json['id']
+    res_update = client.put(
+        f'/api/v1/posts/{post_id}',
+        json={
+            'slug': 'updated-slug',
+            'title': 'Updated Title',
+            'byline': 'Updated Byline'
+        },
+        headers=make_auth_headers(),
+    )
+    assert res_update.status == '200 OK'
+    assert res_update.json['slug'] == 'updated-slug'
+    assert res_update.json['title'] == 'Updated Title'
+    assert res_update.json['byline'] == 'Updated Byline'
+
+    res_get = get_post(client, post_id)
+    assert res_get.json == res_update.json
+
+
+def test_update_empty(client: FlaskClient):
+    """Updating with no parameters should result in no changes."""
+    res_create = create_post(client)
+    post_id = res_create.json['id']
+    res_update = client.put(
+        f'/api/v1/posts/{post_id}',
+        headers=make_auth_headers(),
+    )
+    assert res_update.json == res_create.json
+
+# TODO: test failing updates
+# TODO: test updating a fileID to None
+
+
+def test_delete(client: FlaskClient):
+    res_create = create_post(client)
+    post_id = res_create.json['id']
+    res_delete = client.delete(
+        f'/api/v1/posts/{post_id}',
+        headers=make_auth_headers(),
+    )
+    assert res_delete.status == '204 NO CONTENT'
+    res_get = get_post(client, post_id)
+    assert res_get.status == '404 NOT FOUND'
+
+
+def test_delete_nonexistent(client: FlaskClient):
+    assert client.delete(
+        f'/api/v1/posts/1234',
+        headers=make_auth_headers(),
+    ).status == '404 NOT FOUND'
+# TODO: test delete without permission

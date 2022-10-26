@@ -1,0 +1,37 @@
+import marshmallow as msh
+import dataclasses as dc
+from marshmallow import validate
+from typing import Optional, Dict
+import flaskr.api.constants as constants
+
+
+@dc.dataclass
+class CreateOrUpdatePostContract:
+    """The same schema is used both for creating and for updating a post."""
+    slug: Optional[str] = None
+    title: Optional[str] = None
+    byline: Optional[str] = None
+    featured_image: Optional[str] = None
+    banner_image: Optional[str] = None
+    thumbnail_image: Optional[str] = None
+
+    @staticmethod
+    def get_schema() -> 'CreateOrUpdatePostSchema':
+        return CreateOrUpdatePostSchema()
+
+    @staticmethod
+    def from_json(_json: Optional[Dict]) -> 'CreateOrUpdatePostContract':
+        return CreateOrUpdatePostContract.get_schema().load(_json if _json else {})
+
+
+class CreateOrUpdatePostSchema(msh.Schema):
+    slug = msh.fields.String(validate=msh.validate.Regexp(constants.SLUG_REGEX))
+    title = msh.fields.String()
+    byline = msh.fields.String()
+    featured_image = msh.fields.String()
+    banner_image = msh.fields.String()
+    thumbnail_image = msh.fields.String()
+
+    @msh.post_load
+    def make_contract(self, data, **kwargs) -> CreateOrUpdatePostContract:
+        return CreateOrUpdatePostContract(**data)
