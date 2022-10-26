@@ -4,22 +4,50 @@ import marshmallow
 import typing
 import sqlalchemy
 from flask import request, Response, Blueprint, jsonify, current_app
-from flask_login import login_required
+from flask_login import login_required, current_user
 import flaskr.api.constants as constants
 import flaskr.api.util as util
 from flaskr.database import db
 from flaskr.models.post import Post
-from flaskr.models.image import Image
 from flaskr.models.tag import Tag
 from flaskr.contracts.create_post import CreatePostContract
 from flaskr.contracts.update_post import UpdatePostContract
 from flaskr.contracts.patch_post import PatchPostContract
 from flaskr.email_provider import get_email_provider
 from flaskr.site_config import ConfigKeys
+import flaskr.post_manager as post_manager
 
 
 # Blueprint under which all views will be assigned
 BLUEPRINT = Blueprint('posts', __name__, url_prefix='/api/v1/posts')
+
+
+@BLUEPRINT.route('/', methods=['POST'])
+@login_required
+def create_post():
+    """Creates a new post."""
+    try:
+        contract = CreatePostContract.from_json(request.get_json())
+    except marshmallow.exceptions.ValidationError as e:
+        return Response(status=400, response='Invalid parameters: {}'.format(e))
+
+    try:
+        post = post_manager.create_post(contract, current_user)
+        return jsonify(post.make_contract().make_json()), 201
+    except Exception as e:
+        current_app.logger.error(f'Unknown exception while creating post: {e}')
+        return Response(status=500)
+
+# Save this for the command endpoints
+# try:
+#     if contract.send_email and current_app.config[ConfigKeys.USE_EMAIL_LIST]:
+#         get_email_provider().broadcast_new_post(post)
+#     elif contract.send_email:
+#         current_app.logger.warn('send_email=True but no email service is configured')
+# except ValueError as e:
+#     current_app.logger.error(f'Error while sending email notification: {e}')
+#     return Response(status=400, response=str(e))
+# return Response(status=200)
 
 
 '''
@@ -46,62 +74,6 @@ def get_posts():
     for post in query.all():
         manifest[post.slug] = post.to_dict()
     return jsonify({'posts': manifest})
-
-
-@BLUEPRINT.route('', methods=['POST'])
-@login_required
-def create_post():
-    """
-    Creates a post with the specified configuration and an empty Markdown
-    text.
-
-    I wanted to make this endpoint also require a Markdown file upload,
-    but accepting JSON data *and* an uploaded file is tricky. That's
-    why I split the Markdown out into its own sub-resource.
-
-    Returns 400 if a post with the given slug already exists.
-    """
-    try:
-        contract = CreatePostContract.from_json(request.get_json())
-    except marshmallow.exceptions.ValidationError as e:
-        return Response(status=400, response='Invalid parameters: {}'.format(e))
-
-    current_app.logger.debug(f'Request to create post with slug={contract.slug}')
-    if Post.query.filter_by(slug=contract.slug).first():
-        msg = 'A post with the given slug already exists'
-        current_app.logger.debug(msg)
-        return Response(response=msg, status=400)
-
-    try:
-        post = Post(
-            contract.slug,
-            contract.title,
-            get_image(contract.image),
-            get_image(contract.banner),
-            get_image(contract.thumbnail),
-            byline=contract.byline,
-            publish_date=contract.publish_date,
-            is_featured=contract.feature,
-            is_published=contract.publish,
-            title_color=contract.title_color,
-            tags=get_or_create_tags(contract.tags),
-        )
-        db.session.add(post)
-        db.session.commit()
-        current_app.logger.info(f'Created post with slug={post.slug}')
-    except sqlalchemy.exc.SQLAlchemyError as e:
-        current_app.logger.error(f'Error creating database record: {e}')
-        return Response(status=500, response='Internal database error')
-
-    try:
-        if contract.send_email and current_app.config[ConfigKeys.USE_EMAIL_LIST]:
-            get_email_provider().broadcast_new_post(post)
-        elif contract.send_email:
-            current_app.logger.warn('send_email=True but no email service is configured')
-    except ValueError as e:
-        current_app.logger.error(f'Error while sending email notification: {e}')
-        return Response(status=400, response=str(e))
-    return Response(status=200)
 
 
 @BLUEPRINT.route('/<string:slug>', methods=['PUT'])

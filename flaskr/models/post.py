@@ -32,10 +32,10 @@ class Post(db.Model):
     # Timestamp at which the post was last modified
     last_modified = db.Column(db.DateTime, nullable=False)
     # "slug" used to create a URL for this post
-    slug = db.Column(db.String, unique=True)
-    title = db.Column(db.String, unique=True)
+    slug = db.Column(db.String, unique=True, nullable=False, index=True)
+    title = db.Column(db.String, nullable=False)
     # Short, engaging description of the post
-    byline = db.Column(db.String)
+    byline = db.Column(db.String, nullable=False)
     # Timestamp at which the post was published (if it was published)
     publish_date = db.Column(db.DateTime)
 
@@ -45,9 +45,9 @@ class Post(db.Model):
     thumbnail_id = db.Column(db.Integer, db.ForeignKey('file.id'))
 
     # Whether this post is featured
-    is_featured = db.Column(db.Boolean)
+    is_featured = db.Column(db.Boolean, default=False)
     # Whether this post is published
-    is_published = db.Column(db.Boolean)
+    is_published = db.Column(db.Boolean, default=False)
 
     # Tags associated with this post (Many to Many)
     tags = db.relationship(
@@ -95,46 +95,9 @@ class Post(db.Model):
 
 
     '''
-    def __init__(
-            self,
-            slug: str,
-            title: str,
-            featured_image: 'Image',
-            banner_image: 'Image',
-            thumbnail_image: 'Image',
-            byline: str = None,
-            publish_date: dt.datetime = None,
-            is_featured: bool = None,
-            is_published: bool = None,
-            title_color: str = None,
-            tags: typing.List[Tag] = None,
-            markdown_text: str = None,
-    ):
-        self.slug = slug
-        self.title = title
-        self.set_featured_image(featured_image)
-        self.set_banner_image(banner_image)
-        self.set_thumbnail_image(thumbnail_image)
-        self.byline = byline if byline else ''
-        self.publish_date = publish_date if publish_date else dt.datetime.now()
-        self.is_featured = is_featured if is_featured is not None else False
-        self.is_published = is_published if is_published is not None else False
-        self.set_title_color(title_color if title_color else '#FFFFFF')
-        self.tags = tags if tags else []
-        self.set_markdown(markdown_text if markdown_text else '')
-
     def get_directory(self) -> pathlib.Path:
         """Return Path object to static folder."""
         return pathlib.Path(flask.current_app.static_folder) / self.slug
-
-    def get_featured_image(self) -> Image:
-        return Image.query.filter_by(id=self.featured_id).first()
-
-    def get_banner_image(self) -> Image:
-        return Image.query.filter_by(id=self.banner_id).first()
-
-    def get_thumbnail_image(self) -> Image:
-        return Image.query.filter_by(id=self.thumbnail_id).first()
 
     def get_markdown_path(self) -> pathlib.Path:
         return self.get_directory() / 'post.md'

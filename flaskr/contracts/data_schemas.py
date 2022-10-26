@@ -1,6 +1,6 @@
 import dataclasses as dc
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Optional
 # TODO: this feels inefficient to me. However, it is good to have defined contract structs
 
 
@@ -65,13 +65,13 @@ class PostContract:
     last_modified: datetime
     is_featured: bool
     is_published: bool
-    slug: str = None
-    title: str = None
-    byline: str = None
-    publish_date: datetime = None
-    featured_image: FileContract = None
-    banner_image: FileContract = None
-    thumbnail_image: FileContract = None
+    slug: str
+    title: str
+    byline: str
+    publish_date: Optional[datetime]
+    featured_image: Optional[FileContract]
+    banner_image: Optional[FileContract]
+    thumbnail_image: Optional[FileContract]
     tags: List[TagContract] = None
 
     def make_json(self) -> Dict:
@@ -84,9 +84,9 @@ class PostContract:
             'slug': self.slug,
             'title': self.title,
             'byline': self.byline,
-            'publish_date': str(self.publish_date),
-            'featured_image': self.featured_image.make_json(),
-            'banner_image': self.banner_image.make_json(),
-            'thumbnail_image': self.thumbnail_image.make_json(),
+            'publish_date': str(self.publish_date) if self.publish_date else None,
+            'featured_image': self.featured_image.make_json() if self.featured_image else None,
+            'banner_image': self.banner_image.make_json() if self.banner_image else None,
+            'thumbnail_image': self.thumbnail_image.make_json() if self.thumbnail_image else None,
             'tags': [t.make_json() for t in self.tags],
         }

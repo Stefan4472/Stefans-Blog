@@ -34,6 +34,8 @@ class File(db.Model):
     size = db.Column(db.Integer, nullable=False)
     # MD5 hash of the file contents
     hash = db.Column(db.String, unique=True, nullable=False, index=True)
+    # The posts that reference this file
+    # references = db.relationship('Post')
 
     def get_path(self) -> Path:
         return Path(current_app.static_folder) / self.filename

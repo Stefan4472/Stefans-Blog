@@ -34,7 +34,6 @@ def upload_file():
     except file_manager.FileAlreadyExists as e:
         return jsonify(e.duplicate.make_contract().make_json()), 200
     except Exception as e:
-        print(e.args)
         current_app.logger.error(f'Unknown exception while storing file: {e}')
         return Response(status=500)
 
