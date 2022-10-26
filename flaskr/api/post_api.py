@@ -16,6 +16,7 @@ from flaskr.contracts.patch_post import PatchPostContract
 from flaskr.email_provider import get_email_provider
 from flaskr.site_config import ConfigKeys
 import flaskr.post_manager as post_manager
+from flaskr.post_manager import CreatePostError
 
 
 # Blueprint under which all views will be assigned
@@ -34,6 +35,9 @@ def create_post():
     try:
         post = post_manager.create_post(contract, current_user)
         return jsonify(post.make_contract().make_json()), 201
+    except CreatePostError as e:
+        current_app.logger.info(f'Post creation failed: {e}')
+        return Response(status=400, response=str(e))
     except Exception as e:
         current_app.logger.error(f'Unknown exception while creating post: {e}')
         return Response(status=500)

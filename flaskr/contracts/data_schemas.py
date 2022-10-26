@@ -72,7 +72,7 @@ class PostContract:
     featured_image: Optional[FileContract]
     banner_image: Optional[FileContract]
     thumbnail_image: Optional[FileContract]
-    tags: List[TagContract] = None
+    tags: List[TagContract]
 
     def make_json(self) -> Dict:
         return {

@@ -1,5 +1,6 @@
 import marshmallow as msh
 import dataclasses as dc
+from marshmallow import validate
 from typing import Optional, Dict
 import flaskr.api.constants as constants
 
@@ -9,9 +10,9 @@ class CreatePostContract:
     slug: str = None
     title: str = None
     byline: str = None
-    featured_file_id: str = None
-    banner_file_id: str = None
-    thumbnail_file_id: str = None
+    featured_image: str = None
+    banner_image: str = None
+    thumbnail_image: str = None
 
     @staticmethod
     def get_schema() -> 'CreatePostSchema':
@@ -23,12 +24,12 @@ class CreatePostContract:
 
 
 class CreatePostSchema(msh.Schema):
-    slug = msh.fields.String(data_key=constants.KEY_SLUG)
-    title = msh.fields.String(data_key=constants.KEY_TITLE)
-    byline = msh.fields.String(data_key=constants.KEY_BYLINE)
-    featured_image = msh.fields.String(data_key=constants.KEY_IMAGE)
-    banner_image = msh.fields.String(data_key=constants.KEY_BANNER)
-    thumbnail_image = msh.fields.String(data_key=constants.KEY_THUMBNAIL)
+    slug = msh.fields.String(validate=msh.validate.Regexp(constants.SLUG_REGEX))
+    title = msh.fields.String()
+    byline = msh.fields.String()
+    featured_image = msh.fields.String()
+    banner_image = msh.fields.String()
+    thumbnail_image = msh.fields.String()
 
     @msh.post_load
     def make_contract(self, data, **kwargs) -> CreatePostContract:

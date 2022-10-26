@@ -3,9 +3,13 @@ import pytest
 import base64
 from flask import Flask
 from flask.testing import FlaskClient, FlaskCliRunner
+from pathlib import Path
 from typing import Dict
 from flaskr import create_app
 from flaskr.site_config import SiteConfig
+
+# Path to the root of the `test` folder
+TEST_ROOT = Path(__file__).parent
 
 # Credentials used for the test instance
 TEST_USERNAME = 'test@test.com'
@@ -15,6 +19,7 @@ TEST_PASSWORD = '1234'
 @pytest.fixture()
 def app() -> Flask:
     """Creates a Flask test client with database and test user configured."""
+    # TODO: would like to also expose the "test" user
     app = create_app(SiteConfig(
         secret_key='1234',
         rel_instance_path='test-instance',

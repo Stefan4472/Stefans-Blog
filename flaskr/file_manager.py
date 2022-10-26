@@ -44,6 +44,11 @@ ALLOWED_EXTENSIONS = [
 ]
 
 
+def file_exists(file_id: str) -> bool:
+    """Return whether the file with given ID is stored on the system."""
+    return bool(File.query.filter_by(id=file_id).first())
+
+
 def store_file(file: werkzeug.datastructures.FileStorage, created_by: User) -> File:
     file_name = werkzeug.utils.secure_filename(file.filename)
     current_app.logger.debug(f'Storing file with filename {file_name}')

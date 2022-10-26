@@ -1,4 +1,5 @@
 # TODO: wrap everything in a `Constants` class?
+# TODO: these constants are out of date and not used consistently
 KEY_TITLE = 'title'
 KEY_BYLINE = 'byline'
 KEY_SLUG = 'slug'
@@ -18,7 +19,9 @@ KEY_SEND_EMAIL = 'send_email'
 DATE_FORMAT = "%m/%d/%y"
 
 # Regex used to match a HEX color for the `title_color` field
-COLOR_REGEX = '^#[0-9a-fA-F]{6}$'
+COLOR_REGEX = r'^#[0-9a-fA-F]{6}$'
+# Regex used to validate a post slug
+SLUG_REGEX = r'^[0-9a-zA-Z\-]+$'
 
 # Prescribed featured-image size (width, height)
 FEATURED_IMG_SIZE = (1000, 540)
