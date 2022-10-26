@@ -1,7 +1,7 @@
 import marshmallow as msh
 import dataclasses as dc
 from marshmallow import validate
-from typing import Optional
+from typing import Optional, Dict
 import flaskr.api.constants as constants
 
 
@@ -17,8 +17,8 @@ class CreateTagContract:
         return CreateTagSchema()
 
     @staticmethod
-    def from_json(_json: dict) -> 'CreateTagContract':
-        return CreateTagContract.get_schema().load(_json)
+    def from_json(_json: Optional[Dict]) -> 'CreateTagContract':
+        return CreateTagContract.get_schema().load(_json if _json else {})
 
 
 class CreateTagSchema(msh.Schema):

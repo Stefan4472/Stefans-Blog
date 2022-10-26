@@ -1,7 +1,7 @@
 import datetime as dt
 import marshmallow as msh
 import dataclasses as dc
-import typing
+from typing import Optional, Dict, List
 import flaskr.api.constants as constants
 
 
@@ -11,24 +11,24 @@ class PatchPostContract:
     Note: basically the same as `CreatePostContract` except all fields
     are optional and there is no `slug`.
     """
-    title: typing.Optional[str] = None
-    byline: typing.Optional[str] = None
-    publish_date: typing.Optional[dt.datetime] = None
-    image: typing.Optional[str] = None
-    thumbnail: typing.Optional[str] = None
-    banner: typing.Optional[str] = None
-    tags: typing.Optional[typing.List[str]] = None
-    publish: typing.Optional[bool] = None
-    feature: typing.Optional[bool] = None
-    title_color: typing.Optional[str] = None
+    title: Optional[str] = None
+    byline: Optional[str] = None
+    publish_date: Optional[dt.datetime] = None
+    image: Optional[str] = None
+    thumbnail: Optional[str] = None
+    banner: Optional[str] = None
+    tags: Optional[List[str]] = None
+    publish: Optional[bool] = None
+    feature: Optional[bool] = None
+    title_color: Optional[str] = None
 
     @staticmethod
     def get_schema() -> 'PatchPostSchema':
         return PatchPostSchema()
 
     @staticmethod
-    def from_json(_json: dict) -> 'PatchPostContract':
-        return PatchPostContract.get_schema().load(_json)
+    def from_json(_json: Optional[Dict]) -> 'PatchPostContract':
+        return PatchPostContract.get_schema().load(_json if _json else {})
 
 
 class PatchPostSchema(msh.Schema):

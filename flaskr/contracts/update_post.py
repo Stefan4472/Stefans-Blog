@@ -1,7 +1,7 @@
 import datetime as dt
 import marshmallow as msh
 import dataclasses as dc
-import typing
+from typing import Optional, Dict, List
 import flaskr.api.constants as constants
 
 
@@ -9,23 +9,23 @@ import flaskr.api.constants as constants
 class UpdatePostContract:
     """Note: basically the same as `CreatePostContract`, but without `slug`"""
     title: str
-    byline: typing.Optional[str]
-    publish_date: typing.Optional[dt.datetime]
+    byline: Optional[str]
+    publish_date: Optional[dt.datetime]
     image: str
     thumbnail: str
     banner: str
-    tags: typing.Optional[typing.List[str]]
-    publish: typing.Optional[bool]
-    feature: typing.Optional[bool]
-    title_color: typing.Optional[str]
+    tags: Optional[List[str]]
+    publish: Optional[bool]
+    feature: Optional[bool]
+    title_color: Optional[str]
 
     @staticmethod
     def get_schema() -> 'UpdatePostSchema':
         return UpdatePostSchema()
 
     @staticmethod
-    def from_json(_json: dict) -> 'UpdatePostContract':
-        return UpdatePostContract.get_schema().load(_json)
+    def from_json(_json: Optional[Dict]) -> 'UpdatePostContract':
+        return UpdatePostContract.get_schema().load(_json if _json else {})
 
 
 class UpdatePostSchema(msh.Schema):
