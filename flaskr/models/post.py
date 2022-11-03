@@ -1,18 +1,12 @@
 import flask
-import datetime as dt
 import pathlib
 import re
-import hashlib
-import shutil
 from typing import Optional
 from sqlalchemy import asc, desc
 from flaskr import db
 import flaskr.models.relations as relations
 from flaskr.models.image import Image
 from flaskr.models.file import File
-from flaskr.models.tag import Tag
-from flaskr.models.user import User
-import flaskr.api.constants as constants
 import renderer.markdown
 from flaskr.contracts.data_schemas import PostContract
 
@@ -22,8 +16,7 @@ COLOR_REGEX = re.compile('^#[0-9a-fA-F]{6}$')
 
 
 # TODO: CURRENTLY, MARKDOWN FILES ARE PUBLICLY ACCESSIBLE VIA THE 'STATIC' ROUTE. THIS SHOULD NOT BE THE CASE
-# TODO: hashing?
-# TODO: initialization logic. Should create directory and empty markdown file in __init__()
+# TODO: hash article text?
 class Post(db.Model):
     __tablename__ = 'post'
     id = db.Column(db.Integer, primary_key=True)
@@ -87,10 +80,11 @@ class Post(db.Model):
         """Return path of this post's Markdown content."""
         return self.get_directory() / 'post.md'
 
-    def set_content(self, markdown_text: str):
-        # TODO: update last modified?
+    def write_content(self, markdown_text: str):
+        """Write this post's markdown file. Does not update `last_modified`!"""
         with open(self.get_markdown_path(), 'w+', encoding='utf-8') as out:
             out.write(markdown_text)
+        db.session.commit()
 
     def render_html(self) -> str:
         """Retrieve the Markdown file containing the post's contents and render to HTML."""
@@ -133,35 +127,3 @@ class Post(db.Model):
             thumbnail_image=self.thumbnail_image if self.thumbnail_id else None,
             tags=[t.make_contract() for t in self.tags],
         )
-
-    '''
-    def set_featured_image(self, image: Image):
-        if (image.width, image.height) != constants.FEATURED_IMG_SIZE:
-            raise ValueError('Featured image has the wrong dimensions')
-        if self.featured_id:
-            curr_featured = Image.query.filter_by(id=self.featured_id).first()
-            self.images.remove(curr_featured)
-        self.featured_id = image.id
-        if image not in self.images:
-            self.images.append(image)
-
-    def set_banner_image(self, image: Image):
-        if (image.width, image.height) != constants.BANNER_SIZE:
-            raise ValueError('Banner image has the wrong dimensions')
-        if self.banner_id:
-            curr_banner = Image.query.filter_by(id=self.banner_id).first()
-            self.images.remove(curr_banner)
-        self.banner_id = image.id
-        if image not in self.images:
-            self.images.append(image)
-
-    def set_thumbnail_image(self, image: Image):
-        if (image.width, image.height) != constants.THUMBNAIL_SIZE:
-            raise ValueError('Thumbnail image has the wrong dimensions')
-        if self.thumbnail_id:
-            curr_thumbnail = Image.query.filter_by(id=self.thumbnail_id).first()
-            self.images.remove(curr_thumbnail)
-        self.thumbnail_id = image.id
-        if image not in self.images:
-            self.images.append(image)
-    '''

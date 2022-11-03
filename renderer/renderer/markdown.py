@@ -152,3 +152,12 @@ def find_images(post_markdown: str) -> typing.List[str]:
     for image_elem in soup.find_all('x-image'):
         paths.append(image_elem.findChildren('path', recursive=False)[0].contents[0].replace('"', ''))
     return paths
+
+
+def is_markdown_valid(markdown: str) -> bool:
+    # Render HTML to check for errors
+    try:
+        render_string(markdown)
+        return True
+    except Exception as e:
+        return False

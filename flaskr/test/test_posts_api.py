@@ -23,6 +23,7 @@ def test_create_non_empty(client: FlaskClient):
 
 
 def test_create_invalid_slug(client: FlaskClient):
+    """Creating a post with an invalid slug should fail."""
     response_1 = util.create_post(client, slug='test slug')
     assert response_1.status == '400 BAD REQUEST'
     assert b'Invalid parameters' in response_1.data
@@ -32,6 +33,7 @@ def test_create_invalid_slug(client: FlaskClient):
 
 
 def test_create_duplicate_slug(client: FlaskClient):
+    """Creating a post with a duplicate slug should fail."""
     util.create_post(client, slug='test-slug')
     assert util.create_post(client, slug='test_slug').status == '400 BAD REQUEST'
 
@@ -46,6 +48,7 @@ def test_create_multiple_empty(client: FlaskClient):
 
 
 def test_create_invalid_fileid(client: FlaskClient):
+    """Creating a post with a featured/banner/thumbnail FileID that doesn't exist should fail."""
     # None of these should work because no files exist on the system
     assert util.create_post(client, featured_id='1234').status == '400 BAD REQUEST'
     assert util.create_post(client, banner_id='1234').status == '400 BAD REQUEST'
@@ -53,6 +56,7 @@ def test_create_invalid_fileid(client: FlaskClient):
 
 
 def test_get_all(client: FlaskClient):
+    """The get() endpoint should return the three posts that were created."""
     res1 = util.create_post(client, slug='post-1', title='Post #1', byline='The first post')
     res2 = util.create_post(client, slug='post-2', title='Post #2', byline='The second post')
     res3 = util.create_post(client, slug='post-3', title='Post #3', byline='The third post')
@@ -64,6 +68,37 @@ def test_get_all(client: FlaskClient):
     assert res3.json in res_get.json
 
 
+def test_get_all_paginated(client: FlaskClient):
+    """Test the `limit` and `offset` parameters when getting all posts."""
+    for i in range(25):
+        util.create_post(client, slug=f'slug-{i}')
+
+    res1 = util.get_posts(client, limit=10, offset=1)
+    assert res1.status == '200 OK'
+    assert len(res1.json) == 10
+    assert res1.json[0]['slug'] == 'slug-0'
+    assert res1.json[9]['slug'] == 'slug-9'
+
+    res2 = util.get_posts(client, limit=10, offset=2)
+    assert res2.status == '200 OK'
+    assert len(res2.json) == 10
+    assert res2.json[0]['slug'] == 'slug-10'
+    assert res2.json[9]['slug'] == 'slug-19'
+
+    res3 = util.get_posts(client, limit=10, offset=3)
+    assert res3.status == '200 OK'
+    assert len(res3.json) == 5
+    assert res3.json[0]['slug'] == 'slug-20'
+    assert res3.json[4]['slug'] == 'slug-24'
+
+
+def test_improper_pagination(client: FlaskClient):
+    """The request should fail if the pagination goes out of range"""
+    for i in range(10):
+        util.create_post(client, slug=f'slug-{i}')
+    assert util.get_posts(client, limit=5, offset=10).status == '404 NOT FOUND'
+
+
 # TODO
 # def test_get_featured(client: FlaskClient):
 #
@@ -72,6 +107,7 @@ def test_get_all(client: FlaskClient):
 
 
 def test_get_single(client: FlaskClient):
+    """Test getting a single post via ID."""
     res_create = util.create_post(client, slug='post-1', title='Post #1', byline='The first post')
     res_get = util.get_post(client, res_create.json['id'])
     assert res_get.status == '200 OK'
@@ -79,6 +115,7 @@ def test_get_single(client: FlaskClient):
 
 
 def test_get_nonexistent(client: FlaskClient):
+    """Attempting to get a post by an ID that does not exist should fail."""
     assert util.get_post(client, 1234).status == '404 NOT FOUND'
 
 
@@ -89,9 +126,12 @@ def test_update(client: FlaskClient):
     res_update = util.update_post(
         client,
         post_id,
-        slug='updated-slug',
-        title='Updated Title',
-        byline='Updated Byline',
+        'updated-slug',
+        'Updated Title',
+        'Updated Byline',
+        None,
+        None,
+        None,
     )
     assert res_update.status == '200 OK'
     assert res_update.json['slug'] == 'updated-slug'
@@ -100,15 +140,6 @@ def test_update(client: FlaskClient):
 
     res_get = util.get_post(client, post_id)
     assert res_get.json == res_update.json
-
-
-def test_update_empty(client: FlaskClient):
-    """Updating with no parameters should result in no changes."""
-    res_create = util.create_post(client)
-    post_id = res_create.json['id']
-    res_update = util.update_post(client, post_id)
-    assert res_update.json == res_create.json
-
 # TODO: test failing updates
 # TODO: test updating a fileID to None
 
@@ -122,11 +153,13 @@ def test_delete(client: FlaskClient):
 
 
 def test_delete_nonexistent(client: FlaskClient):
+    """Attempting to delete a post that does not exist should fail."""
     assert util.delete_post(client, 1234).status == '404 NOT FOUND'
 # TODO: test delete without permission
 
 
 def test_set_content(client: FlaskClient):
+    """Test that the post content can be updated properly."""
     res_create = util.create_post(client)
     post_id = res_create.json['id']
     res_set = util.set_content(client, post_id, b'1234')
@@ -138,6 +171,7 @@ def test_set_content(client: FlaskClient):
 
 
 def test_reset_content(client: FlaskClient):
+    """Test that the post content can be set and then overwritten."""
     res_create = util.create_post(client)
     post_id = res_create.json['id']
     util.set_content(client, post_id, b'1234')
@@ -222,14 +256,14 @@ def test_remove_tag(client: FlaskClient):
     assert not util.get_post_tags(client, post_id).json
 
 
-def test_rmv_tag_nonexistent(client: FlaskClient):
+def test_remove_tag_nonexistent(client: FlaskClient):
     """Removing a tag that does not exist should fail."""
     res_create = util.create_post(client)
     post_id = res_create.json['id']
     assert util.rmv_tag_from_post(client, post_id, util.TAG_SLUG).status == '400 BAD REQUEST'
 
 
-def test_rmv_tag_not_used(client: FlaskClient):
+def test_remove_tag_not_used(client: FlaskClient):
     """Removing a tag that exists but is not on the post should fail."""
     res_create = util.create_post(client)
     post_id = res_create.json['id']

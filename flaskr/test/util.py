@@ -6,9 +6,17 @@ from typing import Dict, Optional
 from flaskr.test.conftest import make_auth_headers
 
 
-def get_posts(client: FlaskClient) -> Response:
+def get_posts(
+        client: FlaskClient,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+) -> Response:
+    _json = {}
+    if limit: _json['limit'] = limit
+    if offset: _json['offset'] = offset
     return client.get(
         '/api/v1/posts/',
+        json=_json,
         headers=make_auth_headers(),
     )
 
@@ -39,23 +47,23 @@ def create_post(
 def update_post(
         client: FlaskClient,
         post_id: int,
-        slug: str = None,
-        title: str = None,
-        byline: str = None,
-        featured_id: str = None,
-        banner_id: str = None,
-        thumbnail_id: str = None,
+        slug: str,
+        title: str,
+        byline: str,
+        featured_id: Optional[str],
+        banner_id: Optional[str],
+        thumbnail_id: Optional[str],
 ) -> Response:
-    _json = {}
-    if slug: _json['slug'] = slug
-    if title: _json['title'] = title
-    if byline: _json['byline'] = byline
-    if featured_id: _json['featured_image'] = featured_id
-    if banner_id: _json['banner_image'] = banner_id
-    if thumbnail_id: _json['thumbnail_image'] = thumbnail_id
     return client.put(
         f'/api/v1/posts/{post_id}',
-        json=_json,
+        json={
+            'slug': slug,
+            'title': title,
+            'byline': byline,
+            'featured_image': featured_id,
+            'banner_image': banner_id,
+            'thumbnail_image': thumbnail_id,
+        },
         headers=make_auth_headers(),
     )
 

@@ -1,15 +1,18 @@
 import marshmallow
+from sqlalchemy import desc
 from flask import request, Response, Blueprint, jsonify, current_app, send_file
 from flask_login import login_required, current_user
 from flaskr.database import db
 from flaskr.models.post import Post
 from flaskr.models.tag import Tag
-from flaskr.contracts.create_or_update_post import CreateOrUpdatePostContract
+from flaskr.contracts.create_post import CreatePostContract
+from flaskr.contracts.update_post import UpdatePostContract
 from flaskr.contracts.get_posts import GetPostsContract
 from flaskr.contracts.add_tag import AddTagContract
 import flaskr.post_manager as post_manager
-from flaskr.post_manager import NoSuchPost, InvalidSlug, InvalidFile, InsufficientPermission, ImproperState, InvalidMarkdown
+from flaskr.post_manager import NoSuchPost, InvalidSlug, InvalidFile, InsufficientPermission, InvalidMarkdown
 import flaskr.api.util as util
+# TODO: one thing I don't like about 'Post' is that the logic is spread out across different places: `post_api`, `post`, and `post_manager`
 
 
 # Blueprint under which all views will be assigned
@@ -20,7 +23,6 @@ BLUEPRINT = Blueprint('posts', __name__, url_prefix='/api/v1/posts')
 @login_required
 def get_posts():
     """Get post information."""
-    # TODO: paging
     try:
         contract = GetPostsContract.from_json(request.get_json())
     except marshmallow.exceptions.ValidationError as e:
@@ -32,8 +34,13 @@ def get_posts():
         query = query.filter(Post.is_featured == contract.is_featured)
     if contract.is_published is not None:
         query = query.filter(Post.is_published == contract.is_published)
-
-    return jsonify([post.make_contract().make_json() for post in query.all()])
+    query = query.order_by(desc(Post.publish_date))
+    res = query.paginate(
+        page=contract.offset if contract.offset else 1,
+        per_page=contract.limit if contract.limit else 20,
+        error_out=True,
+    )
+    return jsonify([post.make_contract().make_json() for post in res.items])
 
 
 @BLUEPRINT.route('/', methods=['POST'])
@@ -41,7 +48,7 @@ def get_posts():
 def create_post():
     """Creates a new post."""
     try:
-        contract = CreateOrUpdatePostContract.from_json(request.get_json())
+        contract = CreatePostContract.from_json(request.get_json())
     except marshmallow.exceptions.ValidationError as e:
         return Response(status=400, response='Invalid parameters: {}'.format(e))
 
@@ -71,9 +78,10 @@ def get_single_post(post_id: int):
 @login_required
 def update_post(post_id: int):
     try:
-        contract = CreateOrUpdatePostContract.from_json(request.get_json())
+        contract = UpdatePostContract.from_json(request.get_json())
     except marshmallow.exceptions.ValidationError as e:
         return Response(status=400, response='Invalid parameters: {}'.format(e))
+
     try:
         post = post_manager.update_post(post_id, contract, current_user)
         return jsonify(post.make_contract().make_json())
@@ -85,8 +93,6 @@ def update_post(post_id: int):
         return Response(status=400, response=f'Invalid file_id {e.file_id}')
     except InsufficientPermission:
         return Response(status=403)
-    except ImproperState:
-        return Response(status=400, response='Invalid state')
     except Exception as e:
         current_app.logger.error(f'Unknown exception while creating post: {e}')
         return Response(status=500)
@@ -120,6 +126,7 @@ def set_content(post_id: int):
         raw_markdown, _ = util.get_uploaded_file(request)
     except ValueError as e:
         return Response(status=400, response=str(e))
+
     try:
         post_manager.set_content(post_id, raw_markdown)
         return Response(status=204)

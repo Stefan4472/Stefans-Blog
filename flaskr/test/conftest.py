@@ -20,6 +20,7 @@ TEST_PASSWORD = '1234'
 def app() -> Flask:
     """Creates a Flask test client with database and test user configured."""
     # TODO: would like to also expose the "test" user
+    # TODO: the problem here is that clean up doesn't happen when the test client crashes
     app = create_app(SiteConfig(
         secret_key='1234',
         rel_instance_path='test-instance',

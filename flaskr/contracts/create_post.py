@@ -6,8 +6,7 @@ import flaskr.api.constants as constants
 
 
 @dc.dataclass
-class CreateOrUpdatePostContract:
-    """The same schema is used both for creating and for updating a post."""
+class CreatePostContract:
     slug: Optional[str] = None
     title: Optional[str] = None
     byline: Optional[str] = None
@@ -16,15 +15,15 @@ class CreateOrUpdatePostContract:
     thumbnail_image: Optional[str] = None
 
     @staticmethod
-    def get_schema() -> 'CreateOrUpdatePostSchema':
-        return CreateOrUpdatePostSchema()
+    def get_schema() -> 'CreatePostSchema':
+        return CreatePostSchema()
 
     @staticmethod
-    def from_json(_json: Optional[Dict]) -> 'CreateOrUpdatePostContract':
-        return CreateOrUpdatePostContract.get_schema().load(_json if _json else {})
+    def from_json(_json: Optional[Dict]) -> 'CreatePostContract':
+        return CreatePostContract.get_schema().load(_json if _json else {})
 
 
-class CreateOrUpdatePostSchema(msh.Schema):
+class CreatePostSchema(msh.Schema):
     slug = msh.fields.String(validate=msh.validate.Regexp(constants.SLUG_REGEX))
     title = msh.fields.String()
     byline = msh.fields.String()
@@ -33,5 +32,5 @@ class CreateOrUpdatePostSchema(msh.Schema):
     thumbnail_image = msh.fields.String()
 
     @msh.post_load
-    def make_contract(self, data, **kwargs) -> CreateOrUpdatePostContract:
-        return CreateOrUpdatePostContract(**data)
+    def make_contract(self, data, **kwargs) -> CreatePostContract:
+        return CreatePostContract(**data)
