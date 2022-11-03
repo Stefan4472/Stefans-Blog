@@ -1,10 +1,12 @@
 import marshmallow
 from flask import request, Response, Blueprint, jsonify, current_app, send_file
 from flask_login import login_required, current_user
+from flaskr.database import db
 from flaskr.models.post import Post
 from flaskr.models.tag import Tag
 from flaskr.contracts.create_or_update_post import CreateOrUpdatePostContract
 from flaskr.contracts.get_posts import GetPostsContract
+from flaskr.contracts.add_tag import AddTagContract
 import flaskr.post_manager as post_manager
 from flaskr.post_manager import NoSuchPost, InvalidSlug, InvalidFile, InsufficientPermission, ImproperState, InvalidMarkdown
 import flaskr.api.util as util
@@ -72,7 +74,6 @@ def update_post(post_id: int):
         contract = CreateOrUpdatePostContract.from_json(request.get_json())
     except marshmallow.exceptions.ValidationError as e:
         return Response(status=400, response='Invalid parameters: {}'.format(e))
-
     try:
         post = post_manager.update_post(post_id, contract, current_user)
         return jsonify(post.make_contract().make_json())
@@ -127,6 +128,49 @@ def set_content(post_id: int):
     except Exception as e:
         current_app.logger.error(f'Unknown exception while setting content: {e}')
         return Response(status=500)
+
+
+@BLUEPRINT.route('/<int:post_id>/tags', methods=['GET'])
+@login_required
+def get_tags(post_id: int):
+    post = Post.query.filter_by(id=post_id).first()
+    if not post:
+        return Response(status=404)
+    return jsonify([tag.make_contract().make_json() for tag in post.tags])
+
+
+@BLUEPRINT.route('/<int:post_id>/tags', methods=['POST'])
+@login_required
+def add_tag(post_id: int):
+    try:
+        contract = AddTagContract.from_json(request.get_json())
+    except marshmallow.exceptions.ValidationError as e:
+        return Response(status=400, response='Invalid parameters: {}'.format(e))
+
+    post = Post.query.filter_by(id=post_id).first()
+    if not post:
+        return Response(status=404)
+    tag = Tag.query.filter_by(slug=contract.tag).first()
+    if not tag:
+        return Response(status=400)
+
+    if tag not in post.tags:
+        post.tags.append(tag)
+        db.session.commit()
+    return Response(status=204)
+
+
+@BLUEPRINT.route('/<int:post_id>/tags/<string:tag>', methods=['DELETE'])
+@login_required
+def remove_tag(post_id: int, tag: str):
+    post = Post.query.filter_by(id=post_id).first()
+    if not post:
+        return Response(status=404)
+    if tag in (t.slug for t in post.tags):
+        post.tags = [t for t in post.tags if t.slug != tag]
+        db.session.commit()
+        return Response(status=204)
+    return Response(status=400)
 
 
 '''

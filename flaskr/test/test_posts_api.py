@@ -1,6 +1,6 @@
 """Unit tests for the Posts API."""
 from flask.testing import FlaskClient
-import flaskr.test.test_posts_util as util
+import flaskr.test.util as util
 
 
 def test_create_empty(client: FlaskClient):
@@ -149,9 +149,89 @@ def test_reset_content(client: FlaskClient):
 
 
 def test_get_empty(client: FlaskClient):
-    """Test getting content on an "empty" post"""
+    """A newly-initialized post should have "empty" content."""
     res_create = util.create_post(client)
     post_id = res_create.json['id']
     res_get = util.get_content(client, post_id)
     assert res_get.status == '200 OK'
     assert res_get.data == b''
+
+
+def test_get_tags_empty(client: FlaskClient):
+    """A newly-initialized post should not have any tags."""
+    res_create = util.create_post(client)
+    post_id = res_create.json['id']
+    res_get = util.get_post_tags(client, post_id)
+    assert res_get.status == '200 OK'
+    assert res_get.json == []
+
+
+def test_add_tag(client: FlaskClient):
+    """Add two tags in sequence."""
+    res_create = util.create_post(client)
+    post_id = res_create.json['id']
+
+    util.create_tag(client, **util.TAG_JSON)
+    util.create_tag(client, **util.TAG2_JSON)
+
+    res_add1 = util.add_tag_to_post(client, post_id, util.TAG_SLUG)
+    assert res_add1.status == '204 NO CONTENT'
+
+    res_get1 = util.get_post_tags(client, post_id)
+    assert len(res_get1.json) == 1
+    assert util.TAG_JSON in res_get1.json
+
+    res_add2 = util.add_tag_to_post(client, post_id, util.TAG2_SLUG)
+    assert res_add2.status == '204 NO CONTENT'
+
+    res_get2 = util.get_post_tags(client, post_id)
+    assert len(res_get2.json) == 2
+    assert util.TAG_JSON in res_get2.json
+    assert util.TAG2_JSON in res_get2.json
+
+
+def test_add_tag_nonexistent(client: FlaskClient):
+    """Adding a tag that does not exist should fail."""
+    res_create = util.create_post(client)
+    post_id = res_create.json['id']
+    assert util.add_tag_to_post(client, post_id, 'test').status == '400 BAD REQUEST'
+
+
+def test_remove_tag(client: FlaskClient):
+    """Add two tags, then remove them."""
+    res_create = util.create_post(client)
+    post_id = res_create.json['id']
+
+    util.create_tag(client, **util.TAG_JSON)
+    util.create_tag(client, **util.TAG2_JSON)
+    util.add_tag_to_post(client, post_id, util.TAG_SLUG)
+    util.add_tag_to_post(client, post_id, util.TAG2_SLUG)
+
+    res_get1 = util.get_post_tags(client, post_id)
+    assert len(res_get1.json) == 2
+
+    res_del1 = util.rmv_tag_from_post(client, post_id, util.TAG_SLUG)
+    assert res_del1.status == '204 NO CONTENT'
+
+    res_get2 = util.get_post_tags(client, post_id)
+    assert len(res_get2.json) == 1
+    assert util.TAG2_JSON in res_get2.json
+
+    res_del2 = util.rmv_tag_from_post(client, post_id, util.TAG2_SLUG)
+    assert res_del2.status == '204 NO CONTENT'
+    assert not util.get_post_tags(client, post_id).json
+
+
+def test_rmv_tag_nonexistent(client: FlaskClient):
+    """Removing a tag that does not exist should fail."""
+    res_create = util.create_post(client)
+    post_id = res_create.json['id']
+    assert util.rmv_tag_from_post(client, post_id, util.TAG_SLUG).status == '400 BAD REQUEST'
+
+
+def test_rmv_tag_not_used(client: FlaskClient):
+    """Removing a tag that exists but is not on the post should fail."""
+    res_create = util.create_post(client)
+    post_id = res_create.json['id']
+    util.create_tag(client, **util.TAG_JSON)
+    assert util.rmv_tag_from_post(client, post_id, util.TAG_SLUG).status == '400 BAD REQUEST'

@@ -12,4 +12,4 @@ BLUEPRINT = flask.Blueprint('featured', __name__, url_prefix='/api/v1/featured')
 def get_posts():
     """Get list of featured posts (slugs)."""
     query = Post.query.filter(Post.is_featured)
-    return flask.jsonify([post.slug for post in query.all()])
+    return flask.jsonify([post.tag for post in query.all()])

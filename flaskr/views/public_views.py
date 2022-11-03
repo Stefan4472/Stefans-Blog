@@ -104,7 +104,7 @@ def search_page():
     # Perform search and fetch results
     if query:
         posts = [
-            Post.query.filter(Post.slug == result.slug, Post.is_published).first()
+            Post.query.filter(Post.slug == result.tag, Post.is_published).first()
             for result in flask.current_app.search_engine.search(query)
         ]
 

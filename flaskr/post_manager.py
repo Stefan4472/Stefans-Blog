@@ -137,7 +137,7 @@ def delete_post(post_id: int, user: User):
     try:
         current_app.search_engine.remove_document(str(post.id))
     except ValueError:
-        current_app.logger.warning(f'Wanted to delete search index entry for {post.slug} but it doesn\'t exist')
+        current_app.logger.warning(f'Wanted to delete search index entry for {post.tag} but it doesn\'t exist')
 
     db.session.delete(post)
     db.session.commit()
