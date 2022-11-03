@@ -22,6 +22,8 @@ COLOR_REGEX = re.compile('^#[0-9a-fA-F]{6}$')
 
 
 # TODO: CURRENTLY, MARKDOWN FILES ARE PUBLICLY ACCESSIBLE VIA THE 'STATIC' ROUTE. THIS SHOULD NOT BE THE CASE
+# TODO: hashing?
+# TODO: initialization logic. Should create directory and empty markdown file in __init__()
 class Post(db.Model):
     __tablename__ = 'post'
     id = db.Column(db.Integer, primary_key=True)
@@ -76,6 +78,45 @@ class Post(db.Model):
     def thumbnail_image(self) -> Optional[File]:
         return File.query.filter_by(id=self.thumbnail_id).first()
 
+    # TODO: probably refactor this out and just have a `posts` folder
+    def get_directory(self) -> pathlib.Path:
+        """Return path of this post's directory."""
+        return pathlib.Path(flask.current_app.static_folder) / str(self.id)
+
+    def get_markdown_path(self) -> pathlib.Path:
+        """Return path of this post's Markdown content."""
+        return self.get_directory() / 'post.md'
+
+    def set_content(self, markdown_text: str):
+        # TODO: update last modified?
+        with open(self.get_markdown_path(), 'w+', encoding='utf-8') as out:
+            out.write(markdown_text)
+
+    def render_html(self) -> str:
+        """Retrieve the Markdown file containing the post's contents and render to HTML."""
+        with open(self.get_markdown_path(), encoding='utf-8', errors='strict') as f:
+            markdown = f.read()  # TODO: this is very inefficient. Fix!
+            # Resolve image URLs
+            for image_name in renderer.markdown.find_images(markdown):
+                found_image = Image.query.filter_by(filename=image_name).first()
+                markdown = markdown.replace(image_name, found_image.get_url())
+            html = renderer.markdown.render_string(markdown)
+
+            # Render as a template to allow expanding `url_for()` calls (for example)
+            return flask.render_template_string(html)
+
+    def get_prev(self) -> 'Post':
+        return Post.query \
+            .filter(Post.publish_date < self.publish_date) \
+            .order_by(desc(Post.publish_date)) \
+            .first()
+
+    def get_next(self) -> 'Post':
+        return Post.query \
+            .filter(Post.publish_date > self.publish_date) \
+            .order_by(asc(Post.publish_date)) \
+            .first()
+
     def make_contract(self) -> PostContract:
         return PostContract(
             id=self.id,
@@ -93,15 +134,7 @@ class Post(db.Model):
             tags=[t.make_contract() for t in self.tags],
         )
 
-
     '''
-    def get_directory(self) -> pathlib.Path:
-        """Return Path object to static folder."""
-        return pathlib.Path(flask.current_app.static_folder) / self.slug
-
-    def get_markdown_path(self) -> pathlib.Path:
-        return self.get_directory() / 'post.md'
-
     def set_featured_image(self, image: Image):
         if (image.width, image.height) != constants.FEATURED_IMG_SIZE:
             raise ValueError('Featured image has the wrong dimensions')
@@ -131,98 +164,4 @@ class Post(db.Model):
         self.thumbnail_id = image.id
         if image not in self.images:
             self.images.append(image)
-
-    # TODO: honestly, the image stuff needs some real testing
-    def set_markdown(self, markdown_text: str):
-        # Remove all images except for featured, banner, and thumbnail
-        self.images = [
-            img for img in self.images if
-            img.id == self.featured_id
-            or img.id == self.banner_id
-            or img.id == self.thumbnail_id]
-        # Look up images referenced in the Markdown and ensure they exist
-        for image_name in renderer.markdown.find_images(markdown_text):
-            found_image = Image.query.filter_by(filename=image_name).first()
-            if found_image:
-                self.images.append(found_image)
-            else:
-                msg = f'Image file not found on server: {image_name}'
-                raise ValueError(msg)
-
-        # Render HTML to check for errors
-        try:
-            renderer.markdown.render_string(markdown_text)
-        except Exception as e:
-            raise ValueError(f'Error processing Markdown: {e}')
-
-        # Create directory
-        # TODO: probably refactor this out and just have a `posts` folder
-        self.get_directory().mkdir(exist_ok=True)
-        with open(self.get_markdown_path(), 'w+', encoding='utf-8') as out:
-            out.write(markdown_text)
-        self.hash = hashlib.md5(bytes(markdown_text, encoding='utf8')).hexdigest()
-
-        # Add Markdown file to the search engine index
-        flask.current_app.search_engine.index_string(
-            markdown_text, self.slug, allow_overwrite=True)
-        flask.current_app.search_engine.commit()
-
-    def render_html(self) -> str:
-        """Retrieve the Markdown file containing the post's contents and render to HTML."""
-        with open(self.get_markdown_path(), encoding='utf-8', errors='strict') as f:
-            markdown = f.read()  # TODO: this is very inefficient. Fix!
-            # Resolve image URLs
-            for image_name in renderer.markdown.find_images(markdown):
-                found_image = Image.query.filter_by(filename=image_name).first()
-                markdown = markdown.replace(image_name, found_image.get_url())
-            html = renderer.markdown.render_string(markdown)
-
-            # Render as a template to allow expanding `url_for()` calls (for example)
-            return flask.render_template_string(html)
-
-    def get_prev(self) -> 'Post':
-        return Post.query\
-            .filter(Post.publish_date < self.publish_date)\
-            .order_by(desc(Post.publish_date))\
-            .first()
-
-    def get_next(self) -> 'Post':
-        return Post.query\
-            .filter(Post.publish_date > self.publish_date)\
-            .order_by(asc(Post.publish_date))\
-            .first()
-
-    def to_dict(self) -> dict:
-        return {
-            constants.KEY_SLUG: self.slug,
-            constants.KEY_TITLE: self.title,
-            constants.KEY_BYLINE: self.byline,
-            constants.KEY_DATE: self.publish_date.strftime(constants.DATE_FORMAT),
-            constants.KEY_IMAGE: self.featured_id,
-            constants.KEY_BANNER: self.banner_id,
-            constants.KEY_THUMBNAIL: self.thumbnail_id,
-            constants.KEY_HASH: self.hash,
-            constants.KEY_TAGS: [tag.slug for tag in self.tags],
-            constants.KEY_IMAGES: {
-                image.id: {'hash': image.hash} for image in self.images
-            },
-            constants.KEY_FEATURE: self.is_featured,
-            constants.KEY_PUBLISH: self.is_published,
-        }
-
-    def run_delete_logic(self):
-        """
-        Perform logic to delete the post. The actual database record must
-        then be deleted via SQLAlchemy.
-        """
-        shutil.rmtree(self.get_directory())
-        flask.current_app.search_engine.remove_document(self.slug)
-
-    def __repr__(self):
-        return 'Post(title="{}", slug="{}", date={}, tags={})'.format(
-            self.title,
-            self.slug,
-            self.publish_date,
-            self.tags,
-        )
     '''

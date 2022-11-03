@@ -1,12 +1,13 @@
 import marshmallow
-from flask import request, Response, Blueprint, jsonify, current_app
+from flask import request, Response, Blueprint, jsonify, current_app, send_file
 from flask_login import login_required, current_user
 from flaskr.models.post import Post
 from flaskr.models.tag import Tag
 from flaskr.contracts.create_or_update_post import CreateOrUpdatePostContract
 from flaskr.contracts.get_posts import GetPostsContract
 import flaskr.post_manager as post_manager
-from flaskr.post_manager import NoSuchPost, InvalidSlug, InvalidFile, InsufficientPermision, ImproperState
+from flaskr.post_manager import NoSuchPost, InvalidSlug, InvalidFile, InsufficientPermission, ImproperState, InvalidMarkdown
+import flaskr.api.util as util
 
 
 # Blueprint under which all views will be assigned
@@ -81,7 +82,7 @@ def update_post(post_id: int):
         return Response(status=400, response='Slug is invalid or non-unique')
     except InvalidFile as e:
         return Response(status=400, response=f'Invalid file_id {e.file_id}')
-    except InsufficientPermision:
+    except InsufficientPermission:
         return Response(status=403)
     except ImproperState:
         return Response(status=400, response='Invalid state')
@@ -98,8 +99,34 @@ def delete_post(post_id: int):
         return Response(status=204)
     except NoSuchPost:
         return Response(status=404)
-    except InsufficientPermision:
+    except InsufficientPermission:
         return Response(status=403)
+
+
+@BLUEPRINT.route('/<int:post_id>/content', methods=['GET'])
+@login_required
+def get_content(post_id: int):
+    post = Post.query.filter_by(id=post_id).first()
+    if not post:
+        return Response(status=404)
+    return send_file(post.get_markdown_path())
+
+
+@BLUEPRINT.route('/<int:post_id>/content', methods=['POST'])
+@login_required
+def set_content(post_id: int):
+    try:
+        raw_markdown, _ = util.get_uploaded_file(request)
+    except ValueError as e:
+        return Response(status=400, response=str(e))
+    try:
+        post_manager.set_content(post_id, raw_markdown)
+        return Response(status=204)
+    except InvalidMarkdown as e:
+        return Response(status=400, response=str(e))
+    except Exception as e:
+        current_app.logger.error(f'Unknown exception while setting content: {e}')
+        return Response(status=500)
 
 
 '''
@@ -112,45 +139,4 @@ def delete_post(post_id: int):
 #     current_app.logger.error(f'Error while sending email notification: {e}')
 #     return Response(status=400, response=str(e))
 # return Response(status=200)
-
-@BLUEPRINT.route('/<string:slug>/markdown', methods=['PUT'])
-@login_required
-def upload_markdown(slug: str):
-    """Upload the Markdown body of the post."""
-    post = Post.query.filter_by(slug=slug).first()
-    if not post:
-        return Response(status=404)
-    try:
-        raw_markdown, _ = util.get_uploaded_file(request)
-    except ValueError as e:
-        return Response(status=400, response=str(e))
-    try:
-        markdown = raw_markdown.decode('utf-8', errors='strict')
-    except UnicodeError as e:
-        msg = f'Error reading Markdown in UTF-8: {e}'
-        return Response(status=400, response=msg)
-    try:
-        post.set_markdown(markdown)
-    except ValueError as e:
-        return Response(status=400, response=str(e))
-    try:
-        db.session.commit()
-        current_app.logger.debug(f'Updated markdown for post with slug={post.slug}')
-        return Response(status=200)
-    except sqlalchemy.exc.SQLAlchemyError as e:
-        current_app.logger.error(f'Database error while updating markdown for post with slug={post.slug}: {e}')
-        return Response(status=500, response='Internal database error')
-
-
-@BLUEPRINT.route('/<string:slug>/markdown', methods=['GET'])
-@login_required
-def download_markdown(slug: str):
-    post = Post.query.filter_by(slug=slug).first()
-    if not post:
-        return Response(status=404)
-    return flask.send_file(
-        post.get_markdown_path(),
-        as_attachment=True,
-        attachment_filename=slug+'.md',
-    )
 '''
