@@ -70,26 +70,26 @@ def test_get_all(client: FlaskClient):
 
 def test_get_all_paginated(client: FlaskClient):
     """Test the `limit` and `offset` parameters when getting all posts."""
-    for i in range(25):
+    for i in range(1, 26):
         util.create_post(client, slug=f'slug-{i}')
 
     res1 = util.get_posts(client, limit=10, offset=1)
     assert res1.status == '200 OK'
     assert len(res1.json) == 10
-    assert res1.json[0]['slug'] == 'slug-0'
-    assert res1.json[9]['slug'] == 'slug-9'
+    assert res1.json[0]['slug'] == 'slug-25'
+    assert res1.json[9]['slug'] == 'slug-16'
 
     res2 = util.get_posts(client, limit=10, offset=2)
     assert res2.status == '200 OK'
     assert len(res2.json) == 10
-    assert res2.json[0]['slug'] == 'slug-10'
-    assert res2.json[9]['slug'] == 'slug-19'
+    assert res2.json[0]['slug'] == 'slug-15'
+    assert res2.json[9]['slug'] == 'slug-6'
 
     res3 = util.get_posts(client, limit=10, offset=3)
     assert res3.status == '200 OK'
     assert len(res3.json) == 5
-    assert res3.json[0]['slug'] == 'slug-20'
-    assert res3.json[4]['slug'] == 'slug-24'
+    assert res3.json[0]['slug'] == 'slug-5'
+    assert res3.json[4]['slug'] == 'slug-1'
 
 
 def test_improper_pagination(client: FlaskClient):
@@ -99,11 +99,38 @@ def test_improper_pagination(client: FlaskClient):
     assert util.get_posts(client, limit=5, offset=10).status == '404 NOT FOUND'
 
 
-# TODO
-# def test_get_featured(client: FlaskClient):
-#
-# TODO
-# def test_get_published(client: FlaskClient):
+def test_get_featured(client: FlaskClient):
+    for i in range(1, 11):
+        util.create_post(client, slug=f'slug-{i}')
+    assert not util.get_posts(client, featured=True).json
+
+    util.feature_post(client, 3)
+    res_1 = util.get_posts(client, featured=True)
+    assert len(res_1.json) == 1
+    assert res_1.json[0]['slug'] == 'slug-3'
+
+    util.feature_post(client, 7)
+    res_2 = util.get_posts(client, featured=True)
+    assert len(res_2.json) == 2
+    assert res_2.json[0]['slug'] == 'slug-7'
+    assert res_2.json[1]['slug'] == 'slug-3'
+
+
+def test_get_published(client: FlaskClient):
+    for i in range(1, 11):
+        util.create_post(client, slug=f'slug-{i}')
+    assert not util.get_posts(client, featured=True).json
+
+    util.publish_post(client, 3)
+    res_1 = util.get_posts(client, published=True)
+    assert len(res_1.json) == 1
+    assert res_1.json[0]['slug'] == 'slug-3'
+
+    util.publish_post(client, 7)
+    res_2 = util.get_posts(client, published=True)
+    assert len(res_2.json) == 2
+    assert res_2.json[0]['slug'] == 'slug-7'
+    assert res_2.json[1]['slug'] == 'slug-3'
 
 
 def test_get_single(client: FlaskClient):

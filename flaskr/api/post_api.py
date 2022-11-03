@@ -9,7 +9,7 @@ from flaskr.contracts.create_post import CreatePostContract
 from flaskr.contracts.update_post import UpdatePostContract
 from flaskr.contracts.get_posts import GetPostsContract
 from flaskr.contracts.add_tag import AddTagContract
-import flaskr.post_manager as post_manager
+from flaskr import post_manager
 from flaskr.post_manager import NoSuchPost, InvalidSlug, InvalidFile, InsufficientPermission, InvalidMarkdown
 import flaskr.api.util as util
 # TODO: one thing I don't like about 'Post' is that the logic is spread out across different places: `post_api`, `post`, and `post_manager`
@@ -34,7 +34,7 @@ def get_posts():
         query = query.filter(Post.is_featured == contract.is_featured)
     if contract.is_published is not None:
         query = query.filter(Post.is_published == contract.is_published)
-    query = query.order_by(desc(Post.publish_date))
+    query = query.order_by(desc(Post.last_modified))
     res = query.paginate(
         page=contract.offset if contract.offset else 1,
         per_page=contract.limit if contract.limit else 20,

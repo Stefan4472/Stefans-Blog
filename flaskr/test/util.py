@@ -6,12 +6,48 @@ from typing import Dict, Optional
 from flaskr.test.conftest import make_auth_headers
 
 
+def publish_post(client: FlaskClient, post_id: int) -> Response:
+    return client.post(
+        f'/api/v1/commands/publish',
+        json={'post_id': post_id},
+        headers=make_auth_headers(),
+    )
+
+
+def unpublish_post(client: FlaskClient, post_id: int) -> Response:
+    return client.post(
+        f'/api/v1/commands/unpublish',
+        json={'post_id': post_id},
+        headers=make_auth_headers(),
+    )
+
+
+def feature_post(client: FlaskClient, post_id: int) -> Response:
+    return client.post(
+        f'/api/v1/commands/feature',
+        json={'post_id': post_id},
+        headers=make_auth_headers(),
+    )
+
+
+def unfeature_post(client: FlaskClient, post_id: int) -> Response:
+    return client.post(
+        f'/api/v1/commands/unfeature',
+        json={'post_id': post_id},
+        headers=make_auth_headers(),
+    )
+
+
 def get_posts(
         client: FlaskClient,
+        published: Optional[bool] = None,
+        featured: Optional[bool] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
 ) -> Response:
     _json = {}
+    if published is not None: _json['is_published'] = published
+    if featured is not None: _json['is_featured'] = featured
     if limit: _json['limit'] = limit
     if offset: _json['offset'] = offset
     return client.get(

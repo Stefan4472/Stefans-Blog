@@ -154,6 +154,26 @@ def set_content(post_id: int, content: bytes):
     current_app.logger.debug(f'Updated markdown for post with id={post.id}')
 
 
+def set_published(post_id: str, is_published: bool):
+    post = Post.query.filter_by(id=post_id).first()
+    if not post:
+        raise NoSuchPost()
+    if post.is_published == is_published:
+        # No state change needed
+        return
+    post.is_published = is_published
+    post.publish_date = datetime.now() if is_published else None
+    db.session.commit()
+
+
+def set_featured(post_id: str, is_featured: bool):
+    post = Post.query.filter_by(id=post_id).first()
+    if not post:
+        raise NoSuchPost()
+    post.is_featured = is_featured
+    db.session.commit()
+
+
 def is_slug_valid(slug: str) -> bool:
     """Return whether slug follows specified regex pattern and is unique."""
     if not re.match(constants.SLUG_REGEX, slug):
