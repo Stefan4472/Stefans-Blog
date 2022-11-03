@@ -189,3 +189,39 @@ def create_tag(
         json=_json,
         headers=make_auth_headers(),
     )
+
+
+def update_tag(
+        client: FlaskClient,
+        slug: str,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        color: Optional[str] = None,
+) -> Response:
+    _json = {}
+    if name: _json['name'] = name
+    if description: _json['description'] = description
+    if color: _json['color'] = color
+    return client.post(
+        f'/api/v1/tags/{slug}',
+        json=_json,
+        headers=make_auth_headers(),
+    )
+
+
+def get_tag(client: FlaskClient, tag_slug: str) -> Response:
+    return client.get(
+        f'/api/v1/tags/{tag_slug}',
+        headers=make_auth_headers(),
+    )
+
+
+def delete_tag(client: FlaskClient, tag_slug: str) -> Response:
+    return client.delete(
+        f'/api/v1/tags/{tag_slug}',
+        headers=make_auth_headers(),
+    )
+
+
+def get_all_tags(client: FlaskClient) -> Response:
+    return client.get('/api/v1/tags/', headers=make_auth_headers())
