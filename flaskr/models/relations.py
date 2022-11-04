@@ -11,8 +11,8 @@ posts_to_tags = db.Table(
 
 
 # Many-to-many table storing Post<->Image.
-posts_to_images = db.Table(
-    'posts_to_images',
-    db.Column('post', db.Integer, db.ForeignKey('post.id')),
-    db.Column('image', db.Integer, db.ForeignKey('image.id')),
-)
+# posts_to_images = db.Table(
+#     'posts_to_images',
+#     db.Column('post', db.Integer, db.ForeignKey('post.id')),
+#     db.Column('image', db.Integer, db.ForeignKey('image.id')),
+# )

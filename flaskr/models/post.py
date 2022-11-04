@@ -5,7 +5,6 @@ from typing import Optional
 from sqlalchemy import asc, desc
 from flaskr import db
 import flaskr.models.relations as relations
-from flaskr.models.image import Image
 from flaskr.models.file import File
 import renderer.markdown
 from flaskr.contracts.data_schemas import PostContract

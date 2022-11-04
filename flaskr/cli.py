@@ -8,7 +8,6 @@ from .database import db
 from .site_config import ConfigKeys
 # Ensure all SQLAlchemy models are imported for db.create_all()
 from .models.file import File
-from .models.image import Image
 from .models.post import Post
 from .models.tag import Tag
 from .models.user import User
