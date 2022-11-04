@@ -8,9 +8,11 @@ from flaskr.contracts.update_post import UpdatePostContract
 from flaskr.models.user import User
 from flaskr.models.post import Post
 from flaskr.database import db
+from flaskr.site_config import ConfigKeys
 import flaskr.api.constants as constants
 import renderer.markdown
 from flaskr import image_validator
+from flaskr import email_provider
 # TODO: still not sure about exception handling and whether/when to use custom classes
 
 
@@ -154,15 +156,34 @@ def set_content(post_id: int, content: bytes):
     current_app.logger.debug(f'Updated markdown for post with id={post.id}')
 
 
-def set_published(post_id: str, is_published: bool):
+def publish(post_id: int, send_email: bool):
+    # TODO: currently, email sending fails silently. Should this be the case?
     post = Post.query.filter_by(id=post_id).first()
     if not post:
         raise NoSuchPost()
-    if post.is_published == is_published:
-        # No state change needed
-        return
-    post.is_published = is_published
-    post.publish_date = datetime.now() if is_published else None
+    if post.is_published:
+        return  # TODO: raise exception?
+
+    post.is_published = True
+    post.publish_date = datetime.now()
+    db.session.commit()
+
+    if send_email:
+        if current_app.config[ConfigKeys.USE_EMAIL_LIST]:
+            try:
+                email_provider.get_email_provider().broadcast_new_post(post)
+            except ValueError as e:
+                current_app.logger.error(f'Error while sending email broadcast: {e}')
+        else:
+            current_app.logger.warn('send_email=True but no email service is configured')
+
+
+def unpublish(post_id: str):
+    post = Post.query.filter_by(id=post_id).first()
+    if not post:
+        raise NoSuchPost()
+    post.is_published = False
+    post.publish_date = None
     db.session.commit()
 
 

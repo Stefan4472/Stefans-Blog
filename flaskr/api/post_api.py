@@ -34,6 +34,8 @@ def get_posts():
         query = query.filter(Post.is_featured == contract.is_featured)
     if contract.is_published is not None:
         query = query.filter(Post.is_published == contract.is_published)
+    if contract.slug is not None:
+        query = query.filter(Post.slug == contract.slug)
     query = query.order_by(desc(Post.last_modified))
     res = query.paginate(
         page=contract.offset if contract.offset else 1,
@@ -178,16 +180,3 @@ def remove_tag(post_id: int, tag: str):
         db.session.commit()
         return Response(status=204)
     return Response(status=400)
-
-
-'''
-# try:
-#     if contract.send_email and current_app.config[ConfigKeys.USE_EMAIL_LIST]:
-#         get_email_provider().broadcast_new_post(post)
-#     elif contract.send_email:
-#         current_app.logger.warn('send_email=True but no email service is configured')
-# except ValueError as e:
-#     current_app.logger.error(f'Error while sending email notification: {e}')
-#     return Response(status=400, response=str(e))
-# return Response(status=200)
-'''

@@ -1,7 +1,9 @@
+import marshmallow
 from flask import request, Response, Blueprint, jsonify, current_app, send_file
 from flask_login import login_required, current_user
 from flaskr import post_manager
 from flaskr.post_manager import NoSuchPost
+from flaskr.contracts.publish_post import PublishPostContract
 
 
 # Blueprint under which all views will be assigned
@@ -11,11 +13,13 @@ BLUEPRINT = Blueprint('commands', __name__, url_prefix='/api/v1/commands')
 @BLUEPRINT.route('/publish', methods=['POST'])
 @login_required
 def publish_post():
-    post_id = request.get_json().get('post_id')
-    if not post_id:
-        return Response(status=400, response='Missing post_id')
     try:
-        post_manager.set_published(post_id, True)
+        contract = PublishPostContract.from_json(request.get_json())
+    except marshmallow.exceptions.ValidationError as e:
+        return Response(status=400, response='Invalid parameters: {}'.format(e))
+
+    try:
+        post_manager.publish(contract.post_id, contract.send_email)
         return Response(status=204)
     except NoSuchPost:
         return Response(status=404)
@@ -31,7 +35,7 @@ def unpublish_post():
     if not post_id:
         return Response(status=400, response='Missing post_id')
     try:
-        post_manager.set_published(post_id, False)
+        post_manager.unpublish(post_id)
         return Response(status=204)
     except NoSuchPost:
         return Response(status=404)
