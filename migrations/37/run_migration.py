@@ -1,7 +1,7 @@
 import pathlib
 import sys
-from sitemanager.manager_service import ManagerService
-from sitemanager.postconfig import PostConfig, read_config_file
+from sos_client.manager_service import ManagerService
+from sos_client.postconfig import PostConfig, read_config_file
 
 
 if __name__ == '__main__':

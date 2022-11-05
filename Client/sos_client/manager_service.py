@@ -3,9 +3,9 @@ import pathlib
 import flask
 import base64
 import typing
-from sitemanager.manifest import Manifest, SiteDiff
-from sitemanager.postconfig import PostConfig
-import sitemanager.util as util
+from sos_client.manifest import Manifest, SiteDiff
+from sos_client.postconfig import PostConfig
+import sos_client.util as util
 
 
 class ManagerService:

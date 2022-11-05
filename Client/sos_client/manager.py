@@ -2,10 +2,10 @@ import pathlib
 import typing
 import hashlib
 import copy
-from sitemanager import util
-from sitemanager.postconfig import PostConfig
-from sitemanager.manager_service import ManagerService
-from sitemanager.postconfig import read_config_file, write_config_file
+from sos_client import util
+from sos_client.postconfig import PostConfig
+from sos_client.manager_service import ManagerService
+from sos_client.postconfig import read_config_file, write_config_file
 import renderer.markdown as md
 """Multi-step functionality using `ManagerService`."""
 # TODO: HANDLE POSSIBLE EXCEPTIONS

@@ -1,8 +1,8 @@
 import sys
 import pathlib
 import re
-from sitemanager.manager_service import ManagerService
-from sitemanager.postconfig import PostConfig, read_config_file
+from sos_client.manager_service import ManagerService
+from sos_client.postconfig import PostConfig, read_config_file
 
 
 def migrate_markdown(post_markdown: str) -> str:

@@ -1,9 +1,9 @@
 import typing
 import click
 import pathlib
-from sitemanager import manager
-from sitemanager.manager_service import ManagerService
-from sitemanager.postconfig import read_config_file, write_config_file
+from sos_client import manager
+from sos_client.manager_service import ManagerService
+from sos_client.postconfig import read_config_file, write_config_file
 """CLI interface to the site management API and `manager.py` functionality."""
 
 

@@ -2,7 +2,7 @@ import typing
 import pathlib
 import hashlib
 import dataclasses as dc
-from sitemanager import util
+from sos_client import util
 
 
 @dc.dataclass

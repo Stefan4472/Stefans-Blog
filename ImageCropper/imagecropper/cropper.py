@@ -1,15 +1,12 @@
 import sys
 import os
 import tkinter as tk
+from tkinter.filedialog import askopenfilename
 from PIL import Image, ImageTk
 import json
 import pathlib
 import enum
 import typing 
-
-FEATURED_IMG_SIZE = (1000, 540)
-BANNER_SIZE = (1000, 175)
-THUMBNAIL_SIZE = (400, 400)
 
 
 class AnchorPosition(enum.Enum):
@@ -350,86 +347,36 @@ class ImageCropper(tk.Frame):
         return anchor_positions
 
 
-if __name__ == '__main__':
-    execution_path = pathlib.Path(os.getcwd())
+def choose_image(initialdir: pathlib.Path = None) -> pathlib.Path:
+    """
+    Prompts the user to select an image via the Tk file chooser and
+    returns the path of the chosen image.
 
-    # Look for 'post-meta.json' in the executing directory
-    meta_path = execution_path / 'post-meta.json'
-    if not meta_path.is_file():
-        print('Couldn\'t find "post-meta.json" file in the execution directory')
-        sys.exit(1)
-    # Read the metadata file
-    try:
-        with open(meta_path, 'r') as meta_file:
-            post_data = json.load(meta_file)
-    except IOError:
-        print ('ERROR: Could not read the meta-data file ("{}")'.format(meta_path))
-        sys.exit(1)
-
-    root = tk.Tk()
-    
-    from tkinter.filedialog import askopenfilename
+    Raises ValueError if the operation is cancelled.
+    """
     # Ask user to select an image for use
     img_path = askopenfilename(
-        initialdir=execution_path,
-        title = 'Select image',
-        filetypes = (('jpg files','*.jpg'), ('jpeg files', '*.jpeg'), ('png files', '*.png'), ('gif files', '*.gif')),
+        initialdir=initialdir,
+        title='Select image',
+        filetypes=(('jpg files', '*.jpg'), ('jpeg files', '*.jpeg'), ('png files', '*.png')),
     )
-    # Exit if user did not select an image
     if not img_path:
-        print('No image selected')
-        sys.exit(1)
+        raise ValueError('No image selected')
+    return pathlib.Path(img_path)
 
-    img_path = pathlib.Path(img_path)
 
-    # Create featured image
-    app = ImageCropper(img_path, FEATURED_IMG_SIZE[0], FEATURED_IMG_SIZE[1])
+def run_image_cropper(
+        img_path: pathlib.Path,
+        desired_width: int,
+        desired_height: int,
+        out: pathlib.Path,
+):
+    if out.is_file():
+        raise ValueError(f'Don\'t want to overwrite {write_path}')
+    root = tk.Tk()
+    app = ImageCropper(img_path, desired_width, desired_height)
     app.mainloop()
-    if app.finished_successfully:
-        featured_img = app.cropped_image
-    else:
-        print('Operation cancelled')
-        sys.exit(1)
-    
-    # Create thumbnail
-    app = ImageCropper(str(img_path), THUMBNAIL_SIZE[0], THUMBNAIL_SIZE[1])
-    app.mainloop()
-    if app.finished_successfully:
-        thumbnail_img = app.cropped_image
-    else:
-        print('Operation cancelled')
-        sys.exit(1)
+    if not app.finished_successfully:
+        raise ValueError('Cancelled')
 
-    # Create banner
-    app = ImageCropper(img_path, BANNER_SIZE[0], BANNER_SIZE[1])
-    app.mainloop()
-    if app.finished_successfully:
-        banner_img = app.cropped_image
-    else:
-        print('Operation cancelled')
-        sys.exit(1)
-
-    # Create the paths for the newly-cropped images
-    thumbnail_path = img_path.parent / (img_path.stem + '-thumb.jpg')
-    featured_path = img_path.parent / (img_path.stem + '-featured.jpg')
-    banner_path = img_path.parent / (img_path.stem + '-banner.jpg')
-
-    # Save images
-    thumbnail_img.save(thumbnail_path)
-    featured_img.save(featured_path)
-    banner_img.save(banner_path)
-
-    # Write image paths to the 'post-meta.json' file, overwriting
-    # any paths that are currently there
-    post_data['image'] = featured_path.name
-    post_data['thumbnail'] = thumbnail_path.name
-    post_data['banner'] = banner_path.name
-    
-    # Write out the updated post metadata
-    try:
-        with open(meta_path, 'w') as meta_file:
-            json.dump(post_data, meta_file, indent=4)
-            print('Saved images and updated "post-meta.json" successfully')
-    except IOError:
-        print ('ERROR: Could not read the meta-data file ("{}")'.format(meta_path))
-        sys.exit(1)
+    app.cropped_image.save(out)

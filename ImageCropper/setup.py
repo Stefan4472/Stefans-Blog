@@ -2,7 +2,7 @@ import setuptools
 
 
 setuptools.setup(
-    name='imagecropper',
+    name='ImageCropper',
     version='0.1',
     description='Tkinter GUI used to crop images',
     url='#',
