@@ -32,6 +32,7 @@ def prepare_post(path: Path):
         post_meta = PostMeta.parse_from_file(meta_path)
         click.echo('Read metadata from existing post-meta.json')
 
+    # TODO: validate slugs
     post_meta.slug = decide_slug(post_meta.slug)
     post_meta.title = decide_title(post_meta.title)
     post_meta.byline = decide_byline(post_meta.byline)
@@ -44,7 +45,7 @@ def prepare_post(path: Path):
 
     # Write out the meta
     post_meta.write_to_file(meta_path)
-    click.echo(f'Wrote metadata to {meta_path.absolute}')
+    click.echo(f'Wrote metadata to {meta_path.absolute()}')
 
 def decide_slug(default: Optional[str]) -> str:
     return click.prompt('Enter slug:', default=default if default else '', type=str)

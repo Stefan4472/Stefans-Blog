@@ -1,5 +1,6 @@
 import json
 import typing
+import marshmallow as msh
 import dataclasses as dc
 from typing import Optional, List
 from pathlib import Path
@@ -15,9 +16,10 @@ class PostMeta:
     byline: Optional[str] = None
     date: Optional[date] = None
     tags: Optional[List[str]] = None
-    image: Optional[Path] = None
-    banner: Optional[Path] = None
-    thumbnail: Optional[Path] = None
+    # TODO: would be good to support Path objects
+    image: Optional[str] = None
+    banner: Optional[str] = None
+    thumbnail: Optional[str] = None
 
     # def to_json(self) -> dict:
     #     return {
@@ -37,23 +39,30 @@ class PostMeta:
         try:
             with open(filepath, 'r', encoding='utf-8', errors='strict') as f:
                 cfg_json = json.load(f)
+            return PostMetaSchema().load(cfg_json)
         except IOError:
             raise ValueError(f'Could not open the config file at ("{filepath.absolute()}")')
         except json.JSONDecodeError as e:
             raise ValueError(f'Invalid JSON in the provided config file: {e}')
-        # TODO: validation using marshmallow
-        return PostMeta(**cfg_json)
+        except msh.exceptions.ValidationError as e:
+            raise ValueError(f'Invalid post-meta.json file: {e}')
 
     def write_to_file(self, filepath: Path):
         """Write `PostConfig` instance out to specified filepath."""
         with open(filepath, 'w', encoding='utf-8') as f:
-            json.dump({
-                'slug': self.slug,
-                'title': self.title,
-                'byline': self.byline,
-                'date': self.date, #self.date.strftime(constants.DATE_FORMAT),
-                'tags': self.tags,
-                'image': str(self.image), #str(self.image.absolute()),
-                'banner': str(self.banner), #str(self.banner.absolute()),
-                'thumbnail': str(self.thumbnail), #str(self.thumbnail.absolute()),
-            }, f, indent=4)
+            json.dump(PostMetaSchema().dump(self), f, indent=4, sort_keys=True)
+
+
+class PostMetaSchema(msh.Schema):
+    slug = msh.fields.String(validate=msh.validate.Regexp(constants.SLUG_REGEX))
+    title = msh.fields.String()
+    byline = msh.fields.String()
+    date = msh.fields.Date(format=constants.DATE_FORMAT)
+    tags = msh.fields.List(msh.fields.String(validate=msh.validate.Regexp(constants.SLUG_REGEX)))
+    image = msh.fields.String()
+    banner = msh.fields.String()
+    thumbnail = msh.fields.String()
+
+    @msh.post_load
+    def make_meta(self, data, **kwargs) -> PostMeta:
+        return PostMeta(**data)

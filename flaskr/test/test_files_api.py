@@ -40,6 +40,7 @@ def get_example_file(file_type: ExampleFileType) -> ExampleFile:
     return ExampleFile(contents, file_type.value)
 
 
+# TODO: move to `util.py`
 def upload_file(client: FlaskClient, file: ExampleFile) -> Response:
     """Utility function: uploads the specified file and returns the response."""
     return client.post(

@@ -1,15 +1,15 @@
 {
-    "slug": "gamedev-spritesheets",
-    "title": "How to Implement Spritesheets",
+    "banner": "banner.jpg",
     "byline": "In this post we'll use Java to implement a Spritesheet class, with which we can play back hand-drawn animation sequences.",
     "date": "09/20/17",
+    "image": "featured.jpg",
+    "slug": "gamedev-spritesheets",
     "tags": [
         "Tutorial",
         "GameDev",
         "Java",
         "IntroGameDev"
     ],
-    "image": "featured.jpg",
-    "banner": "banner.jpg",
-    "thumbnail": "thumb.jpg"
+    "thumbnail": "thumb.jpg",
+    "title": "How to Implement Spritesheets"
 }
