@@ -1,4 +1,5 @@
 import click
+import re
 import sys
 from typing import Optional, List
 from pathlib import Path
@@ -14,7 +15,7 @@ def prepare_post(path: Path):
     """
     Prepare a post for upload.
 
-    PATH: path to the directory where the `post.md` to prepare lives.
+    PATH: path to the directory where the `post.md` and `post-meta.json` live.
     """
     md_path = path / 'post.md'
     if not md_path.exists():
@@ -32,7 +33,8 @@ def prepare_post(path: Path):
         post_meta = PostMeta.parse_from_file(meta_path)
         click.echo('Read metadata from existing post-meta.json')
 
-    # TODO: validate slugs
+    # For each field, give the user the option of using the currently-set
+    # value (if any), or of entering a new value.
     post_meta.slug = decide_slug(post_meta.slug)
     post_meta.title = decide_title(post_meta.title)
     post_meta.byline = decide_byline(post_meta.byline)
@@ -41,14 +43,18 @@ def prepare_post(path: Path):
     post_meta.image = decide_featured_image(path, post_meta.image)
     post_meta.banner = decide_banner_image(path, post_meta.banner)
     post_meta.thumbnail = decide_thumbnail_image(path, post_meta.thumbnail)
-    print(post_meta)
 
     # Write out the meta
     post_meta.write_to_file(meta_path)
     click.echo(f'Wrote metadata to {meta_path.absolute()}')
 
+
 def decide_slug(default: Optional[str]) -> str:
-    return click.prompt('Enter slug:', default=default if default else '', type=str)
+    while True:
+        slug = click.prompt('Enter slug:', default=default if default else '', type=str)
+        if re.match(constants.SLUG_REGEX, slug):
+            return slug
+        click.echo('The specified slug does not match the required regex.')
 
 
 def decide_title(default: Optional[str]) -> str:
@@ -66,8 +72,12 @@ def decide_date(default: Optional[date]) -> date:
 def decide_tags(default: Optional[List[str]]) -> List[str]:
     if default and _confirm_choice(f'Current tags are: {",".join(default)}'):
         return default
-    tag_str = click.prompt('Enter comma-separated tags', type=str)
-    tags = [tag.strip() for tag in tag_str.split(',')]
+    while True:
+        tag_str = click.prompt('Enter comma-separated tags', type=str)
+        tags = [tag.strip() for tag in tag_str.split(',')]
+        if all(re.match(constants.SLUG_REGEX, tag) for tag in tags):
+            return tags
+        click.echo('At least one tag does not match the required regex')
 
 
 def decide_featured_image(post_dir: Path, default: Optional[Path]) -> Path:
@@ -77,7 +87,8 @@ def decide_featured_image(post_dir: Path, default: Optional[Path]) -> Path:
     write_path = post_dir / 'featured.jpg'
     cropper.run_image_cropper(
         image_path,
-        *constants.FEATURED_IMG_SIZE,
+        constants.FEATURED_IMAGE_WIDTH,
+        constants.FEATURED_IMAGE_HEIGHT,
         write_path,
     )
     return write_path
@@ -90,7 +101,8 @@ def decide_banner_image(post_dir: Path, default: Optional[Path]) -> Path:
     write_path = post_dir / 'banner.jpg'
     cropper.run_image_cropper(
         image_path,
-        *constants.BANNER_SIZE,
+        constants.BANNER_WIDTH,
+        constants.BANNER_HEIGHT,
         write_path,
     )
     return write_path
@@ -103,7 +115,8 @@ def decide_thumbnail_image(post_dir: Path, default: Optional[Path]) -> Path:
     write_path = post_dir / 'thumbnail.jpg'
     cropper.run_image_cropper(
         image_path,
-        *constants.THUMBNAIL_SIZE,
+        constants.THUMBNAIL_WIDTH,
+        constants.THUMBNAIL_HEIGHT,
         write_path,
     )
     return write_path

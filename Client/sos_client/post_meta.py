@@ -21,18 +21,6 @@ class PostMeta:
     banner: Optional[str] = None
     thumbnail: Optional[str] = None
 
-    # def to_json(self) -> dict:
-    #     return {
-    #         'slug': self.slug,
-    #         'title': self.title,
-    #         'byline': self.byline,
-    #         'date': self.date.strftime(constants.DATE_FORMAT),
-    #         'tags': self.tags,
-    #         'featured_image': self.featured_img.absolute(),
-    #         'banner_image': self.banner_img.absolute(),
-    #         'thumbnail_image': self.thumbnail_img.absolute(),
-    #     }
-
     @staticmethod
     def parse_from_file(filepath: Path) -> 'PostMeta':
         """Parse a `post-meta.json` file and return an instance of `PostConfig`."""
@@ -58,7 +46,7 @@ class PostMetaSchema(msh.Schema):
     title = msh.fields.String()
     byline = msh.fields.String()
     date = msh.fields.Date(format=constants.DATE_FORMAT)
-    tags = msh.fields.List(msh.fields.String(validate=msh.validate.Regexp(constants.SLUG_REGEX)))
+    tags = msh.fields.List(msh.fields.String(data_key='tags', validate=msh.validate.Regexp(constants.SLUG_REGEX)))
     image = msh.fields.String()
     banner = msh.fields.String()
     thumbnail = msh.fields.String()
