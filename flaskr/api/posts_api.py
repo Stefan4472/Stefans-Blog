@@ -34,8 +34,6 @@ def get_posts():
         query = query.filter(Post.is_featured == contract.is_featured)
     if contract.is_published is not None:
         query = query.filter(Post.is_published == contract.is_published)
-    if contract.slug is not None:
-        query = query.filter(Post.slug == contract.slug)
     query = query.order_by(desc(Post.last_modified))
     res = query.paginate(
         page=contract.offset if contract.offset else 1,

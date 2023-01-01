@@ -9,7 +9,6 @@ class GetPostsContract:
     is_published: Optional[bool] = None
     limit: Optional[int] = None
     offset: Optional[int] = None
-    slug: Optional[str] = None
 
     @staticmethod
     def get_schema() -> 'GetPostsSchema':
@@ -25,7 +24,6 @@ class GetPostsSchema(msh.Schema):
     is_published = msh.fields.Boolean()
     limit = msh.fields.Integer()
     offset = msh.fields.Integer()
-    slug = msh.fields.String()
 
     @msh.post_load
     def make_contract(self, data, **kwargs) -> GetPostsContract:

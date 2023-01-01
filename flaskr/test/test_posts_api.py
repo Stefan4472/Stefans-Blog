@@ -133,16 +133,6 @@ def test_get_published(client: FlaskClient):
     assert res_2.json[1]['slug'] == 'slug-3'
 
 
-def test_get_slug(client: FlaskClient):
-    """Test searching for a post with a specified slug via /posts."""
-    res_create = util.create_post(client, slug='test-1')
-    res1 = util.get_posts(client, slug='test-1')
-    assert len(res1.json) == 1
-    assert res1.json[0] == res_create.json
-    # Searching for a slug that does not exist should return an empty result
-    assert not util.get_posts(client, slug='does-not-exist').json
-
-
 def test_get_single(client: FlaskClient):
     """Test getting a single post via ID."""
     res_create = util.create_post(client, slug='post-1', title='Post #1', byline='The first post')

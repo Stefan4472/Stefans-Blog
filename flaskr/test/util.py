@@ -44,14 +44,12 @@ def get_posts(
         featured: Optional[bool] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
-        slug: Optional[str] = None,
 ) -> Response:
     _json = {}
     if published is not None: _json['is_published'] = published
     if featured is not None: _json['is_featured'] = featured
     if limit: _json['limit'] = limit
     if offset: _json['offset'] = offset
-    if slug: _json['slug'] = slug
     return client.get(
         '/api/v1/posts/',
         json=_json,

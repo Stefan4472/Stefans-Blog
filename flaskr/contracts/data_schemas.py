@@ -63,8 +63,6 @@ class PostContract:
     id: int
     author: UserContract
     last_modified: datetime
-    is_featured: bool
-    is_published: bool
     slug: str
     title: str
     byline: str
@@ -73,14 +71,14 @@ class PostContract:
     banner_image: Optional[FileContract]
     thumbnail_image: Optional[FileContract]
     tags: List[TagContract]
+    is_featured: bool
+    is_published: bool
 
     def make_json(self) -> Dict:
         return {
             'id': self.id,
             'author': self.author.make_json(),
             'last_modified': str(self.last_modified),
-            'is_featured': self.is_featured,
-            'is_published': self.is_published,
             'slug': self.slug,
             'title': self.title,
             'byline': self.byline,
@@ -89,4 +87,6 @@ class PostContract:
             'banner_image': self.banner_image.make_json() if self.banner_image else None,
             'thumbnail_image': self.thumbnail_image.make_json() if self.thumbnail_image else None,
             'tags': [t.make_json() for t in self.tags],
+            'is_featured': self.is_featured,
+            'is_published': self.is_published,
         }

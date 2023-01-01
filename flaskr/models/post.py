@@ -115,8 +115,6 @@ class Post(db.Model):
             id=self.id,
             author=self.author.make_contract(),
             last_modified=self.last_modified,
-            is_featured=self.is_featured,
-            is_published=self.is_published,
             slug=self.slug,
             title=self.title,
             byline=self.byline,
@@ -125,4 +123,6 @@ class Post(db.Model):
             banner_image=self.banner_image if self.banner_id else None,
             thumbnail_image=self.thumbnail_image if self.thumbnail_id else None,
             tags=[t.make_contract() for t in self.tags],
+            is_featured=self.is_featured,
+            is_published=self.is_published,
         )
