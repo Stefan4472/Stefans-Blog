@@ -39,6 +39,7 @@ def upload_file():
 
 
 @BLUEPRINT.route('/<string:file_id>', methods=['GET'])
+@login_required
 def download_file(file_id: str):
     file = File.query.filter_by(id=file_id).first()
     if not file:
@@ -47,6 +48,7 @@ def download_file(file_id: str):
 
 
 @BLUEPRINT.route('/<string:file_id>', methods=['DELETE'])
+@login_required
 def delete_file(file_id: str):
     file = File.query.filter_by(id=file_id).first()
     if not file:
@@ -56,6 +58,7 @@ def delete_file(file_id: str):
 
 
 @BLUEPRINT.route('/<string:file_id>/metadata', methods=['GET'])
+@login_required
 def get_file_metadata(file_id: str):
     file = File.query.filter_by(id=file_id).first()
     if not file:

@@ -3,7 +3,7 @@ import hashlib
 from enum import Enum
 from flask.testing import FlaskClient
 import flaskr.test.util as util
-from flaskr.test.conftest import make_auth_headers, DEFAULT_USER
+from flaskr.test.conftest import DEFAULT_USER, INVALID_USER
 
 
 # Path to the root of the `test` folder
@@ -163,3 +163,13 @@ def test_get_metadata(client: FlaskClient):
     response_upload = util.upload_file(client, DEFAULT_USER, file)
     response_metadata = util.get_file_metadata(client, DEFAULT_USER, response_upload.json["id"])
     assert response_metadata.json == response_upload.json
+
+
+def test_auth(client: FlaskClient):
+    """Ensure that endpoints are protected."""
+    file = get_example_file(ExampleFileType.Txt)
+    assert util.get_all_files(client, INVALID_USER).status == '403 FORBIDDEN'
+    assert util.upload_file(client, INVALID_USER, file).status == '403 FORBIDDEN'
+    assert util.download_file(client, INVALID_USER, '123').status == '403 FORBIDDEN'
+    assert util.delete_file(client, INVALID_USER, '123').status == '403 FORBIDDEN'
+    assert util.get_file_metadata(client, INVALID_USER, '123').status == '403 FORBIDDEN'

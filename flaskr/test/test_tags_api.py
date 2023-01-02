@@ -1,6 +1,6 @@
 from flask.testing import FlaskClient
-from flaskr.test.conftest import make_auth_headers, DEFAULT_USER
 import flaskr.test.util as util
+from flaskr.test.conftest import make_auth_headers, DEFAULT_USER, INVALID_USER
 
 
 def test_create(client: FlaskClient):
@@ -140,3 +140,12 @@ def test_update_invalid_color(client: FlaskClient):
 def test_delete_non_existent(client: FlaskClient):
     """Attempting to delete a non-existent tag should fail."""
     assert util.delete_tag(client, DEFAULT_USER, 'test').status == '404 NOT FOUND'
+
+
+def test_auth(client: FlaskClient):
+    """Ensure that endpoints are protected."""
+    assert util.get_all_tags(client, INVALID_USER).status == '403 FORBIDDEN'
+    assert util.create_tag(client, INVALID_USER, 'Test', 'test', '...', None).status == '403 FORBIDDEN'
+    assert util.get_tag(client, INVALID_USER, '123').status == '403 FORBIDDEN'
+    assert util.update_tag(client, INVALID_USER, '123', None, None, None).status == '403 FORBIDDEN'
+    assert util.delete_tag(client, INVALID_USER, '123').status == '403 FORBIDDEN'

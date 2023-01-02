@@ -1,7 +1,7 @@
 """Unit tests for the Commands API."""
 from flask.testing import FlaskClient
 import flaskr.test.util as util
-from flaskr.test.conftest import DEFAULT_USER
+from flaskr.test.conftest import DEFAULT_USER, INVALID_USER
 
 
 def test_publish(client: FlaskClient):
@@ -18,7 +18,6 @@ def test_unpublish(client: FlaskClient):
     res_create = util.create_post(client, DEFAULT_USER)
     post_id = res_create.json['id']
     res_publish = util.publish_post(client, DEFAULT_USER, post_id, False)
-    print(res_publish.data)
     assert res_publish.status == '204 NO CONTENT'
     res_unpublish = util.unpublish_post(client, DEFAULT_USER, post_id, False)
     assert res_unpublish.status == '204 NO CONTENT'
@@ -45,3 +44,11 @@ def test_unfeature(client: FlaskClient):
     assert res_unfeature.status == '204 NO CONTENT'
     res_get = util.get_post(client, DEFAULT_USER, post_id)
     assert not res_get.json['is_featured']
+
+
+def test_auth(client: FlaskClient):
+    """Ensure that endpoints are protected."""
+    assert util.publish_post(client, INVALID_USER, 123, False).status == '403 FORBIDDEN'
+    assert util.unpublish_post(client, INVALID_USER, 123, False).status == '403 FORBIDDEN'
+    assert util.feature_post(client, INVALID_USER, 123).status == '403 FORBIDDEN'
+    assert util.unfeature_post(client, INVALID_USER, 123).status == '403 FORBIDDEN'

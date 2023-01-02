@@ -59,7 +59,6 @@ class User:
 DEFAULT_USER = User(TEST_USERNAME, TEST_PASSWORD)
 INVALID_USER = User('invalid@test.com', 'wrong_password')
 WRONG_PASSWORD = User(TEST_USERNAME, 'wrong_password')
-EMPTY_USER = User('', '')
 
 
 def make_auth_headers(user: User) -> Dict:

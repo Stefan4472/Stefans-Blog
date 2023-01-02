@@ -1,7 +1,7 @@
 """Unit tests for the Posts API."""
 from flask.testing import FlaskClient
 import flaskr.test.util as util
-from flaskr.test.conftest import DEFAULT_USER
+from flaskr.test.conftest import DEFAULT_USER, INVALID_USER
 
 
 def test_create_empty(client: FlaskClient):
@@ -298,3 +298,17 @@ def test_remove_tag_not_used(client: FlaskClient):
     post_id = res_create.json['id']
     util.create_tag(client, DEFAULT_USER, **util.TAG_JSON)
     assert util.rmv_tag_from_post(client, DEFAULT_USER, post_id, util.TAG_SLUG).status == '400 BAD REQUEST'
+
+
+def test_auth(client: FlaskClient):
+    """Ensure that endpoints are protected."""
+    assert util.get_posts(client, INVALID_USER).status == '403 FORBIDDEN'
+    assert util.create_post(client, INVALID_USER).status == '403 FORBIDDEN'
+    assert util.get_post(client, INVALID_USER, 123).status == '403 FORBIDDEN'
+    assert util.update_post(client, INVALID_USER, 123, 'test', 'Test', '...', None, None, None).status == '403 FORBIDDEN'
+    assert util.delete_post(client, INVALID_USER, 123).status == '403 FORBIDDEN'
+    assert util.get_content(client, INVALID_USER, 123).status == '403 FORBIDDEN'
+    assert util.set_content(client, INVALID_USER, 123, b'1234').status == '403 FORBIDDEN'
+    assert util.get_post_tags(client, INVALID_USER, 123).status == '403 FORBIDDEN'
+    assert util.add_tag_to_post(client, INVALID_USER, 123, 'test').status == '403 FORBIDDEN'
+    assert util.rmv_tag_from_post(client, INVALID_USER, 123, 'test').status == '403 FORBIDDEN'
