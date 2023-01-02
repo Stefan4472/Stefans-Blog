@@ -1,45 +1,47 @@
-"""Utility functions used for testing the Posts API."""
+"""Utility functions used for testing the StefanOnSoftware API."""
 import io
+from dataclasses import dataclass
 from flask.testing import FlaskClient
 from flask.wrappers import Response
 from typing import Dict, Optional
-from flaskr.test.conftest import make_auth_headers
+from flaskr.test.conftest import make_auth_headers, User
 
 
-def publish_post(client: FlaskClient, post_id: int, send_email: bool) -> Response:
+def publish_post(client: FlaskClient, user: Optional[User], post_id: int, send_email: bool) -> Response:
     return client.post(
         f'/api/v1/commands/publish',
         json={'post_id': post_id, 'send_email': send_email},
-        headers=make_auth_headers(),
+        headers=make_auth_headers(user) if user else {},
     )
 
 
-def unpublish_post(client: FlaskClient, post_id: int, send_email: bool) -> Response:
+def unpublish_post(client: FlaskClient, user: Optional[User], post_id: int, send_email: bool) -> Response:
     return client.post(
         f'/api/v1/commands/unpublish',
         json={'post_id': post_id, 'send_email': send_email},
-        headers=make_auth_headers(),
+        headers=make_auth_headers(user) if user else {},
     )
 
 
-def feature_post(client: FlaskClient, post_id: int) -> Response:
+def feature_post(client: FlaskClient, user: Optional[User], post_id: int) -> Response:
     return client.post(
         f'/api/v1/commands/feature',
         json={'post_id': post_id},
-        headers=make_auth_headers(),
+        headers=make_auth_headers(user) if user else {},
     )
 
 
-def unfeature_post(client: FlaskClient, post_id: int) -> Response:
+def unfeature_post(client: FlaskClient, user: Optional[User], post_id: int) -> Response:
     return client.post(
         f'/api/v1/commands/unfeature',
         json={'post_id': post_id},
-        headers=make_auth_headers(),
+        headers=make_auth_headers(user) if user else {},
     )
 
 
 def get_posts(
         client: FlaskClient,
+        user: Optional[User],
         published: Optional[bool] = None,
         featured: Optional[bool] = None,
         limit: Optional[int] = None,
@@ -53,12 +55,13 @@ def get_posts(
     return client.get(
         '/api/v1/posts/',
         json=_json,
-        headers=make_auth_headers(),
+        headers=make_auth_headers(user) if user else {},
     )
 
 
 def create_post(
         client: FlaskClient,
+        user: Optional[User],
         slug: str = None,
         title: str = None,
         byline: str = None,
@@ -76,12 +79,13 @@ def create_post(
     return client.post(
         '/api/v1/posts/',
         json=_json,
-        headers=make_auth_headers(),
+        headers=make_auth_headers(user) if user else {},
     )
 
 
 def update_post(
         client: FlaskClient,
+        user: Optional[User],
         post_id: int,
         slug: str,
         title: str,
@@ -100,59 +104,59 @@ def update_post(
             'banner_image': banner_id,
             'thumbnail_image': thumbnail_id,
         },
-        headers=make_auth_headers(),
+        headers=make_auth_headers(user) if user else None,
     )
 
 
-def get_post(client: FlaskClient, post_id: int) -> Response:
+def get_post(client: FlaskClient, user: Optional[User], post_id: int) -> Response:
     return client.get(
         f'/api/v1/posts/{post_id}',
-        headers=make_auth_headers(),
+        headers=make_auth_headers(user) if user else {},
     )
 
 
-def delete_post(client: FlaskClient, post_id: int) -> Response:
+def delete_post(client: FlaskClient, user: Optional[User], post_id: int) -> Response:
     return client.delete(
         f'/api/v1/posts/{post_id}',
-        headers=make_auth_headers(),
+        headers=make_auth_headers(user) if user else {},
     )
 
 
-def get_content(client: FlaskClient, post_id: int) -> Response:
+def get_content(client: FlaskClient, user: Optional[User], post_id: int) -> Response:
     return client.get(
         f'/api/v1/posts/{post_id}/content',
-        headers=make_auth_headers(),
+        headers=make_auth_headers(user) if user else {},
     )
 
 
-def set_content(client: FlaskClient, post_id: int, content: bytes) -> Response:
+def set_content(client: FlaskClient, user: Optional[User], post_id: int, content: bytes) -> Response:
     return client.post(
         f'/api/v1/posts/{post_id}/content',
         data={'file': (io.BytesIO(content), 'test.md')},
         content_type='multipart/form-data',
-        headers=make_auth_headers(),
+        headers=make_auth_headers(user) if user else {},
     )
 
 
-def get_post_tags(client: FlaskClient, post_id: int) -> Response:
+def get_post_tags(client: FlaskClient, user: Optional[User], post_id: int) -> Response:
     return client.get(
         f'/api/v1/posts/{post_id}/tags',
-        headers=make_auth_headers(),
+        headers=make_auth_headers(user) if user else {},
     )
 
 
-def add_tag_to_post(client: FlaskClient, post_id: int, tag_slug: str) -> Response:
+def add_tag_to_post(client: FlaskClient, user: Optional[User], post_id: int, tag_slug: str) -> Response:
     return client.post(
         f'/api/v1/posts/{post_id}/tags',
         json={'tag': tag_slug},
-        headers=make_auth_headers(),
+        headers=make_auth_headers(user) if user else {},
     )
 
 
-def rmv_tag_from_post(client: FlaskClient, post_id: int, tag_slug: str) -> Response:
+def rmv_tag_from_post(client: FlaskClient, user: Optional[User], post_id: int, tag_slug: str) -> Response:
     return client.delete(
         f'/api/v1/posts/{post_id}/tags/{tag_slug}',
-        headers=make_auth_headers(),
+        headers=make_auth_headers(user) if user else {},
     )
 
 
@@ -217,6 +221,7 @@ TAG2_JSON = {
 
 def create_tag(
         client: FlaskClient,
+        user: Optional[User],
         name: str,
         slug: str,
         description: str,
@@ -231,12 +236,13 @@ def create_tag(
     return client.post(
         '/api/v1/tags/',
         json=_json,
-        headers=make_auth_headers(),
+        headers=make_auth_headers(user) if user else {},
     )
 
 
 def update_tag(
         client: FlaskClient,
+        user: Optional[User],
         slug: str,
         name: Optional[str] = None,
         description: Optional[str] = None,
@@ -249,23 +255,71 @@ def update_tag(
     return client.post(
         f'/api/v1/tags/{slug}',
         json=_json,
-        headers=make_auth_headers(),
+        headers=make_auth_headers(user) if user else {},
     )
 
 
-def get_tag(client: FlaskClient, tag_slug: str) -> Response:
+def get_tag(client: FlaskClient, user: Optional[User], tag_slug: str) -> Response:
     return client.get(
         f'/api/v1/tags/{tag_slug}',
-        headers=make_auth_headers(),
+        headers=make_auth_headers(user) if user else {},
     )
 
 
-def delete_tag(client: FlaskClient, tag_slug: str) -> Response:
+def delete_tag(client: FlaskClient, user: Optional[User], tag_slug: str) -> Response:
     return client.delete(
         f'/api/v1/tags/{tag_slug}',
-        headers=make_auth_headers(),
+        headers=make_auth_headers(user) if user else {},
     )
 
 
-def get_all_tags(client: FlaskClient) -> Response:
-    return client.get('/api/v1/tags/', headers=make_auth_headers())
+def get_all_tags(client: FlaskClient, user: Optional[User]) -> Response:
+    return client.get('/api/v1/tags/', headers=make_auth_headers(user) if user else {})
+
+
+@dataclass
+class ExampleFile:
+    """
+    Struct representing an example file.
+    Note: `contents` must be wrapped in `io.BytesIO` for use with FlaskClient.
+    """
+    contents: bytes
+    filename: str
+
+
+def get_all_files(client: FlaskClient, user: Optional[User]) -> Response:
+    return client.get('/api/v1/files/', headers=make_auth_headers(user) if user else {})
+
+
+def upload_file(client: FlaskClient, user: Optional[User], file: ExampleFile) -> Response:
+    """Uploads the specified file and returns the response."""
+    return client.post(
+        '/api/v1/files/',
+        data={'file': (io.BytesIO(file.contents), file.filename)},
+        headers=make_auth_headers(user) if user else {},
+        content_type='multipart/form-data',
+    )
+
+
+def download_file(client: FlaskClient, user: Optional[User], file_id: str) -> Response:
+    """Downloads the specified file and returns the response."""
+    return client.get(
+        f'/api/v1/files/{file_id}',
+        headers=make_auth_headers(user) if user else {},
+    )
+
+
+def delete_file(client: FlaskClient, user: Optional[User], file_id: str) -> Response:
+    """Deletes the specified file and returns the response."""
+    return client.delete(
+        f'/api/v1/files/{file_id}',
+        headers=make_auth_headers(user) if user else {},
+    )
+
+
+def get_file_metadata(client: FlaskClient, user: Optional[User], file_id: str) -> Response:
+    """Gets the file metadata and returns the response."""
+    return client.get(
+        f'/api/v1/files/{file_id}/metadata',
+        headers=make_auth_headers(user) if user else {},
+    )

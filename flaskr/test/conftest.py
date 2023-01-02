@@ -1,6 +1,7 @@
 """Shared fixtures for pytest."""
 import pytest
 import base64
+from dataclasses import dataclass
 from flask import Flask
 from flask.testing import FlaskClient, FlaskCliRunner
 from pathlib import Path
@@ -49,8 +50,20 @@ def runner(app: Flask) -> FlaskCliRunner:
     return app.test_cli_runner()
 
 
-def make_auth_headers() -> Dict:
+@dataclass
+class User:
+    username: str
+    password: str
+
+
+DEFAULT_USER = User(TEST_USERNAME, TEST_PASSWORD)
+INVALID_USER = User('invalid@test.com', 'wrong_password')
+WRONG_PASSWORD = User(TEST_USERNAME, 'wrong_password')
+EMPTY_USER = User('', '')
+
+
+def make_auth_headers(user: User) -> Dict:
     """Make headers for basic auth that will work with the test client."""
-    auth_string = f'{TEST_USERNAME}:{TEST_PASSWORD}'
+    auth_string = f'{user.username}:{user.password}'
     auth_binary = base64.b64encode(auth_string.encode())
     return {'Authorization': 'Basic ' + auth_binary.decode()}
