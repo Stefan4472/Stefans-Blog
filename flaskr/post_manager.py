@@ -9,7 +9,7 @@ from flaskr.models.user import User
 from flaskr.models.post import Post
 from flaskr.database import db
 from flaskr.site_config import ConfigKeys
-import flaskr.api.constants as constants
+import flaskr.contracts.constants as constants
 import renderer.markdown
 from flaskr import image_validator
 from flaskr import email_provider

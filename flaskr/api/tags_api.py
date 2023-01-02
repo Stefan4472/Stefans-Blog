@@ -1,10 +1,6 @@
-import flask
 import marshmallow
-import typing
-import sqlalchemy
-from flask import request, Response, Blueprint, jsonify, current_app
+from flask import request, Response, Blueprint, jsonify
 from flask_login import login_required
-import flaskr.api.constants as constants
 import flaskr.api.util as util
 from flaskr.database import db
 from flaskr.models.tag import Tag

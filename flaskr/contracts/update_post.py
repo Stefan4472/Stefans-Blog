@@ -2,7 +2,7 @@ import marshmallow as msh
 import dataclasses as dc
 from marshmallow import validate
 from typing import Optional, Dict
-import flaskr.api.constants as constants
+import flaskr.contracts.constants as constants
 
 
 @dc.dataclass

@@ -1,25 +1,25 @@
 from PIL import Image
-from typing import Optional, Tuple
+from typing import Optional
 from flaskr.models.file import File, FileType
-from flaskr import file_manager
-from flaskr.api.constants import FEATURED_IMG_SIZE, BANNER_SIZE, THUMBNAIL_SIZE
+import flaskr.contracts.constants as constants
 
 
 def is_featured_image_valid(file_id: Optional[str]) -> bool:
-    return _is_image_valid(file_id, FEATURED_IMG_SIZE)
+    return _is_image_valid(file_id, constants.FEATURED_IMAGE_WIDTH, constants.FEATURED_IMAGE_HEIGHT)
 
 
 def is_banner_image_valid(file_id: Optional[str]) -> bool:
-    return _is_image_valid(file_id, BANNER_SIZE)
+    return _is_image_valid(file_id, constants.BANNER_WIDTH, constants.BANNER_HEIGHT)
 
 
 def is_thumbnail_image_valid(file_id: Optional[str]) -> bool:
-    return _is_image_valid(file_id, THUMBNAIL_SIZE)
+    return _is_image_valid(file_id, constants.THUMBNAIL_WIDTH, constants.THUMBNAIL_HEIGHT)
 
 
 def _is_image_valid(
         file_id: str,
-        required_dimensions: Tuple[int, int],
+        required_width: int,
+        required_height: int,
         allow_none: bool = True,
 ) -> bool:
     if file_id is None:
@@ -35,4 +35,4 @@ def _is_image_valid(
     if file.filename.endswith('.gif'):
         return False
     as_image = Image.open(file.get_path())
-    return (as_image.width, as_image.height) == required_dimensions
+    return as_image.width == required_width and as_image.height == required_height

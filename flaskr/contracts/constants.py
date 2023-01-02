@@ -1,4 +1,3 @@
-"""API constants. Copied from flaskr/api/constants.py."""
 # Expected data format for JSON
 DATE_FORMAT = "%m/%d/%y"
 
@@ -16,3 +15,7 @@ BANNER_HEIGHT = 175
 # Size of image thumbnails
 THUMBNAIL_WIDTH = 400
 THUMBNAIL_HEIGHT = 400
+# The size that images in posts cannot exceed.
+# Images that exceed this size will be thumbnail-ed to it.
+MAX_IMG_WIDTH = 1200
+MAX_IMG_HEIGHT = 800

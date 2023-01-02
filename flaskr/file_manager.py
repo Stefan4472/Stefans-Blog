@@ -10,7 +10,7 @@ from datetime import datetime
 from flaskr import db
 from flaskr.models.file import File, FileType
 from flaskr.models.user import User
-import flaskr.api.constants as constants
+import flaskr.contracts.constants as constants
 
 
 class FileAlreadyExists(ValueError):
@@ -138,7 +138,7 @@ def _process_file(file: io.BytesIO, extension: str) -> ProcessedFile:
             raise InvalidFile('Cannot read image')
         # Bound to MAX_IMG_SIZE
         if image.width > constants.MAX_IMG_WIDTH or image.height > constants.MAX_IMG_HEIGHT:
-            image.thumbnail(constants.MAX_IMG_SIZE, Image.ANTIALIAS)
+            image.thumbnail((constants.MAX_IMG_WIDTH, constants.MAX_IMG_HEIGHT), Image.ANTIALIAS)
         # Convert to RGB (for saving to JPG)
         image = image.convert('RGB')
         # Write out to buffer
