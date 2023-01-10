@@ -5,10 +5,10 @@
     "image": "featured.jpg",
     "slug": "gamedev-spritesheets",
     "tags": [
-        "Tutorial",
-        "GameDev",
-        "Java",
-        "IntroGameDev"
+        "tutorial",
+        "gamedev",
+        "java",
+        "intro-game-dev"
     ],
     "thumbnail": "thumb.jpg",
     "title": "How to Implement Spritesheets"

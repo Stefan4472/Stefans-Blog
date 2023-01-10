@@ -11,6 +11,7 @@ from sos_client import constants
 @dc.dataclass
 class PostMeta:
     """Store post configuration ("post-meta") data."""
+    # TODO: I don't think that "PostMeta" (i.e. "metadata") is actually the best name for this. It's not actually metadata. Nor is it "config" either, really.
     slug: Optional[str] = None
     title: Optional[str] = None
     byline: Optional[str] = None
