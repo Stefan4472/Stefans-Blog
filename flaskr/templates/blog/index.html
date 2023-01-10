@@ -24,12 +24,13 @@
                 ></li>
 			{% endfor %}
 		</ol>
+<!--		TODO: black background behind text -->
 		<div id="featured_carousel" class="carousel-inner">
 			{% for i in range(0, featured_posts|length) %}
                 <div class="carousel-item {% if i == 0 %}active{% endif %} carousel-div">
                     <a href="{{ url_for('blog.post_view', slug=featured_posts[i].slug) }}">
                         <img
-                            src="{{ featured_posts[i].get_featured_image().get_url() }}"
+                            src="{{ featured_posts[i].featured_image.make_url() }}"
                             class="d-block carousel-image"
                             alt="..."
                         >

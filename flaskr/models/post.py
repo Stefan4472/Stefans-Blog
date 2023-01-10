@@ -89,10 +89,13 @@ class Post(db.Model):
         """Retrieve the Markdown file containing the post's contents and render to HTML."""
         with open(self.get_markdown_path(), encoding='utf-8', errors='strict') as f:
             markdown = f.read()  # TODO: this is very inefficient. Fix!
-            # Resolve image URLs
-            for image_name in renderer.markdown.find_images(markdown):
-                found_image = Image.query.filter_by(filename=image_name).first()
-                markdown = markdown.replace(image_name, found_image.get_url())
+            # Resolve file URLs
+            for file_name in renderer.markdown.find_images(markdown):
+                found_file = File.query.filter_by(filename=file_name).first()
+                if found_file:
+                    markdown = markdown.replace(file_name, found_file.make_url())
+                else:
+                    flask.current_app.logger.error(f'Couldn\'t find file reference {file_name} in post {self.slug}')
             html = renderer.markdown.render_string(markdown)
 
             # Render as a template to allow expanding `url_for()` calls (for example)
@@ -119,9 +122,9 @@ class Post(db.Model):
             title=self.title,
             byline=self.byline,
             publish_date=self.publish_date,
-            featured_image=self.featured_image if self.featured_id else None,
-            banner_image=self.banner_image if self.banner_id else None,
-            thumbnail_image=self.thumbnail_image if self.thumbnail_id else None,
+            featured_image=self.featured_image.make_contract() if self.featured_id else None,
+            banner_image=self.banner_image.make_contract() if self.banner_id else None,
+            thumbnail_image=self.thumbnail_image.make_contract() if self.thumbnail_id else None,
             tags=[t.make_contract() for t in self.tags],
             is_featured=self.is_featured,
             is_published=self.is_published,

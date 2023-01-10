@@ -75,18 +75,23 @@ class PostContract:
     is_published: bool
 
     def make_json(self) -> Dict:
-        return {
+        res = {
             'id': self.id,
             'author': self.author.make_json(),
             'last_modified': str(self.last_modified),
             'slug': self.slug,
             'title': self.title,
             'byline': self.byline,
-            'publish_date': str(self.publish_date) if self.publish_date else None,
-            'featured_image': self.featured_image.make_json() if self.featured_image else None,
-            'banner_image': self.banner_image.make_json() if self.banner_image else None,
-            'thumbnail_image': self.thumbnail_image.make_json() if self.thumbnail_image else None,
             'tags': [t.make_json() for t in self.tags],
             'is_featured': self.is_featured,
             'is_published': self.is_published,
         }
+        if self.publish_date:
+            res['publish_date'] = str(self.publish_date)
+        if self.featured_image:
+            res['featured_image'] = self.featured_image.make_json()
+        if self.banner_image:
+            res['banner_image'] = self.banner_image.make_json()
+        if self.thumbnail_image:
+            res['thumbnail_image'] = self.thumbnail_image.make_json()
+        return res

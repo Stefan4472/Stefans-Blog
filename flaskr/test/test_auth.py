@@ -1,6 +1,6 @@
 """Test that auth works under several possible error conditions."""
 from flask.testing import FlaskClient
-import flaskr.test.util as util
+import flaskr.test.test_util as util
 from flaskr.test.conftest import DEFAULT_USER, INVALID_USER, WRONG_PASSWORD
 
 

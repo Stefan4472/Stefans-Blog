@@ -197,6 +197,9 @@ def set_featured(post_id: str, is_featured: bool):
 
 def is_slug_valid(slug: str) -> bool:
     """Return whether slug follows specified regex pattern and is unique."""
+    # Ensure not empty
+    if not slug:
+        return False
     if not re.match(constants.SLUG_REGEX, slug):
         return False
     # Ensure no duplicate
