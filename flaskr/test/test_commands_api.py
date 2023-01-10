@@ -1,6 +1,6 @@
 """Unit tests for the Commands API."""
 from flask.testing import FlaskClient
-import flaskr.test.util as util
+import flaskr.test.test_util as util
 from flaskr.test.conftest import DEFAULT_USER, INVALID_USER
 
 
@@ -23,7 +23,7 @@ def test_unpublish(client: FlaskClient):
     assert res_unpublish.status == '204 NO CONTENT'
     res_get = util.get_post(client, DEFAULT_USER, post_id)
     assert not res_get.json['is_published']
-    assert res_get.json['publish_date'] is None
+    assert 'publish_date' not in res_get.json
 
 
 def test_feature(client: FlaskClient):

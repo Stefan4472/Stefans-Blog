@@ -19,14 +19,14 @@ import flaskr.api.util as util
 BLUEPRINT = Blueprint('posts', __name__, url_prefix='/api/v1/posts')
 
 
-@BLUEPRINT.route('/', methods=['GET'])
+@BLUEPRINT.route('', methods=['GET'])
 @login_required
 def get_posts():
     """Get post information."""
     try:
-        contract = GetPostsContract.from_json(request.get_json())
+        contract = GetPostsContract.from_json(request.args)
     except marshmallow.exceptions.ValidationError as e:
-        return Response(status=400, response='Invalid parameters: {}'.format(e))
+        return jsonify(f'Invalid parameters: {e}'), 400
 
     # Create query dynamically based on the parameters passed in the request
     query = Post.query
@@ -38,27 +38,29 @@ def get_posts():
     res = query.paginate(
         page=contract.offset if contract.offset else 1,
         per_page=contract.limit if contract.limit else 20,
-        error_out=True,
     )
+    # Offset specified but no results: request is out of range
+    if contract.offset and not res:
+        return Response(404)
     return jsonify([post.make_contract().make_json() for post in res.items])
 
 
-@BLUEPRINT.route('/', methods=['POST'])
+@BLUEPRINT.route('', methods=['POST'])
 @login_required
 def create_post():
     """Creates a new post."""
     try:
         contract = CreatePostContract.from_json(request.get_json())
     except marshmallow.exceptions.ValidationError as e:
-        return Response(status=400, response='Invalid parameters: {}'.format(e))
+        return jsonify(f'Invalid parameters: {e}'), 400
 
     try:
         post = post_manager.create_post(contract, current_user)
         return jsonify(post.make_contract().make_json()), 201
     except InvalidSlug:
-        return Response(status=400, response='Slug is invalid or non-unique')
+        return jsonify('Slug is invalid or non-unique'), 400
     except InvalidFile as e:
-        return Response(status=400, response=f'Invalid file_id {e.file_id}')
+        return jsonify(f'Invalid file_id {e.file_id}'), 400
     except Exception as e:
         current_app.logger.error(f'Unknown exception while creating post: {e}')
         return Response(status=500)
@@ -80,19 +82,19 @@ def update_post(post_id: int):
     try:
         contract = UpdatePostContract.from_json(request.get_json())
     except marshmallow.exceptions.ValidationError as e:
-        return Response(status=400, response='Invalid parameters: {}'.format(e))
+        return jsonify(f'Invalid parameters: {e}'), 400
 
     try:
         post = post_manager.update_post(post_id, contract, current_user)
         return jsonify(post.make_contract().make_json())
-    except NoSuchPost:
-        return Response(status=404)
     except InvalidSlug:
-        return Response(status=400, response='Slug is invalid or non-unique')
+        return jsonify('Slug is invalid or non-unique'), 400
     except InvalidFile as e:
-        return Response(status=400, response=f'Invalid file_id {e.file_id}')
+        return jsonify(f'Invalid file_id {e.file_id}'), 400
     except InsufficientPermission:
         return Response(status=403)
+    except NoSuchPost:
+        return Response(status=404)
     except Exception as e:
         current_app.logger.error(f'Unknown exception while creating post: {e}')
         return Response(status=500)
@@ -104,10 +106,10 @@ def delete_post(post_id: int):
     try:
         post_manager.delete_post(post_id, current_user)
         return Response(status=204)
-    except NoSuchPost:
-        return Response(status=404)
     except InsufficientPermission:
         return Response(status=403)
+    except NoSuchPost:
+        return Response(status=404)
 
 
 @BLUEPRINT.route('/<int:post_id>/content', methods=['GET'])
@@ -125,13 +127,13 @@ def set_content(post_id: int):
     try:
         raw_markdown, _ = util.get_uploaded_file(request)
     except ValueError as e:
-        return Response(status=400, response=str(e))
+        return jsonify(e), 400
 
     try:
         post_manager.set_content(post_id, raw_markdown)
         return Response(status=204)
     except InvalidMarkdown as e:
-        return Response(status=400, response=str(e))
+        return jsonify(e), 400
     except Exception as e:
         current_app.logger.error(f'Unknown exception while setting content: {e}')
         return Response(status=500)
@@ -152,14 +154,14 @@ def add_tag(post_id: int):
     try:
         contract = AddTagContract.from_json(request.get_json())
     except marshmallow.exceptions.ValidationError as e:
-        return Response(status=400, response='Invalid parameters: {}'.format(e))
+        return jsonify(f'Invalid parameters: {e}'), 400
 
     post = Post.query.filter_by(id=post_id).first()
     if not post:
         return Response(status=404)
     tag = Tag.query.filter_by(slug=contract.tag).first()
     if not tag:
-        return Response(status=400)
+        return jsonify('No such tag'), 400
 
     if tag not in post.tags:
         post.tags.append(tag)

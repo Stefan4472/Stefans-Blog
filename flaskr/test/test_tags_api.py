@@ -1,5 +1,5 @@
 from flask.testing import FlaskClient
-import flaskr.test.util as util
+import flaskr.test.test_util as util
 from flaskr.test.conftest import make_auth_headers, DEFAULT_USER, INVALID_USER
 
 
@@ -79,7 +79,7 @@ def test_delete(client: FlaskClient):
 def test_create_incomplete(client: FlaskClient):
     """Creating a tag that is missing a required field should fail"""
     response = client.post(
-        '/api/v1/tags/',
+        '/api/v1/tags',
         json={'name': 'Test'},
         headers=make_auth_headers(DEFAULT_USER),
     )

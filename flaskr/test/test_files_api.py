@@ -2,7 +2,7 @@ import pathlib
 import hashlib
 from enum import Enum
 from flask.testing import FlaskClient
-import flaskr.test.util as util
+import flaskr.test.test_util as util
 from flaskr.test.conftest import DEFAULT_USER, INVALID_USER
 
 
@@ -110,7 +110,6 @@ def test_missing_extension(client: FlaskClient):
     file.filename = 'test'
     response = util.upload_file(client, DEFAULT_USER, file)
     assert response.status == '400 BAD REQUEST'
-    assert list(response.response)[0] == b'Unsupported or missing file extension'
 
 
 def test_unsupported_extension(client: FlaskClient):
@@ -119,7 +118,6 @@ def test_unsupported_extension(client: FlaskClient):
     file.filename = 'test.py'
     response = util.upload_file(client, DEFAULT_USER, file)
     assert response.status == '400 BAD REQUEST'
-    assert list(response.response)[0] == b'Unsupported or missing file extension'
 
 
 def test_download(client: FlaskClient):

@@ -12,26 +12,25 @@ from flaskr.contracts.update_tag import UpdateTagContract
 BLUEPRINT = Blueprint('tags', __name__, url_prefix='/api/v1/tags')
 
 
-@BLUEPRINT.route('/', methods=['GET'])
+@BLUEPRINT.route('', methods=['GET'])
 @login_required
 def get_all_tags():
     """Get all tags that have been created."""
     return jsonify([tag.make_contract().make_json() for tag in Tag.query.all()])
 
 
-@BLUEPRINT.route('/', methods=['POST'])
+@BLUEPRINT.route('', methods=['POST'])
 @login_required
 def create_tag():
     """Create a tag."""
-    # TODO: could make "slug" optional because it can be auto-generated from the name
     try:
         contract = CreateTagContract.from_json(request.get_json())
     except marshmallow.exceptions.ValidationError as e:
-        return Response(status=400, response='Invalid parameters: {}'.format(e))
+        return jsonify(f'Invalid parameters: {e.messages}'), 400
 
     tag = Tag.query.filter_by(slug=contract.slug).first()
     if tag:
-        return Response(status=400, response='The desired slug is not unique')
+        return jsonify('The desired slug is not unique'), 400
 
     tag = Tag(
         slug=contract.slug,
@@ -62,11 +61,10 @@ def update_tag(tag: str):
     if not tag:
         return Response(status=404)
 
-    # TODO: the fields should be marked "required" on the OpenAPI Spec
     try:
         contract = UpdateTagContract.from_json(request.get_json())
     except marshmallow.exceptions.ValidationError as e:
-        return Response(status=400, response='Invalid parameters: {}'.format(e))
+        return jsonify(f'Invalid parameters: {e}'), 400
 
     tag.name = contract.name
     tag.description = contract.description

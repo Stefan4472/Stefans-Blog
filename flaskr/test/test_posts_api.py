@@ -1,6 +1,6 @@
 """Unit tests for the Posts API."""
 from flask.testing import FlaskClient
-import flaskr.test.util as util
+import flaskr.test.test_util as util
 from flaskr.test.conftest import DEFAULT_USER, INVALID_USER
 
 
@@ -120,7 +120,7 @@ def test_get_featured(client: FlaskClient):
 def test_get_published(client: FlaskClient):
     for i in range(1, 11):
         util.create_post(client, DEFAULT_USER, slug=f'slug-{i}')
-    assert not util.get_posts(client, DEFAULT_USER, featured=True).json
+    assert not util.get_posts(client, DEFAULT_USER, published=True).json
 
     util.publish_post(client, DEFAULT_USER, 3, False)
     res_1 = util.get_posts(client, DEFAULT_USER, published=True)

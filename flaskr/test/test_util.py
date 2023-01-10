@@ -47,14 +47,14 @@ def get_posts(
         limit: Optional[int] = None,
         offset: Optional[int] = None,
 ) -> Response:
-    _json = {}
-    if published is not None: _json['is_published'] = published
-    if featured is not None: _json['is_featured'] = featured
-    if limit: _json['limit'] = limit
-    if offset: _json['offset'] = offset
+    args = {}
+    if published is not None: args['is_published'] = published
+    if featured is not None: args['is_featured'] = featured
+    if limit: args['limit'] = limit
+    if offset: args['offset'] = offset
     return client.get(
-        '/api/v1/posts/',
-        json=_json,
+        '/api/v1/posts',
+        query_string=args,
         headers=make_auth_headers(user) if user else {},
     )
 
@@ -77,7 +77,7 @@ def create_post(
     if banner_id: _json['banner_image'] = banner_id
     if thumbnail_id: _json['thumbnail_image'] = thumbnail_id
     return client.post(
-        '/api/v1/posts/',
+        '/api/v1/posts',
         json=_json,
         headers=make_auth_headers(user) if user else {},
     )
@@ -234,7 +234,7 @@ def create_tag(
     }
     if color: _json['color'] = color
     return client.post(
-        '/api/v1/tags/',
+        '/api/v1/tags',
         json=_json,
         headers=make_auth_headers(user) if user else {},
     )
@@ -274,7 +274,7 @@ def delete_tag(client: FlaskClient, user: Optional[User], tag_slug: str) -> Resp
 
 
 def get_all_tags(client: FlaskClient, user: Optional[User]) -> Response:
-    return client.get('/api/v1/tags/', headers=make_auth_headers(user) if user else {})
+    return client.get('/api/v1/tags', headers=make_auth_headers(user) if user else {})
 
 
 @dataclass
@@ -288,13 +288,13 @@ class ExampleFile:
 
 
 def get_all_files(client: FlaskClient, user: Optional[User]) -> Response:
-    return client.get('/api/v1/files/', headers=make_auth_headers(user) if user else {})
+    return client.get('/api/v1/files', headers=make_auth_headers(user) if user else {})
 
 
 def upload_file(client: FlaskClient, user: Optional[User], file: ExampleFile) -> Response:
     """Uploads the specified file and returns the response."""
     return client.post(
-        '/api/v1/files/',
+        '/api/v1/files',
         data={'file': (io.BytesIO(file.contents), file.filename)},
         headers=make_auth_headers(user) if user else {},
         content_type='multipart/form-data',

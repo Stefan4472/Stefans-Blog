@@ -52,7 +52,7 @@ components:
       description: A post on the website.
       required:
         - id
-        - created_by
+        - author
         - last_modified
       properties:
         id:
@@ -60,8 +60,7 @@ components:
           description: Unique integer ID assigned to this post.
           readOnly: true
           example: 15
-        # TODO: in which situations should it return ID, in which should it return the full object?
-        created_by:
+        author:
           $ref: '#/components/schemas/User'
           #description: The user who created (and therefore owns) this post.
         last_modified:
@@ -72,7 +71,7 @@ components:
           example: 2022-09-15T10:40:52Z
         slug:
           type: string
-          description: Unique "slug" used to make the URL for this post on the public website. Cannot be changed while the post is published.
+          description: Unique "slug" used to make the URL for this post on the public website. Because the post URL (when published) is based on the slug, changing the slug will change the post's URL.
           example: gamedev-spritesheets
         title:
           type: string
@@ -112,13 +111,13 @@ components:
           description: Whether this post is currently published.
           readOnly: true
           example: true
-        file_references:
-          type: array
-          items:
-            type: string
-          description: FileIds that are "referenced" from this post. This includes the featured, banner, and thumbnail images, as well as any images displayed on the website.
-          readOnly: true
-          example: cd280bf9-b7bd-424e-ae56-4ea88120cfb9, 83fe542d-3fbb-475b-b667-62f37cc6574e, 1f536f1b-cb44-41e2-be18-c89140d0f02c
+#        file_references:
+#          type: array
+#          items:
+#            type: string
+#          description: FileIds that are "referenced" from this post. This includes the featured, banner, and thumbnail images, as well as any images displayed on the website.
+#          readOnly: true
+#          example: cd280bf9-b7bd-424e-ae56-4ea88120cfb9, 83fe542d-3fbb-475b-b667-62f37cc6574e, 1f536f1b-cb44-41e2-be18-c89140d0f02c
     Tag:
       type: object
       description: A tag used to categorize posts
@@ -210,12 +209,14 @@ components:
     QueryLimit:
       name: limit
       in: query
+      required: true
       description: Limits the number of items returned per page
       schema:
         type: integer
     QueryOffset:
       name: offset
       in: query
+      required: true
       description: Specifies the page number of items to return
       schema:
         type: integer
@@ -225,7 +226,7 @@ components:
       required: true
       description: Unique postId assigned to a post
       schema:
-        type: string
+        type: integer
     Tag:
       name: tag
       in: path
@@ -276,6 +277,14 @@ components:
           schema:
             type: string
             example: You do not have permission to modify the specified post
+    ErrServerError:
+      description: The server encountered an internal error
+      content:
+        application/json:
+          schema:
+            type: string
+            example: Failed to write to the database
+
 security:
   - BasicAuth: []
 
@@ -292,6 +301,7 @@ tags:
     description: Email list management
 
 paths:
+  ### Posts
   /posts:
     get:
       description: Get post information, applying optional filters and paging.
@@ -321,36 +331,34 @@ paths:
                   $ref: '#/components/schemas/Post'
         '401':
           $ref: '#/components/responses/ErrUnauthorized'
+        '404':
+          $ref: '#/components/responses/ErrNotFound'
+        '500':
+          $ref: '#/components/responses/ErrServerError'
 
     post:
       description: Create a new post. All parameters are optional; if unset, they will use default values.
       tags:
         - posts
-      parameters:
-        - name: slug
-          in: query
-          schema:
-            type: string
-        - name: title
-          in: query
-          schema:
-            type: string
-        - name: byline
-          in: query
-          schema:
-            type: string
-        - name: featured_image
-          in: query
-          schema:
-            type: string
-        - name: banner_image
-          in: query
-          schema:
-            type: string
-        - name: thumbnail_image
-          in: query
-          schema:
-            type: string
+      requestBody:
+        # TODO: make required and generate defaults client-side
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                slug:
+                  type: string
+                title:
+                  type: string
+                byline:
+                  type: string
+                featured_image:
+                  type: string
+                banner_image:
+                  type: string
+                thumbnail_image:
+                  type: string
       responses:
         '201':
           description: Successfully created and returned a new post
@@ -358,8 +366,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Post'
+        '400':
+          description: Error creating post
+          content:
+            application/json:
+              schema:
+                type: string
+                example: featured_image does not meet size requirements.
         '401':
           $ref: '#/components/responses/ErrUnauthorized'
+        '500':
+          $ref: '#/components/responses/ErrServerError'
 
   /posts/{post_id}:
     parameters:
@@ -379,36 +396,36 @@ paths:
           $ref: '#/components/responses/ErrUnauthorized'
         '404':
           $ref: '#/components/responses/ErrNoSuchPost'
+        '500':
+          $ref: '#/components/responses/ErrServerError'
 
+    # TODO: make all required? Semantics get tricky
     put:
-      description: Change post metadata. The slug can only be changed if the post has not been published yet. Can also fail if an image is set that does not meet the specifications. Only the user who created the post can change it.
+      description: Change post metadata. Can fail if an image is set that does not meet the specifications. Only the user who created the post can change it.
       tags:
         - posts
-      parameters:
-        - name: slug
-          in: query
-          schema:
-            type: string
-        - name: title
-          in: query
-          schema:
-            type: string
-        - name: byline
-          in: query
-          schema:
-            type: string
-        - name: featured_image
-          in: query
-          schema:
-            type: string
-        - name: banner_image
-          in: query
-          schema:
-            type: string
-        - name: thumbnail_image
-          in: query
-          schema:
-            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - slug
+                - title
+                - byline
+              properties:
+                slug:
+                  type: string
+                title:
+                  type: string
+                byline:
+                  type: string
+                featured_image:
+                  type: string
+                banner_image:
+                  type: string
+                thumbnail_image:
+                  type: string
       responses:
         '200':
           description: Changed metadata and returned the updated post.
@@ -429,6 +446,9 @@ paths:
           $ref: '#/components/responses/ErrNoPermissionToModifyPost'
         '404':
           $ref: '#/components/responses/ErrNoSuchPost'
+        '500':
+          $ref: '#/components/responses/ErrServerError'
+
     delete:
       description: Delete a post
       tags:
@@ -442,6 +462,8 @@ paths:
           $ref: '#/components/responses/ErrNoPermissionToModifyPost'
         '404':
           $ref: '#/components/responses/ErrNoSuchPost'
+        '500':
+          $ref: '#/components/responses/ErrServerError'
 
   /posts/{post_id}/content:
     parameters:
@@ -454,14 +476,15 @@ paths:
         '200':
           description: Returned the Markdown file
           content:
-            # TODO: what format to return? Binary? Text? Will be a markdown file
-            text/plain:
+            application/octet-stream:
               schema:
                 type: string
         '401':
           $ref: '#/components/responses/ErrUnauthorized'
         '404':
           $ref: '#/components/responses/ErrNoSuchPost'
+        '500':
+          $ref: '#/components/responses/ErrServerError'
 
     post:
       description: Upload the Markdown file of this post, overwriting whichever file had been there previously.
@@ -469,11 +492,15 @@ paths:
         - posts
       requestBody:
         content:
-          # TODO: is this the right format? Should it accept binary or plain text?
-          text/plain:
+          multipart/form-data:
             schema:
-              type: string
-              format: binary
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
       responses:
         '204':
           description: Markdown file was successfully set
@@ -490,6 +517,8 @@ paths:
           $ref: '#/components/responses/ErrNoPermissionToModifyPost'
         '404':
           $ref: '#/components/responses/ErrNoSuchPost'
+        '500':
+          $ref: '#/components/responses/ErrServerError'
 
   /posts/{post_id}/tags:
     parameters:
@@ -511,17 +540,24 @@ paths:
           $ref: '#/components/responses/ErrUnauthorized'
         '404':
           $ref: '#/components/responses/ErrNoSuchPost'
+        '500':
+          $ref: '#/components/responses/ErrServerError'
 
     post:
       description: Add a tag to this post.
       tags:
         - posts
-      parameters:
-        - name: tag
-          in: query
-          description: Slug of the tag to add to the post
-          schema:
-            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - tag
+              properties:
+                tag:
+                  type: string
+                  description: Slug of the tag to add to the post
       responses:
         '204':
           description: Tag was added successfully
@@ -530,15 +566,16 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
+                type: string
+                example: No such tag exists.
         '401':
           $ref: '#/components/responses/ErrUnauthorized'
         '403':
           $ref: '#/components/responses/ErrNoPermissionToModifyPost'
         '404':
           $ref: '#/components/responses/ErrNoSuchPost'
+        '500':
+          $ref: '#/components/responses/ErrServerError'
 
   /posts/{post_id}/tags/{tag}:
     parameters:
@@ -564,39 +601,63 @@ paths:
           $ref: '#/components/responses/ErrNoPermissionToModifyPost'
         '404':
           $ref: '#/components/responses/ErrNoSuchPost'
+        '500':
+          $ref: '#/components/responses/ErrServerError'
 
-  /posts/commands/publish:
+  ### Commands
+  /commands/publish:
     post:
       description: Publish a post
       tags:
         - commands
-      parameters:
-        - name: post_id
-          in: query
-          required: true
-          description: ID of the post to publish
-          schema:
-            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - post_id
+                - send_email
+              properties:
+                post_id:
+                  type: integer
+                  description: ID of the post to publish
+                send_email:
+                  type: boolean
+                  description: Whether to trigger sending an update email to all subscribers.
       responses:
         '204':
-          description: The post was published or had already been published.
+          description: The post was published.
+        '400':
+          description: Could not publish post because it was already published.
+          content:
+            application/json:
+              schema:
+                type: string
+                example: The post is already published
         '401':
           $ref: '#/components/responses/ErrUnauthorized'
         '404':
           $ref: '#/components/responses/ErrNoSuchPost'
+        '500':
+          $ref: '#/components/responses/ErrServerError'
 
-  /posts/commands/unpublish:
+  /commands/unpublish:
     post:
       description: Un-publish a post. This may lead to broken links!
       tags:
         - commands
-      parameters:
-        - name: post_id
-          in: query
-          required: true
-          description: ID of the post to unpublish
-          schema:
-            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - post_id
+              properties:
+                post_id:
+                  type: integer
+                  description: ID of the post to unpublish
       responses:
         '204':
           description: The post was unpublished
@@ -611,24 +672,30 @@ paths:
           $ref: '#/components/responses/ErrUnauthorized'
         '404':
           $ref: '#/components/responses/ErrNoSuchPost'
+        '500':
+          $ref: '#/components/responses/ErrServerError'
 
-  /posts/commands/feature:
+  /commands/feature:
     post:
       description: Make a post featured
       tags:
         - commands
-      parameters:
-        - name: post_id
-          in: query
-          required: true
-          description: ID of the post to make featured
-          schema:
-            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - post_id
+              properties:
+                post_id:
+                  type: integer
+                  description: ID of the post to make featured.
       responses:
         '204':
           description: The post was featured
         '400':
-          description: The specified post is not published, and therefore cannot be featured.
+          description: The specified post is not published, and therefore cannot be featured. Or it was already featured.
           content:
             application/json:
               schema:
@@ -638,19 +705,25 @@ paths:
           $ref: '#/components/responses/ErrUnauthorized'
         '404':
           $ref: '#/components/responses/ErrNoSuchPost'
+        '500':
+          $ref: '#/components/responses/ErrServerError'
 
-  /posts/commands/unfeature:
+  /commands/unfeature:
     post:
       description: Un-feature a post
       tags:
         - commands
-      parameters:
-        - name: post_id
-          in: query
-          required: true
-          description: ID of the post to unfeature
-          schema:
-            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - post_id
+              properties:
+                post_id:
+                  type: integer
+                  description: ID of the post to un-feature
       responses:
         '204':
           description: The post was unfeatured
@@ -665,7 +738,10 @@ paths:
           $ref: '#/components/responses/ErrUnauthorized'
         '404':
           $ref: '#/components/responses/ErrNoSuchPost'
+        '500':
+          $ref: '#/components/responses/ErrServerError'
 
+  ### Tags
   /tags:
     get:
       description: Get all tags that have been created. There are not expected to be more than 10-20 tags used on a website; therefore, this endpoint does not support paging.
@@ -682,35 +758,36 @@ paths:
                   $ref: '#/components/schemas/Tag'
         '401':
           $ref: '#/components/responses/ErrUnauthorized'
+        '500':
+          $ref: '#/components/responses/ErrServerError'
+
     post:
       description: Create a new tag
       tags:
         - tags
-      parameters:
-        - name: name
-          in: query
-          description: Name of the tag
-          required: true
-          schema:
-            type: string
-        - name: slug
-          in: query
-          description: Slug used to create a URL for the tag. Must be unique. Cannot be changed once created.
-          required: true
-          schema:
-            type: string
-        - name: description
-          in: query
-          description: Tag description
-          required: true
-          schema:
-            type: string
-        - name: color
-          in: query
-          description: Hex color for the tag. Will be randomly generated by the backend if none is provided
-          schema:
-            type: string
-            pattern: '^#[0-9a-fA-F]{6}$'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - slug
+                - description
+              properties:
+                name:
+                  type: string
+                  description: Name of the tag
+                slug:
+                  type: string
+                  description: Slug used to create a URL for the tag. Must be unique. Cannot be changed once created.
+                description:
+                  type: string
+                  description: Tag description
+                color:
+                  type: string
+                  description: Hex color for the tag. Will be randomly generated by the backend if none is provided
+                  pattern: '^#[0-9a-fA-F]{6}$'
       responses:
         '201':
           description: Tag was created and returned.
@@ -724,9 +801,11 @@ paths:
             application/json:
               schema:
                 type: string
-                example: The desired slug is not unique
+                example: A tag with the specified slug already exists.
         '401':
           $ref: '#/components/responses/ErrUnauthorized'
+        '500':
+          $ref: '#/components/responses/ErrServerError'
 
   /tags/{tag}:
     parameters:
@@ -746,27 +825,30 @@ paths:
           $ref: '#/components/responses/ErrUnauthorized'
         '404':
           $ref: '#/components/responses/ErrNoSuchTag'
+        '500':
+          $ref: '#/components/responses/ErrServerError'
+
     put:
       description: Update a tag
       tags:
         - tags
-      parameters:
-        - name: name
-          in: query
-          description: Name of the tag
-          schema:
-            type: string
-        - name: description
-          in: query
-          description: Tag description
-          schema:
-            type: string
-        - name: color
-          in: query
-          description: Hex color for the tag. Will be randomly generated if none is provided
-          schema:
-            type: string
-            pattern: '^#[0-9a-fA-F]{6}$'
+      # TODO: make all required
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Name of the tag
+                description:
+                  type: string
+                  description: Tag description
+                color:
+                  type: string
+                  description: Hex color for the tag. Will be randomly generated by the backend if none is provided
+                  pattern: '^#[0-9a-fA-F]{6}$'
       responses:
         '200':
           description: Changed the tag and returned the updated tag
@@ -785,6 +867,9 @@ paths:
           $ref: '#/components/responses/ErrUnauthorized'
         '404':
           $ref: '#/components/responses/ErrNoSuchTag'
+        '500':
+          $ref: '#/components/responses/ErrServerError'
+
     delete:
       description: Delete the tag. The tag will be removed from all posts that use it
       tags:
@@ -796,7 +881,10 @@ paths:
           $ref: '#/components/responses/ErrUnauthorized'
         '404':
           $ref: '#/components/responses/ErrNoSuchTag'
+        '500':
+          $ref: '#/components/responses/ErrServerError'
 
+  ### Files API
   /files:
     get:
       description: Get a list of files
@@ -816,32 +904,24 @@ paths:
                   $ref: '#/components/schemas/File'
         '401':
           $ref: '#/components/responses/ErrUnauthorized'
+        '500':
+          $ref: '#/components/responses/ErrServerError'
+
     post:
       description: Upload a new file. The server stores the hash of every uploaded file. It can therefore detect if a file already exists on the server, in which case it will not store a duplicate. Please specify the content type when uploading.
       tags:
         - files
       requestBody:
         content:
-          application/octet-stream:
+          multipart/form-data:
             schema:
-              type: string
-              format: binary
-          application/pdf:
-            schema:
-              type: string
-              format: binary
-          image/jpeg:
-            schema:
-              type: string
-              format: binary
-          image/png:
-            schema:
-              type: string
-              format: binary
-          image/gif:
-            schema:
-              type: string
-              format: binary
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
       responses:
         '200':
           description: File already exists on server. Returns the metadata of the existing file
@@ -855,8 +935,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/File'
+        # TODO: 400 response bad file??
         '401':
           $ref: '#/components/responses/ErrUnauthorized'
+        '500':
+          $ref: '#/components/responses/ErrServerError'
 
   /files/{file_id}:
     parameters:
@@ -877,6 +960,9 @@ paths:
             $ref: '#/components/responses/ErrUnauthorized'
           '404':
             $ref: '#/components/responses/ErrNoSuchFile'
+          '500':
+            $ref: '#/components/responses/ErrServerError'
+
     delete:
       description: Delete a file. Will fail if the file is referenced from any posts.
       tags:
@@ -895,27 +981,30 @@ paths:
           $ref: '#/components/responses/ErrUnauthorized'
         '404':
             $ref: '#/components/responses/ErrNoSuchFile'
+        '500':
+          $ref: '#/components/responses/ErrServerError'
 
-  /files/{file_id}/references:
-    parameters:
-      - $ref: '#/components/parameters/FileId'
-    get:
-      description: Get a list of posts that this file is referenced from.
-      tags:
-        - files
-      responses:
-        '200':
-          description: Returned a list of referenced postIds
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: string
-        '401':
-          $ref: '#/components/responses/ErrUnauthorized'
-        '404':
-            $ref: '#/components/responses/ErrNoSuchFile'
+# TODO
+#  /files/{file_id}/references:
+#    parameters:
+#      - $ref: '#/components/parameters/FileId'
+#    get:
+#      description: Get a list of posts that this file is referenced from.
+#      tags:
+#        - files
+#      responses:
+#        '200':
+#          description: Returned a list of referenced postIds
+#          content:
+#            application/json:
+#              schema:
+#                type: array
+#                items:
+#                  type: string
+#        '401':
+#          $ref: '#/components/responses/ErrUnauthorized'
+#        '404':
+#            $ref: '#/components/responses/ErrNoSuchFile'
 
   /files/{file_id}/metadata:
     parameters:
@@ -935,6 +1024,8 @@ paths:
           $ref: '#/components/responses/ErrUnauthorized'
         '404':
             $ref: '#/components/responses/ErrNoSuchFile'
+        '500':
+          $ref: '#/components/responses/ErrServerError'
 
   # Note: the actual endpoint does not have authentication set up. Should it?
   /registrations:
@@ -942,6 +1033,7 @@ paths:
       description: Register a new email address in the mailing list
       tags:
         - emails
+      # TODO: move into request body
       parameters:
       - name: email
         in: query
@@ -953,3 +1045,10 @@ paths:
           description: Successfully added email address to the mailing list
         '400':
           description: Invalid email address format
+          content:
+            application/json:
+              schema:
+                type: string
+                example: Provided string is not a valid email address.
+        '500':
+          $ref: '#/components/responses/ErrServerError'
