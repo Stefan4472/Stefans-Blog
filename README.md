@@ -78,3 +78,7 @@ if __name__ == '__main__':
     print('Hello world')
 </x-code>
 ```
+
+## Generating the API client
+
+In a separate virtual environment, install [openapi-python-client](https://github.com/openapi-generators/openapi-python-client). Then, from the root directory, run `openapi-python-client update --path api.yaml`.

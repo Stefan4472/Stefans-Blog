@@ -1,6 +1,7 @@
 -e ./Imagecropper
 -e ./Client
 -e ./renderer
+-e ./stefan-on-software-api-client
 stefansearch==0.9.1
 bcrypt==3.2.0
 beautifulsoup4==4.10.0
