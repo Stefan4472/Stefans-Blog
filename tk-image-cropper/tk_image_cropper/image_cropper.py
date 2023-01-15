@@ -32,7 +32,7 @@ class ImageCropper(tk.Frame):
         desired_height: int,
     ):
         tk.Frame.__init__(self)
-        self.master.title("ImageCropper")
+        self.master.title("tk-image-cropper")
 
         self.image_path = image_path
         self.desired_width = desired_width
@@ -397,8 +397,8 @@ def run_image_cropper(
 ):
     if out.is_file():
         raise ValueError(f"Don't want to overwrite {out}")
-    tk.Tk()
-    app = ImageCropper(img_path, desired_width, desired_height)
+    root = tk.Tk()
+    app = ImageCropper(str(img_path), desired_width, desired_height)
     app.mainloop()
     if not app.finished_successfully:
         raise ValueError("Cancelled")

@@ -8,7 +8,7 @@ import click
 from sos_client import constants
 from sos_client.post_meta import PostMeta
 
-from imagecropper import cropper
+from tk_image_cropper import image_cropper
 
 
 @click.command()
@@ -89,9 +89,9 @@ def decide_tags(default: Optional[List[str]]) -> List[str]:
 def decide_featured_image(post_dir: Path, default: Optional[Path]) -> Path:
     if default and _confirm_choice(f"Current featured image is: {default}"):
         return default
-    image_path = cropper.choose_image(post_dir)
+    image_path = image_cropper.choose_image(post_dir)
     write_path = post_dir / "featured.jpg"
-    cropper.run_image_cropper(
+    image_cropper.run_image_cropper(
         image_path,
         constants.FEATURED_IMAGE_WIDTH,
         constants.FEATURED_IMAGE_HEIGHT,
@@ -103,9 +103,9 @@ def decide_featured_image(post_dir: Path, default: Optional[Path]) -> Path:
 def decide_banner_image(post_dir: Path, default: Optional[Path]) -> Path:
     if default and _confirm_choice(f"Current banner is: {default}"):
         return default
-    image_path = cropper.choose_image(post_dir)
+    image_path = image_cropper.choose_image(post_dir)
     write_path = post_dir / "banner.jpg"
-    cropper.run_image_cropper(
+    image_cropper.run_image_cropper(
         image_path,
         constants.BANNER_WIDTH,
         constants.BANNER_HEIGHT,
@@ -117,9 +117,9 @@ def decide_banner_image(post_dir: Path, default: Optional[Path]) -> Path:
 def decide_thumbnail_image(post_dir: Path, default: Optional[Path]) -> Path:
     if default and _confirm_choice(f"Current thumbnail is: {default}"):
         return default
-    image_path = cropper.choose_image(post_dir)
+    image_path = image_cropper.choose_image(post_dir)
     write_path = post_dir / "thumbnail.jpg"
-    cropper.run_image_cropper(
+    image_cropper.run_image_cropper(
         image_path,
         constants.THUMBNAIL_WIDTH,
         constants.THUMBNAIL_HEIGHT,
