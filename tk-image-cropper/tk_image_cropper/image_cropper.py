@@ -3,6 +3,7 @@ import pathlib
 import tkinter as tk
 import typing
 from tkinter.filedialog import askopenfilename
+from tkinter.messagebox import askokcancel
 
 from PIL import Image, ImageTk
 
@@ -395,9 +396,15 @@ def run_image_cropper(
     desired_height: int,
     out: pathlib.Path,
 ):
-    if out.is_file():
-        raise ValueError(f"Don't want to overwrite {out}")
     root = tk.Tk()
+    root.title("Tk Root")
+    if out.is_file():
+        allow_overwrite = askokcancel(
+            title="Confirm overwrite",
+            message=f"The file {out} will be overwritten. Proceed?",
+        )
+        if not allow_overwrite:
+            raise ValueError(f"Don't want to overwrite {out}")
     app = ImageCropper(str(img_path), desired_width, desired_height)
     app.mainloop()
     if not app.finished_successfully:
