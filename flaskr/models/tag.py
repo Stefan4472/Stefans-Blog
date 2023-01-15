@@ -1,5 +1,3 @@
-from typing import Dict
-
 from flaskr import db
 from flaskr.contracts.data_schemas import TagContract
 

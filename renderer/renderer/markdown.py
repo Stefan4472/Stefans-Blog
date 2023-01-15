@@ -1,5 +1,3 @@
-import enum
-import pathlib
 import re
 import typing
 
@@ -175,5 +173,5 @@ def is_markdown_valid(markdown: str) -> bool:
     try:
         render_string(markdown)
         return True
-    except Exception as e:
+    except Exception:
         return False

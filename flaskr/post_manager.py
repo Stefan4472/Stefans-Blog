@@ -154,7 +154,7 @@ def set_content(post_id: int, content: bytes):
     except UnicodeError as e:
         raise InvalidMarkdown(f"Error reading Markdown in UTF-8: {e}")
     if not renderer.markdown.is_markdown_valid(markdown):
-        raise InvalidMarkdown(f"Error processing Markdown: {e}")
+        raise InvalidMarkdown("Provided Markdown is invalid")
     post.write_content(markdown)
     post.last_modified = datetime.now()
     db.session.commit()

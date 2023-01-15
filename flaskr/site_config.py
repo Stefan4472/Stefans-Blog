@@ -1,8 +1,7 @@
 import dataclasses as dc
 import os
 import typing
-from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict
 
 
 class ConfigKeys:

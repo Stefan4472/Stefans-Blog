@@ -13,7 +13,7 @@ def publish_post(
     client: FlaskClient, user: Optional[User], post_id: int, send_email: bool
 ) -> Response:
     return client.post(
-        f"/api/v1/commands/publish",
+        "/api/v1/commands/publish",
         json={"post_id": post_id, "send_email": send_email},
         headers=make_auth_headers(user) if user else {},
     )
@@ -23,7 +23,7 @@ def unpublish_post(
     client: FlaskClient, user: Optional[User], post_id: int, send_email: bool
 ) -> Response:
     return client.post(
-        f"/api/v1/commands/unpublish",
+        "/api/v1/commands/unpublish",
         json={"post_id": post_id, "send_email": send_email},
         headers=make_auth_headers(user) if user else {},
     )
@@ -31,7 +31,7 @@ def unpublish_post(
 
 def feature_post(client: FlaskClient, user: Optional[User], post_id: int) -> Response:
     return client.post(
-        f"/api/v1/commands/feature",
+        "/api/v1/commands/feature",
         json={"post_id": post_id},
         headers=make_auth_headers(user) if user else {},
     )
@@ -39,7 +39,7 @@ def feature_post(client: FlaskClient, user: Optional[User], post_id: int) -> Res
 
 def unfeature_post(client: FlaskClient, user: Optional[User], post_id: int) -> Response:
     return client.post(
-        f"/api/v1/commands/unfeature",
+        "/api/v1/commands/unfeature",
         json={"post_id": post_id},
         headers=make_auth_headers(user) if user else {},
     )

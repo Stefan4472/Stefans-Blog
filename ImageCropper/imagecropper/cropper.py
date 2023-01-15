@@ -1,8 +1,5 @@
 import enum
-import json
-import os
 import pathlib
-import sys
 import tkinter as tk
 import typing
 from tkinter.filedialog import askopenfilename
@@ -189,12 +186,12 @@ class ImageCropper(tk.Frame):
 
         # Found intersect: copy whatever is within the bounding box into `resized_image`
         if overlap_left_x < overlap_right_x and overlap_top_y < overlap_bottom_y:
-            intersect = (
-                overlap_left_x,
-                overlap_top_y,
-                overlap_right_x,
-                overlap_bottom_y,
-            )
+            # intersect = (
+            #     overlap_left_x,
+            #     overlap_top_y,
+            #     overlap_right_x,
+            #     overlap_bottom_y,
+            # )
             # print('intersect (absolute coordinates: {}'.format(intersect))
             # Get itersect bounds relative to `resized_image`'s coordinate space
             crop_rel_x1 = overlap_left_x - img_top_left_x
@@ -399,8 +396,8 @@ def run_image_cropper(
     out: pathlib.Path,
 ):
     if out.is_file():
-        raise ValueError(f"Don't want to overwrite {write_path}")
-    root = tk.Tk()
+        raise ValueError(f"Don't want to overwrite {out}")
+    tk.Tk()
     app = ImageCropper(img_path, desired_width, desired_height)
     app.mainloop()
     if not app.finished_successfully:

@@ -33,7 +33,7 @@ def log_visit():
                     "secret": current_app.config[ConfigKeys.SITE_ANALYTICS_KEY],
                 },
             )
-        except requests.exceptions.ConnectionError as e:
+        except requests.exceptions.ConnectionError:
             current_app.logger.error("Couldn't connect to SiteAnalytics")
 
 

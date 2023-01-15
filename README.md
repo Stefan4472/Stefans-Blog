@@ -29,6 +29,10 @@ pip install -r requirements.txt
 
 There is a range of configuration values that can be set. See `flaskr/config.py` for more information. I recommend using a `.flaskenv` file and using absolute paths.
 
+## Linting
+
+Code should be linted using [black](https://black.readthedocs.io/en/stable) and [isort](https://isort.readthedocs.io/en/latest/). Furthermore, before pushing, you should run [pyflakes](https://github.com/PyCQA/pyflakes) and ensure that there are no errors.
+
 ## Usage
 
 To run the site, simply run Flask from the `flaskr` directory. The `python-dotenv` package will use the `.flaskenv` config file to set environment variables for you.

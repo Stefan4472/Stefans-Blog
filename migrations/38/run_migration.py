@@ -3,7 +3,7 @@ import re
 import sys
 
 from sos_client.manager_service import ManagerService
-from sos_client.postconfig import PostConfig, read_config_file
+from sos_client.postconfig import read_config_file
 
 
 def migrate_markdown(post_markdown: str) -> str:

@@ -1,6 +1,6 @@
 import marshmallow
-from flask import Blueprint, Response, current_app, jsonify, request, send_file
-from flask_login import current_user, login_required
+from flask import Blueprint, Response, current_app, request
+from flask_login import login_required
 
 from flaskr import post_manager
 from flaskr.contracts.publish_post import PublishPostContract
@@ -25,7 +25,7 @@ def publish_post():
         return Response(status=404)
     except Exception as e:
         current_app.logger.error(
-            f"Unknown exception while publishing post with id={post_id}: {e}"
+            f"Unknown exception while publishing post with id={contract.post_id}: {e}"
         )
         return Response(status=500)
 

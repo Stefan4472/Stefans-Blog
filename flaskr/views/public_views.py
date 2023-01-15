@@ -2,13 +2,11 @@ import flask
 import werkzeug.exceptions
 from flask_login import current_user, login_user
 from sqlalchemy import desc
-from werkzeug.security import check_password_hash
 
 from flaskr import site_logger
 from flaskr.auth import verify_login
 from flaskr.models.post import Post
 from flaskr.models.tag import Tag
-from flaskr.models.user import User
 from flaskr.site_config import ConfigKeys
 
 # Blueprint under which all views will be assigned

@@ -4,7 +4,7 @@ from pathlib import Path
 from flask import current_app, url_for
 
 from flaskr import db
-from flaskr.contracts.data_schemas import FileContract, UserContract
+from flaskr.contracts.data_schemas import FileContract
 
 
 class FileType(Enum):

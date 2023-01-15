@@ -24,7 +24,7 @@ def register_email():
 
     try:
         contract = RegisterEmailContract.from_json(request.get_json())
-    except marshmallow.exceptions.ValidationError as e:
+    except marshmallow.exceptions.ValidationError:
         return Response(status=400, response="Invalid email address")
 
     try:

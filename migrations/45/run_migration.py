@@ -3,7 +3,6 @@ import sys
 
 from sos_client.manager import upload_post_from_dir
 from sos_client.manager_service import ManagerService
-from sos_client.postconfig import read_config_file
 
 if __name__ == "__main__":
     """

@@ -1,5 +1,5 @@
 import sib_api_v3_sdk
-from flask import current_app, g, render_template, url_for
+from flask import current_app, g, render_template
 from sib_api_v3_sdk import (
     ApiClient,
     ContactsApi,
