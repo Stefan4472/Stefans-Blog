@@ -1,6 +1,6 @@
 # Stefans-Blog
 
-A blog platform written in Python 3.6 using the [Flask](https://palletsprojects.com/p/flask/) framework. See it live at [www.stefanonsoftware.com](https://www.stefanonsoftware.com/).
+A simple blogging website written in Python 3.9 using the [Flask](https://palletsprojects.com/p/flask/) framework. Articles are written in Markdown and use extra XML tags that I've implemented for features such as images. See it live at [www.stefanonsoftware.com](https://www.stefanonsoftware.com/).
 
 ## Sibling Projects
 
@@ -10,15 +10,15 @@ Along with this site, I'm working on two sibling projects:
 
 ## Project Organization 
 
-This repository contains code and templates, but no blog articles. My long-term goal is to make it 100% configurable, so that anyone _could_ use it to build their own blog.
+This repository contains code and templates, but no blog articles. My long-term goal is to make it 100% configurable and extensible, so that anyone _could_ use it to build their own blog.
 
 Important directories:
 - `flaskr`: the Flask code for the website, as well as static resources and templates.
 - `imagecropper`: a Python module that provides a Tkinter GUI to crop an image to a specific size. This is used to create properly-sized thumbnails, for example.
-- `sitemanager`: a Python module that provides a CLI to the blog's API.
+- `Client`: a Python module that provides a CLI to the blog's API.
+- `example-post`: an example post (including Markdown text, images, and configuration).
 - `renderer`: a Python module for rendering post Markdown into HTML.
-
-Follow the setup instructions below to install the `imagecropper`, `sitemanager`, and `renderer` modules!
+- `stefan-on-software-api-client`: an auto-generated Python client based on the StefanOnSoftware API (`api.yaml`).
 
 ## Setup
 
