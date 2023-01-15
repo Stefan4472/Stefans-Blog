@@ -1,14 +1,12 @@
-import flask
 import os
-from pathlib import Path
-from .database import db
-from flaskr.views import public_views, internal_views
-from flaskr.api import posts_api, emails_api, tags_api, files_api, commands_api
-from flaskr.site_config import SiteConfig, ConfigKeys
-from . import auth
-from . import cli
-from . import defaults
+
+import flask
 from stefansearch.engine.search_engine import SearchEngine
+
+from flaskr.site_config import ConfigKeys, SiteConfig
+
+# Note: initialization order matters. db must be initialized first.
+from .database import db
 
 
 def create_app(config: SiteConfig = None):
@@ -23,12 +21,14 @@ def create_app(config: SiteConfig = None):
         # Set instance path, if configured.
         # https://flask.palletsprojects.com/en/2.2.x/config/#instance-folders
         app.instance_path = os.path.join(app.root_path, my_config.rel_instance_path)
-        app.logger.info(f'instance_path set to {app.instance_path}')
+        app.logger.info(f"instance_path set to {app.instance_path}")
     if my_config.rel_static_path:
         # Set static path, if configured.
         # TODO: I'm not sure if this works 100% correctly. This needs to be tested.
         app.static_folder = os.path.join(app.root_path, my_config.rel_static_path)
-        app.logger.info(f'static_folder set to {app.static_folder}')
+        app.logger.info(f"static_folder set to {app.static_folder}")
+
+    from . import auth, cli, defaults
 
     # Populate app.config with paths that are set by default
     app.config.update(defaults.make_defaults(app.instance_path))
@@ -36,6 +36,9 @@ def create_app(config: SiteConfig = None):
     # Init extensions
     auth.login_manager.init_app(app)
     db.init_app(app)
+
+    from flaskr.api import commands_api, emails_api, files_api, posts_api, tags_api
+    from flaskr.views import internal_views, public_views
 
     # Register blueprints
     app.register_blueprint(public_views.BLUEPRINT)
@@ -45,7 +48,7 @@ def create_app(config: SiteConfig = None):
     app.register_blueprint(files_api.BLUEPRINT)
     app.register_blueprint(commands_api.BLUEPRINT)
     app.register_blueprint(emails_api.BLUEPRINT)
-    app.add_url_rule('/', endpoint='index')
+    app.add_url_rule("/", endpoint="index")
 
     # Init search engine
     app.search_engine = SearchEngine(app.config[ConfigKeys.SEARCH_INDEX_PATH])

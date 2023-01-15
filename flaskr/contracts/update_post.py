@@ -1,7 +1,9 @@
-import marshmallow as msh
 import dataclasses as dc
+from typing import Dict, Optional
+
+import marshmallow as msh
 from marshmallow import validate
-from typing import Optional, Dict
+
 import flaskr.contracts.constants as constants
 
 
@@ -15,11 +17,11 @@ class UpdatePostContract:
     thumbnail_image: Optional[str]
 
     @staticmethod
-    def get_schema() -> 'UpdatePostSchema':
+    def get_schema() -> "UpdatePostSchema":
         return UpdatePostSchema()
 
     @staticmethod
-    def from_json(_json: Optional[Dict]) -> 'UpdatePostContract':
+    def from_json(_json: Optional[Dict]) -> "UpdatePostContract":
         return UpdatePostContract.get_schema().load(_json if _json else {})
 
 

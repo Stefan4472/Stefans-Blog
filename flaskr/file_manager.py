@@ -1,16 +1,18 @@
-import werkzeug
+import dataclasses as dc
 import hashlib
 import io
 import os
 import uuid
-import dataclasses as dc
+from datetime import datetime
+
+import werkzeug
 from flask import current_app
 from PIL import Image, UnidentifiedImageError
-from datetime import datetime
+
+import flaskr.contracts.constants as constants
 from flaskr import db
 from flaskr.models.file import File, FileType
 from flaskr.models.user import User
-import flaskr.contracts.constants as constants
 
 
 class FileAlreadyExists(ValueError):
@@ -18,6 +20,7 @@ class FileAlreadyExists(ValueError):
     Exception thrown when a file with the same contents already
     exists on the server.
     """
+
     def __init__(self, duplicate: File):
         self.duplicate = duplicate
 
@@ -27,6 +30,7 @@ class InvalidExtension(ValueError):
     Exception thrown when a file has an extension that is not
     supported by the server.
     """
+
     def __init__(self, extension: str):
         self.extension = extension
 
@@ -36,11 +40,11 @@ class InvalidFile(ValueError):
 
 
 ALLOWED_EXTENSIONS = [
-    '.jpg',
-    '.png',
-    '.gif',
-    '.txt',
-    '.pdf',
+    ".jpg",
+    ".png",
+    ".gif",
+    ".txt",
+    ".pdf",
 ]
 
 
@@ -51,7 +55,7 @@ def file_exists(file_id: str) -> bool:
 
 def store_file(file: werkzeug.datastructures.FileStorage, created_by: User) -> File:
     file_name = werkzeug.utils.secure_filename(file.filename)
-    current_app.logger.debug(f'Storing file with filename {file_name}')
+    current_app.logger.debug(f"Storing file with filename {file_name}")
 
     # Validate file extension
     original_extension = get_extension(file_name)
@@ -68,7 +72,7 @@ def store_file(file: werkzeug.datastructures.FileStorage, created_by: User) -> F
     file_hash = hashlib.md5(processed.contents.getbuffer()).hexdigest()
     query = File.query.filter_by(hash=file_hash)
     if query.first():
-        current_app.logger.debug(f'File is a duplicate of {query.first().id}')
+        current_app.logger.debug(f"File is a duplicate of {query.first().id}")
         raise FileAlreadyExists(query.first())
 
     file_id = uuid.uuid4().hex
@@ -83,13 +87,13 @@ def store_file(file: werkzeug.datastructures.FileStorage, created_by: User) -> F
     )
 
     # Save to file system
-    with open(file.get_path(), 'wb') as out:
+    with open(file.get_path(), "wb") as out:
         out.write(processed.contents.getbuffer())
     file.size = os.path.getsize(file.get_path())
 
     db.session.add(file)
     db.session.commit()
-    current_app.logger.debug(f'File stored successfully with ID={file.id}')
+    current_app.logger.debug(f"File stored successfully with ID={file.id}")
     return file
 
 
@@ -101,26 +105,28 @@ def delete_file(file: File):
         file.get_path().unlink()
     except FileNotFoundError:
         # Doesn't exist anymore... strange but doesn't matter at this point
-        current_app.logger.warning(f'Attempted to delete {file.get_path()}, which doesn\'t exist')
+        current_app.logger.warning(
+            f"Attempted to delete {file.get_path()}, which doesn't exist"
+        )
 
     db.session.delete(file)
     db.session.commit()
-    current_app.logger.debug(f'Deleted file with id={file.id}')
+    current_app.logger.debug(f"Deleted file with id={file.id}")
 
 
 def get_extension(filename: str) -> str:
-    if '.' not in filename:
-        return ''
-    return filename[filename.rindex('.'):].lower()
+    if "." not in filename:
+        return ""
+    return filename[filename.rindex(".") :].lower()
 
 
 def get_file_type(extension: str) -> FileType:
-    if extension in ('.jpg', '.png', '.gif'):
+    if extension in (".jpg", ".png", ".gif"):
         return FileType.Image
-    elif extension in ('.txt', '.pdf'):
+    elif extension in (".txt", ".pdf"):
         return FileType.Document
     else:
-        raise ValueError(f'Unsupported extension {extension}')
+        raise ValueError(f"Unsupported extension {extension}")
 
 
 @dc.dataclass
@@ -130,21 +136,26 @@ class ProcessedFile:
 
 
 def _process_file(file: io.BytesIO, extension: str) -> ProcessedFile:
-    if extension in ('.jpg', '.png'):
+    if extension in (".jpg", ".png"):
         # Convert still images to JPG and limit to MAX_IMG_SIZE
         try:
             image: Image = Image.open(file)
         except UnidentifiedImageError:
-            raise InvalidFile('Cannot read image')
+            raise InvalidFile("Cannot read image")
         # Bound to MAX_IMG_SIZE
-        if image.width > constants.MAX_IMG_WIDTH or image.height > constants.MAX_IMG_HEIGHT:
-            image.thumbnail((constants.MAX_IMG_WIDTH, constants.MAX_IMG_HEIGHT), Image.ANTIALIAS)
+        if (
+            image.width > constants.MAX_IMG_WIDTH
+            or image.height > constants.MAX_IMG_HEIGHT
+        ):
+            image.thumbnail(
+                (constants.MAX_IMG_WIDTH, constants.MAX_IMG_HEIGHT), Image.ANTIALIAS
+            )
         # Convert to RGB (for saving to JPG)
-        image = image.convert('RGB')
+        image = image.convert("RGB")
         # Write out to buffer
         image_bytes = io.BytesIO()
-        image.save(image_bytes, format='JPEG')
-        return ProcessedFile(image_bytes, '.jpg')
+        image.save(image_bytes, format="JPEG")
+        return ProcessedFile(image_bytes, ".jpg")
     else:
         # Do nothing
         return ProcessedFile(file, extension)

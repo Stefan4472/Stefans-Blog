@@ -1,0 +1,8 @@
+[tool.black]
+# Include only .py files in the project folders. The goal is to avoid processing virtualenv and pytest caches.
+include = 'flaskr\/.*\.py$|stefan-on-software-api-client\/.*\.py$|Client\/.*\.py$|ImageCropper\/.*\.py$|migrations\/.*\.py$|renderer\/.*\.py$'
+
+[tool.isort]
+profile = "black"
+# TODO: using src_paths as a whitelist unfortunately didn't work. It would be great to unify all configs to include the same files using the same semantics.
+skip = ['clientenv', 'blogenv', 'testenv']

@@ -1,16 +1,18 @@
+import dataclasses as dc
 import json
 import typing
-import marshmallow as msh
-import dataclasses as dc
-from typing import Optional, List
+from datetime import date, datetime
 from pathlib import Path
-from datetime import datetime, date
+from typing import List, Optional
+
+import marshmallow as msh
 from sos_client import constants
 
 
 @dc.dataclass
 class PostMeta:
     """Store post configuration ("post-meta") data."""
+
     # TODO: I don't think that "PostMeta" (i.e. "metadata") is actually the best name for this. It's not actually metadata. Nor is it "config" either, really.
     slug: Optional[str] = None
     title: Optional[str] = None
@@ -23,22 +25,24 @@ class PostMeta:
     thumbnail: Optional[str] = None
 
     @staticmethod
-    def parse_from_file(filepath: Path) -> 'PostMeta':
+    def parse_from_file(filepath: Path) -> "PostMeta":
         """Parse a `post-meta.json` file and return an instance of `PostConfig`."""
         try:
-            with open(filepath, 'r', encoding='utf-8', errors='strict') as f:
+            with open(filepath, "r", encoding="utf-8", errors="strict") as f:
                 cfg_json = json.load(f)
             return PostMetaSchema().load(cfg_json)
         except IOError:
-            raise ValueError(f'Could not open the config file at ("{filepath.absolute()}")')
+            raise ValueError(
+                f'Could not open the config file at ("{filepath.absolute()}")'
+            )
         except json.JSONDecodeError as e:
-            raise ValueError(f'Invalid JSON in the provided config file: {e}')
+            raise ValueError(f"Invalid JSON in the provided config file: {e}")
         except msh.exceptions.ValidationError as e:
-            raise ValueError(f'Invalid post-meta.json file: {e}')
+            raise ValueError(f"Invalid post-meta.json file: {e}")
 
     def write_to_file(self, filepath: Path):
         """Write `PostConfig` instance out to specified filepath."""
-        with open(filepath, 'w', encoding='utf-8') as f:
+        with open(filepath, "w", encoding="utf-8") as f:
             json.dump(PostMetaSchema().dump(self), f, indent=4, sort_keys=True)
 
 
@@ -47,7 +51,11 @@ class PostMetaSchema(msh.Schema):
     title = msh.fields.String()
     byline = msh.fields.String()
     date = msh.fields.Date(format=constants.DATE_FORMAT)
-    tags = msh.fields.List(msh.fields.String(data_key='tags', validate=msh.validate.Regexp(constants.SLUG_REGEX)))
+    tags = msh.fields.List(
+        msh.fields.String(
+            data_key="tags", validate=msh.validate.Regexp(constants.SLUG_REGEX)
+        )
+    )
     image = msh.fields.String()
     banner = msh.fields.String()
     thumbnail = msh.fields.String()

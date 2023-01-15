@@ -1,20 +1,24 @@
 from enum import Enum
 from pathlib import Path
+
 from flask import current_app, url_for
+
 from flaskr import db
-from flaskr.contracts.data_schemas import UserContract, FileContract
+from flaskr.contracts.data_schemas import FileContract, UserContract
 
 
 class FileType(Enum):
     """General file types used to classify uploaded files."""
-    Image = 'IMAGE'
+
+    Image = "IMAGE"
     # Video = 'VIDEO'
-    Document = 'DOCUMENT'
+    Document = "DOCUMENT"
 
 
 class File(db.Model):
     """Represents a file uploaded to the server."""
-    __tablename__ = 'file'
+
+    __tablename__ = "file"
     # UUID
     id = db.Column(db.String, primary_key=True)
     # User-given name at time of upload
@@ -22,10 +26,10 @@ class File(db.Model):
     # Timestamp of upload
     upload_date = db.Column(db.DateTime, nullable=False)
     # ID of the user who uploaded this file (one-to-many)
-    uploaded_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    uploaded_by_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     # The user who uploaded this file (one-to-many)
     # See https://docs.sqlalchemy.org/en/14/orm/basic_relationships.html#one-to-many
-    uploaded_by = db.relationship('User', back_populates='files')
+    uploaded_by = db.relationship("User", back_populates="files")
     # File type
     filetype = db.Column(db.Enum(FileType), nullable=False)
     # Name of the file as it is stored on the system
@@ -41,7 +45,7 @@ class File(db.Model):
         return Path(current_app.static_folder) / self.filename
 
     def make_url(self, external: bool = True) -> str:
-        return url_for('static', filename=self.filename, _external=external)
+        return url_for("static", filename=self.filename, _external=external)
 
     def make_contract(self) -> FileContract:
         return FileContract(

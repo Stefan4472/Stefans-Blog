@@ -1,6 +1,6 @@
+import dataclasses as dc
 import os
 import typing
-import dataclasses as dc
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -12,21 +12,22 @@ class ConfigKeys:
     Use the string values when setting environment variables
     or when accessing `flask.current_app.config`.
     """
-    SECRET_KEY = 'SECRET_KEY'
-    SQLALCHEMY_DATABASE_URI = 'SQLALCHEMY_DATABASE_URI'
-    TRAFFIC_LOG_PATH = 'TRAFFIC_LOG_PATH'
-    SEARCH_INDEX_PATH = 'SEARCH_INDEX_PATH'
-    INSTANCE_PATH = 'INSTANCE_PATH'
-    STATIC_PATH = 'STATIC_PATH'
-    TESTING = 'TESTING'
-    USE_SITE_ANALYTICS = 'USE_SITE_ANALYTICS'
-    SITE_ANALYTICS_URL = 'SITE_ANALYTICS_URL'
-    SITE_ANALYTICS_KEY = 'SITE_ANALYTICS_KEY'
-    USE_EMAIL_LIST = 'USE_EMAIL_LIST'
-    EMAIL_API_KEY = 'EMAIL_API_KEY'
-    EMAIL_LIST_ID = 'EMAIL_LIST_ID'
-    SQLALCHEMY_TRACK_MODIFICATIONS = 'SQLALCHEMY_TRACK_MODIFICATIONS'
-    PAGINATE_POSTS_PER_PAGE = 'PAGINATE_POSTS_PER_PAGE'
+
+    SECRET_KEY = "SECRET_KEY"
+    SQLALCHEMY_DATABASE_URI = "SQLALCHEMY_DATABASE_URI"
+    TRAFFIC_LOG_PATH = "TRAFFIC_LOG_PATH"
+    SEARCH_INDEX_PATH = "SEARCH_INDEX_PATH"
+    INSTANCE_PATH = "INSTANCE_PATH"
+    STATIC_PATH = "STATIC_PATH"
+    TESTING = "TESTING"
+    USE_SITE_ANALYTICS = "USE_SITE_ANALYTICS"
+    SITE_ANALYTICS_URL = "SITE_ANALYTICS_URL"
+    SITE_ANALYTICS_KEY = "SITE_ANALYTICS_KEY"
+    USE_EMAIL_LIST = "USE_EMAIL_LIST"
+    EMAIL_API_KEY = "EMAIL_API_KEY"
+    EMAIL_LIST_ID = "EMAIL_LIST_ID"
+    SQLALCHEMY_TRACK_MODIFICATIONS = "SQLALCHEMY_TRACK_MODIFICATIONS"
+    PAGINATE_POSTS_PER_PAGE = "PAGINATE_POSTS_PER_PAGE"
 
 
 @dc.dataclass
@@ -37,6 +38,7 @@ class SiteConfig:
     Create a dictionary with configured values via `to_dict()`.
     Init a SiteConfig instance from environment variables via `load_from_env()`.
     """
+
     # App secret key
     secret_key: str
     # Path to the instance folder RELATIVE TO APP ROOT.
@@ -76,14 +78,20 @@ class SiteConfig:
         Raises ValueError in case of a problem.
         """
         if not self.secret_key:
-            raise ValueError(f'{ConfigKeys.SECRET_KEY} is unset')
+            raise ValueError(f"{ConfigKeys.SECRET_KEY} is unset")
         if self.use_email_list and not (self.email_api_key and self.email_list_id):
-            raise ValueError(f'{ConfigKeys.USE_EMAIL_LIST} = True but {ConfigKeys.EMAIL_API_KEY} and {ConfigKeys.EMAIL_LIST_ID} are not both configured')
-        if self.use_site_analytics and not (self.site_analytics_key and self.site_analytics_url):
-            raise ValueError(f'{ConfigKeys.USE_SITE_ANALYTICS} = True but {ConfigKeys.SITE_ANALYTICS_KEY} and {ConfigKeys.SITE_ANALYTICS_URL} are not both configured')
-        if self.rel_instance_path and self.rel_instance_path.startswith('/'):
+            raise ValueError(
+                f"{ConfigKeys.USE_EMAIL_LIST} = True but {ConfigKeys.EMAIL_API_KEY} and {ConfigKeys.EMAIL_LIST_ID} are not both configured"
+            )
+        if self.use_site_analytics and not (
+            self.site_analytics_key and self.site_analytics_url
+        ):
+            raise ValueError(
+                f"{ConfigKeys.USE_SITE_ANALYTICS} = True but {ConfigKeys.SITE_ANALYTICS_KEY} and {ConfigKeys.SITE_ANALYTICS_URL} are not both configured"
+            )
+        if self.rel_instance_path and self.rel_instance_path.startswith("/"):
             raise ValueError(f'{ConfigKeys.INSTANCE_PATH} must not start with "/"')
-        if self.rel_static_path and self.rel_static_path.startswith('/'):
+        if self.rel_static_path and self.rel_static_path.startswith("/"):
             raise ValueError(f'{ConfigKeys.STATIC_PATH} must not start with "/"')
 
     def to_dict(self) -> Dict:
@@ -104,16 +112,23 @@ class SiteConfig:
         }
 
     @staticmethod
-    def load_from_env() -> 'SiteConfig':
+    def load_from_env() -> "SiteConfig":
         """Load config from environment variables."""
         if ConfigKeys.SECRET_KEY not in os.environ:
-            raise ValueError(f'{ConfigKeys.SECRET_KEY} is not declared')
+            raise ValueError(f"{ConfigKeys.SECRET_KEY} is not declared")
         # Collect optional settings
         optional = [
-            ConfigKeys.INSTANCE_PATH, ConfigKeys.STATIC_PATH, ConfigKeys.TESTING,
-            ConfigKeys.USE_SITE_ANALYTICS, ConfigKeys.USE_EMAIL_LIST, ConfigKeys.SITE_ANALYTICS_URL,
-            ConfigKeys.SITE_ANALYTICS_KEY, ConfigKeys.EMAIL_API_KEY, ConfigKeys.EMAIL_LIST_ID,
-            ConfigKeys.SQLALCHEMY_TRACK_MODIFICATIONS, ConfigKeys.PAGINATE_POSTS_PER_PAGE,
+            ConfigKeys.INSTANCE_PATH,
+            ConfigKeys.STATIC_PATH,
+            ConfigKeys.TESTING,
+            ConfigKeys.USE_SITE_ANALYTICS,
+            ConfigKeys.USE_EMAIL_LIST,
+            ConfigKeys.SITE_ANALYTICS_URL,
+            ConfigKeys.SITE_ANALYTICS_KEY,
+            ConfigKeys.EMAIL_API_KEY,
+            ConfigKeys.EMAIL_LIST_ID,
+            ConfigKeys.SQLALCHEMY_TRACK_MODIFICATIONS,
+            ConfigKeys.PAGINATE_POSTS_PER_PAGE,
         ]
         kwargs = {key: os.environ[key] for key in optional if key in os.environ}
         return SiteConfig(os.environ[ConfigKeys.SECRET_KEY], **kwargs)

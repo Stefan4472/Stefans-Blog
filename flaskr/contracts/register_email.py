@@ -1,17 +1,19 @@
-import marshmallow as msh
 import dataclasses as dc
-from typing import Optional, Dict
+from typing import Dict, Optional
+
+import marshmallow as msh
+
 
 @dc.dataclass
 class RegisterEmailContract:
     address: str
 
     @staticmethod
-    def get_schema() -> 'RegisterEmailSchema':
+    def get_schema() -> "RegisterEmailSchema":
         return RegisterEmailSchema()
 
     @staticmethod
-    def from_json(_json: Optional[Dict]) -> 'RegisterEmailContract':
+    def from_json(_json: Optional[Dict]) -> "RegisterEmailContract":
         return RegisterEmailContract.get_schema().load(_json if _json else {})
 
 

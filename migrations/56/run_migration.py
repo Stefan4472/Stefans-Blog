@@ -1,9 +1,10 @@
-import sys
-import sqlite3
 import pathlib
+import sqlite3
+import sys
+
 from stefansearch.engine.search_engine import SearchEngine
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     """
     Run migration for Issue #56.
 
@@ -16,10 +17,10 @@ if __name__ == '__main__':
 
     DB_PATH: path to the SQLITE database file
     INDEX_PATH: path to the search engine index file
-    STATIC_PATH: path to the STATIC folder 
+    STATIC_PATH: path to the STATIC folder
     """
     if len(sys.argv) != 4:
-        print('Usage: python run_migration.py [DB_PATH] [INDEX_PATH] [STATIC_PATH]')
+        print("Usage: python run_migration.py [DB_PATH] [INDEX_PATH] [STATIC_PATH]")
         sys.exit(1)
 
     db_path = pathlib.Path(sys.argv[1])
@@ -33,7 +34,7 @@ if __name__ == '__main__':
     cur.execute("SELECT slug FROM post")
     for record in cur.fetchall():
         slug = record[0]
-        md_path = static_path / slug / 'post.md'
-        search_engine.index_file(md_path, slug, encoding='utf-8', allow_overwrite=True)
+        md_path = static_path / slug / "post.md"
+        search_engine.index_file(md_path, slug, encoding="utf-8", allow_overwrite=True)
     conn.close()
     search_engine.commit()

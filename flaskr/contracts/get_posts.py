@@ -1,6 +1,7 @@
-import marshmallow as msh
 import dataclasses as dc
-from typing import Optional, Dict
+from typing import Dict, Optional
+
+import marshmallow as msh
 
 
 @dc.dataclass
@@ -11,11 +12,11 @@ class GetPostsContract:
     offset: Optional[int] = None
 
     @staticmethod
-    def get_schema() -> 'GetPostsSchema':
+    def get_schema() -> "GetPostsSchema":
         return GetPostsSchema()
 
     @staticmethod
-    def from_json(_json: Optional[Dict]) -> 'GetPostsContract':
+    def from_json(_json: Optional[Dict]) -> "GetPostsContract":
         return GetPostsContract.get_schema().load(_json if _json else {})
 
 

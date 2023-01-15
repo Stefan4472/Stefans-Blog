@@ -27,7 +27,9 @@ def _get_kwargs(
     }
 
 
-def _parse_response(*, client: Client, response: httpx.Response) -> Optional[Union[Any, str]]:
+def _parse_response(
+    *, client: Client, response: httpx.Response
+) -> Optional[Union[Any, str]]:
     if response.status_code == HTTPStatus.NO_CONTENT:
         response_204 = cast(Any, None)
         return response_204
@@ -49,7 +51,9 @@ def _parse_response(*, client: Client, response: httpx.Response) -> Optional[Uni
         return None
 
 
-def _build_response(*, client: Client, response: httpx.Response) -> Response[Union[Any, str]]:
+def _build_response(
+    *, client: Client, response: httpx.Response
+) -> Response[Union[Any, str]]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,

@@ -1,10 +1,11 @@
 from typing import Dict
+
 from flaskr import db
 from flaskr.contracts.data_schemas import TagContract
 
 
 class Tag(db.Model):
-    __tablename__ = 'tag'
+    __tablename__ = "tag"
     slug = db.Column(db.String, primary_key=True)
     name = db.Column(db.String, nullable=False)
     description = db.Column(db.String, nullable=False)
@@ -12,7 +13,7 @@ class Tag(db.Model):
     color = db.Column(db.String, nullable=False)
 
     def __repr__(self):
-        return 'Tag(slug={}, color={})'.format(self.slug, self.color)
+        return "Tag(slug={}, color={})".format(self.slug, self.color)
 
     def make_contract(self) -> TagContract:
         return TagContract(

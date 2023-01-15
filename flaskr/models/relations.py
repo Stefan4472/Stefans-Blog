@@ -1,12 +1,11 @@
 from flaskr import db
 
-
 # Many-to-many table storing Post<->Tags
 # YouTube tutorial for many-to-many relationships: https://www.youtube.com/watch?v=OvhoYbjtiKc
 posts_to_tags = db.Table(
-    'posts_to_tags',
-    db.Column('post', db.Integer, db.ForeignKey('post.id')),
-    db.Column('tag', db.Integer, db.ForeignKey('tag.slug')),
+    "posts_to_tags",
+    db.Column("post", db.Integer, db.ForeignKey("post.id")),
+    db.Column("tag", db.Integer, db.ForeignKey("tag.slug")),
 )
 
 

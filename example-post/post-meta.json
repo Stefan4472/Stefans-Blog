@@ -4,12 +4,7 @@
     "date": "09/20/17",
     "image": "featured.jpg",
     "slug": "gamedev-spritesheets",
-    "tags": [
-        "tutorial",
-        "gamedev",
-        "java",
-        "intro-game-dev"
-    ],
+    "tags": ["tutorial", "gamedev", "java", "intro-game-dev"],
     "thumbnail": "thumb.jpg",
-    "title": "How to Implement Spritesheets"
+    "title": "How to Implement Spritesheets",
 }

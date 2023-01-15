@@ -36,7 +36,10 @@ class PostFilesMultipartData:
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(
-            {key: (None, str(value).encode(), "text/plain") for key, value in self.additional_properties.items()}
+            {
+                key: (None, str(value).encode(), "text/plain")
+                for key, value in self.additional_properties.items()
+            }
         )
         field_dict.update(
             {

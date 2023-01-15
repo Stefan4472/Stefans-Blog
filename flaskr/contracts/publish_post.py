@@ -1,6 +1,7 @@
-import marshmallow as msh
 import dataclasses as dc
-from typing import Optional, Dict
+from typing import Dict, Optional
+
+import marshmallow as msh
 
 
 @dc.dataclass
@@ -9,11 +10,11 @@ class PublishPostContract:
     send_email: bool
 
     @staticmethod
-    def get_schema() -> 'PublishPostSchema':
+    def get_schema() -> "PublishPostSchema":
         return PublishPostSchema()
 
     @staticmethod
-    def from_json(_json: Optional[Dict]) -> 'PublishPostContract':
+    def from_json(_json: Optional[Dict]) -> "PublishPostContract":
         return PublishPostContract.get_schema().load(_json if _json else {})
 
 

@@ -1,33 +1,36 @@
 import base64
 import typing
-from flask import current_app, request, redirect, url_for, abort
+
+from flask import abort, current_app, redirect, request, url_for
 from flask_login import LoginManager, UserMixin
 from werkzeug.security import check_password_hash
+
 from flaskr.models.user import User
-'''
+
+"""
 Functionality for API authentication.
 
 You must initialize `login_manager` on app start!
 `login_manager.init_app()`
-'''
+"""
 login_manager = LoginManager()
-login_manager.login_view = 'blog.login'
+login_manager.login_view = "blog.login"
 
 
 def verify_login(email: str, password: str) -> User:
     # Ensure user exists and check password
     user = User.query.filter_by(email=email).first()
     if not user or not check_password_hash(user.password, password):
-        current_app.logger.info(f'Verification failed for email={email}')
-        raise ValueError('Invalid email or password')
+        current_app.logger.info(f"Verification failed for email={email}")
+        raise ValueError("Invalid email or password")
     return user
 
 
 @login_manager.unauthorized_handler
 def unauthorized():
     # Redirect to login page for web requests
-    if request.blueprint == 'internal':
-        return redirect(url_for('blog.login'))
+    if request.blueprint == "internal":
+        return redirect(url_for("blog.login"))
     # Abort API requests
     abort(403)
 
@@ -41,19 +44,19 @@ def request_loader(request) -> typing.Optional[UserMixin]:
     header should be the "[email]:[password]" of the user making the
     request.
     """
-    if 'Authorization' not in request.headers:
+    if "Authorization" not in request.headers:
         return None
-    if not request.headers['Authorization'].startswith('Basic '):
+    if not request.headers["Authorization"].startswith("Basic "):
         return None
     # Decode base-64, then decode the resulting bytes to a string
-    auth_string = base64.b64decode(request.headers['Authorization'][6:]).decode()
-    if ':' not in auth_string:
+    auth_string = base64.b64decode(request.headers["Authorization"][6:]).decode()
+    if ":" not in auth_string:
         return None
-    colon_index = auth_string.index(':')
+    colon_index = auth_string.index(":")
     email = auth_string[:colon_index]
-    password = auth_string[colon_index+1:]
+    password = auth_string[colon_index + 1 :]
     try:
-        return verify_login(email, password)    
+        return verify_login(email, password)
     except ValueError:
         return None
 

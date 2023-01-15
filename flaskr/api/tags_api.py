@@ -1,36 +1,36 @@
 import marshmallow
-from flask import request, Response, Blueprint, jsonify
+from flask import Blueprint, Response, jsonify, request
 from flask_login import login_required
+
 import flaskr.api.util as util
-from flaskr.database import db
-from flaskr.models.tag import Tag
 from flaskr.contracts.create_tag import CreateTagContract
 from flaskr.contracts.update_tag import UpdateTagContract
-
+from flaskr.database import db
+from flaskr.models.tag import Tag
 
 # Blueprint under which all views will be assigned
-BLUEPRINT = Blueprint('tags', __name__, url_prefix='/api/v1/tags')
+BLUEPRINT = Blueprint("tags", __name__, url_prefix="/api/v1/tags")
 
 
-@BLUEPRINT.route('', methods=['GET'])
+@BLUEPRINT.route("", methods=["GET"])
 @login_required
 def get_all_tags():
     """Get all tags that have been created."""
     return jsonify([tag.make_contract().make_json() for tag in Tag.query.all()])
 
 
-@BLUEPRINT.route('', methods=['POST'])
+@BLUEPRINT.route("", methods=["POST"])
 @login_required
 def create_tag():
     """Create a tag."""
     try:
         contract = CreateTagContract.from_json(request.get_json())
     except marshmallow.exceptions.ValidationError as e:
-        return jsonify(f'Invalid parameters: {e.messages}'), 400
+        return jsonify(f"Invalid parameters: {e.messages}"), 400
 
     tag = Tag.query.filter_by(slug=contract.slug).first()
     if tag:
-        return jsonify('The desired slug is not unique'), 400
+        return jsonify("The desired slug is not unique"), 400
 
     tag = Tag(
         slug=contract.slug,
@@ -43,7 +43,7 @@ def create_tag():
     return jsonify(tag.make_contract().make_json()), 201
 
 
-@BLUEPRINT.route('/<string:tag>', methods=['GET'])
+@BLUEPRINT.route("/<string:tag>", methods=["GET"])
 @login_required
 def get_single_tag(tag: str):
     """Get a single tag by its slug."""
@@ -53,7 +53,7 @@ def get_single_tag(tag: str):
     return jsonify(tag.make_contract().make_json())
 
 
-@BLUEPRINT.route('/<string:tag>', methods=['POST'])
+@BLUEPRINT.route("/<string:tag>", methods=["POST"])
 @login_required
 def update_tag(tag: str):
     """Change a tag, given the tag's slug."""
@@ -64,7 +64,7 @@ def update_tag(tag: str):
     try:
         contract = UpdateTagContract.from_json(request.get_json())
     except marshmallow.exceptions.ValidationError as e:
-        return jsonify(f'Invalid parameters: {e}'), 400
+        return jsonify(f"Invalid parameters: {e}"), 400
 
     tag.name = contract.name
     tag.description = contract.description
@@ -73,7 +73,7 @@ def update_tag(tag: str):
     return jsonify(tag.make_contract().make_json()), 200
 
 
-@BLUEPRINT.route('/<string:tag>', methods=['DELETE'])
+@BLUEPRINT.route("/<string:tag>", methods=["DELETE"])
 @login_required
 def delete_tag(tag: str):
     """Delete a tag, given the tag's slug."""
