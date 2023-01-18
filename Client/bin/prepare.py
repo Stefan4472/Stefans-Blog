@@ -7,7 +7,6 @@ from typing import List, Optional
 import click
 from sos_client import constants
 from sos_client.post_meta import PostMeta
-
 from tk_image_cropper import image_cropper
 
 

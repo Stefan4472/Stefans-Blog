@@ -1,5 +1,4 @@
 -e ./Client
--e ./renderer
 -e ./stefan-on-software-api-client
 stefansearch==0.9.1
 bcrypt==3.2.0
@@ -35,6 +34,7 @@ sib-api-v3-sdk==7.5.0
 six==1.15.0
 soupsieve==2.3.1
 SQLAlchemy==1.4.22
+stefan-on-software-renderer==0.1.0
 tk-image-cropper
 typing-extensions==3.10.0.0
 urllib3==1.26.5

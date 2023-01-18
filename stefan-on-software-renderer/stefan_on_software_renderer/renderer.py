@@ -1,3 +1,9 @@
+"""
+Functions for rendering and handling post text, which consists of Markdown
+and custom XML tags.
+
+TODO: needs significant cleanup and clear documentation.
+"""
 import re
 import typing
 
@@ -6,14 +12,6 @@ import markdown2
 import pygments
 from pygments.formatters import HtmlFormatter
 from pygments.lexers import get_lexer_by_name
-
-"""
-Functions for rendering and handling post text, which consists of Markdown
-and custom XML tags.
-
-TODO: needs significant cleanup and clear documentation.
-"""
-
 
 IMAGE_TAG = "x-image"
 CODE_TAG = "x-code"

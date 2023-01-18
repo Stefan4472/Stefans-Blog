@@ -1,13 +1,14 @@
 import pathlib
 
 import pytest
-
-import renderer.markdown as md2
+from stefan_on_software_renderer import renderer
 
 """
 A couple very simple tests.
 
 Use `example.md` as input and `example.html` as the expected output.
+
+TODO: these tests are flaky!!
 """
 
 
@@ -33,13 +34,13 @@ def example_html():
 
 def test_render(example_markdown, example_html):
     """Test that `render_string()` of the example Markdown yields the example HTML"""
-    actual = md2.render_string(example_markdown)
+    actual = renderer.render_string(example_markdown)
     assert actual.strip() == example_html.strip()
 
 
 def test_find_images(example_markdown):
     """Test that `find_images()` works as expected on the example Markdown."""
-    actual = md2.find_images(example_markdown)
+    actual = renderer.find_images(example_markdown)
     expected = [
         "vintage-film-reel.jpg",
         "example-draw-square.jpg",
@@ -59,4 +60,4 @@ unordered_map<ItemType, list<InvCoordinate>> hotbarMappings;
     expected = """<div>{% raw %}<div class="highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span>unordered_map<span style="color: #666666">&lt;</span>ItemType,<span style="color: #bbbbbb"> </span>list<span style="color: #666666">&lt;</span>InvCoordinate<span style="color: #666666">&gt;&gt;</span><span style="color: #bbbbbb"> </span>mainInvMappings;<span style="color: #bbbbbb"></span>
 unordered_map<span style="color: #666666">&lt;</span>ItemType,<span style="color: #bbbbbb"> </span>list<span style="color: #666666">&lt;</span>InvCoordinate<span style="color: #666666">&gt;&gt;</span><span style="color: #bbbbbb"> </span>hotbarMappings;<span style="color: #bbbbbb"></span>
 </pre></div>{% endraw %}</div>"""
-    assert md2.render_string(str).strip() == expected
+    assert renderer.render_string(str).strip() == expected

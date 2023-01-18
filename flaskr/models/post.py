@@ -4,9 +4,9 @@ from typing import Optional
 
 import flask
 from sqlalchemy import asc, desc
+from stefan_on_software_renderer import renderer
 
 import flaskr.models.relations as relations
-import renderer.markdown
 from flaskr import db
 from flaskr.contracts.data_schemas import PostContract
 from flaskr.models.file import File
@@ -91,7 +91,7 @@ class Post(db.Model):
         with open(self.get_markdown_path(), encoding="utf-8", errors="strict") as f:
             markdown = f.read()  # TODO: this is very inefficient. Fix!
             # Resolve file URLs
-            for file_name in renderer.markdown.find_images(markdown):
+            for file_name in renderer.find_images(markdown):
                 found_file = File.query.filter_by(filename=file_name).first()
                 if found_file:
                     markdown = markdown.replace(file_name, found_file.make_url())
@@ -99,7 +99,7 @@ class Post(db.Model):
                     flask.current_app.logger.error(
                         f"Couldn't find file reference {file_name} in post {self.slug}"
                     )
-            html = renderer.markdown.render_string(markdown)
+            html = renderer.render_string(markdown)
 
             # Render as a template to allow expanding `url_for()` calls (for example)
             return flask.render_template_string(html)

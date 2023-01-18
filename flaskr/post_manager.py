@@ -4,9 +4,9 @@ from datetime import datetime
 
 import sqlalchemy
 from flask import current_app
+from stefan_on_software_renderer import renderer
 
 import flaskr.contracts.constants as constants
-import renderer.markdown
 from flaskr import email_provider, image_validator
 from flaskr.contracts.create_post import CreatePostContract
 from flaskr.contracts.update_post import UpdatePostContract
@@ -153,7 +153,7 @@ def set_content(post_id: int, content: bytes):
         markdown = content.decode("utf-8", errors="strict")
     except UnicodeError as e:
         raise InvalidMarkdown(f"Error reading Markdown in UTF-8: {e}")
-    if not renderer.markdown.is_markdown_valid(markdown):
+    if not renderer.is_markdown_valid(markdown):
         raise InvalidMarkdown("Provided Markdown is invalid")
     post.write_content(markdown)
     post.last_modified = datetime.now()

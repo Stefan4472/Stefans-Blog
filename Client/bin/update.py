@@ -14,8 +14,7 @@ from stefan_on_software_api_client.models.put_posts_post_id_json_body import (
 from stefan_on_software_api_client.types import UNSET
 from stefan_on_software_api_client.types import File as UploadFile
 from stefan_on_software_api_client.types import HTTPStatus
-
-import renderer.markdown
+from stefan_on_software_renderer import renderer
 
 
 # TODO: needs significant revisions and error-handling.
@@ -85,7 +84,7 @@ def update_post(post_id: int, path: Path, email: str, password: str, host_url: s
     with open(post.md_path) as markdown_file:
         post_md = markdown_file.read()
     # Get the list of image filenames referenced in the Markdown
-    for filename in renderer.markdown.find_images(post_md):
+    for filename in renderer.find_images(post_md):
         # Resolve absolute path
         full_path = (path / filename).resolve()
         # Upload image and get its online filename
