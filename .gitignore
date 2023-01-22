@@ -1,6 +1,6 @@
-flaskr/static/
-flaskr/.flaskenv
-instance/
+stefan-on-software/stefan_on_software/static/
+stefan-on-software/stefan_on_software/.flaskenv
+stefan-on-software/instance/
 env/
 
 .idea/

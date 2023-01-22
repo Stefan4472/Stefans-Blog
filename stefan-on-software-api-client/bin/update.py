@@ -2,8 +2,6 @@ import sys
 from pathlib import Path
 
 import click
-from stefan_on_software_renderer import renderer
-
 import stefan_on_software_api_client.api.posts.post_posts_post_id_content as api_set_post_content
 import stefan_on_software_api_client.api.posts.put_posts_post_id as api_update_post
 from stefan_on_software_api_client import client_util
@@ -16,6 +14,7 @@ from stefan_on_software_api_client.models.put_posts_post_id_json_body import (
 from stefan_on_software_api_client.types import UNSET
 from stefan_on_software_api_client.types import File as UploadFile
 from stefan_on_software_api_client.types import HTTPStatus
+from stefan_on_software_renderer import renderer
 
 
 # TODO: needs significant revisions and error-handling.

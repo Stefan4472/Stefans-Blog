@@ -6,9 +6,8 @@ from typing import List, Optional
 
 import click
 from sos_client import constants
-from tk_image_cropper import image_cropper
-
 from stefan_on_software_api_client.client_util import PostMeta
+from tk_image_cropper import image_cropper
 
 
 @click.command()

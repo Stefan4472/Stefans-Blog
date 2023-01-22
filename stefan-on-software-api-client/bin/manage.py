@@ -2,7 +2,6 @@
 from typing import Optional
 
 import click
-
 import stefan_on_software_api_client.api.commands.post_commands_feature as api_feature_post
 import stefan_on_software_api_client.api.commands.post_commands_publish as api_publish_post
 import stefan_on_software_api_client.api.commands.post_commands_unfeature as api_unfeature_post

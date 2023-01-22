@@ -1,3 +1,4 @@
+-e ./stefan-on-software
 -e ./stefan-on-software-api-client
 stefansearch==0.9.1
 bcrypt==3.2.0

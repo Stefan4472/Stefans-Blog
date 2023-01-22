@@ -2,8 +2,6 @@ import sys
 from pathlib import Path
 
 import click
-from stefan_on_software_renderer import renderer
-
 import stefan_on_software_api_client.api.posts.post_posts as api_create_post
 import stefan_on_software_api_client.api.posts.post_posts_post_id_content as api_set_post_content
 import stefan_on_software_api_client.api.posts.post_posts_post_id_tags as api_add_tag_to_post
@@ -18,6 +16,7 @@ from stefan_on_software_api_client.models.post_posts_post_id_tags_json_body impo
 from stefan_on_software_api_client.types import UNSET
 from stefan_on_software_api_client.types import File as UploadFile
 from stefan_on_software_api_client.types import HTTPStatus
+from stefan_on_software_renderer import renderer
 
 
 # TODO: needs significant revisions and error-handling.

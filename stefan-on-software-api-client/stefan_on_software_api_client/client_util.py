@@ -19,7 +19,7 @@ from stefan_on_software_api_client.models.post_files_multipart_data import (
 from stefan_on_software_api_client.types import File as UploadFile
 from stefan_on_software_api_client.types import HTTPStatus
 
-"""API constants. Copied from flaskr/api/constants.py."""
+"""API constants. Copied from stefan_on_software/api/constants.py."""
 # TODO: cleanup
 # Expected data format for JSON
 DATE_FORMAT = "%m/%d/%y"
