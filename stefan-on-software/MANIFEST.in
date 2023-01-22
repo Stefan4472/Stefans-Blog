@@ -1,0 +1,4 @@
+graft flaskr/templates
+include flaskr/test/example_file.jpg
+include flaskr/test/example_file.png
+include flaskr/test/example_file.txt
