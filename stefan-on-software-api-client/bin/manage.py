@@ -2,6 +2,7 @@
 from typing import Optional
 
 import click
+
 import stefan_on_software_api_client.api.commands.post_commands_feature as api_feature_post
 import stefan_on_software_api_client.api.commands.post_commands_publish as api_publish_post
 import stefan_on_software_api_client.api.commands.post_commands_unfeature as api_unfeature_post
@@ -10,7 +11,7 @@ import stefan_on_software_api_client.api.posts.delete_posts_post_id as api_delet
 import stefan_on_software_api_client.api.tags.delete_tags_tag as api_delete_tag
 import stefan_on_software_api_client.api.tags.post_tags as api_create_tag
 import stefan_on_software_api_client.api.tags.put_tags_tag as api_update_tag
-from sos_client import client_util
+from stefan_on_software_api_client import client_util
 from stefan_on_software_api_client.models.post_commands_feature_json_body import (
     PostCommandsFeatureJsonBody,
 )
