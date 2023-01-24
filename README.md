@@ -1,24 +1,44 @@
 # Stefans-Blog
 
-A simple blogging website written in Python 3.9 using the [Flask](https://palletsprojects.com/p/flask/) framework. Articles are written in Markdown and use extra XML tags that I've implemented for features such as images. See it live at [www.stefanonsoftware.com](https://www.stefanonsoftware.com/).
+A blogging website written in Python 3.9 using the [flask](https://palletsprojects.com/p/flask/) framework. Licensed under the MIT License. See it live at [www.stefanonsoftware.com](https://www.stefanonsoftware.com/).
 
-## Sibling Projects
+## Features
 
-Along with this site, I'm working on two sibling projects:
-- [simple-search](https://github.com/Stefan4472/simple-search-engine): A simple search engine written in Python. It's used in the search bar of the site.
-- [site-analytics](https://github.com/Stefan4472/site-analytics): An API for collecting and analyzing website traffic. Also used in the site.
+- Modern, fully type-hinted Python3 syntax with [black](https://black.readthedocs.io), [isort](https://pycqa.github.io/isort/), and [pyflakes](https://pypi.org/project/pyflakes/) linting.
+- Web UI rendered using [Jinja](https://jinja.palletsprojects.com/en/3.1.x/) templates and using [bootstrap4](https://getbootstrap.com/docs/4.0/getting-started/introduction/) for responsiveness.
+- Backend [sqlite3](https://docs.python.org/3/library/sqlite3.html) database connection implemented using [sqlalchemy](https://www.sqlalchemy.org/).
+- Custom Markdown rendering built on top of [markdown2](https://github.com/trentm/python-markdown2). Supports custom XML tags for images and colored code blocks powered by [pygments](https://pygments.org).
+- Simple user accounts and permissions implemented using [flask-login](https://flask-login.readthedocs.io/en/latest/).
+- RESTful API fully defined in [OpenAPI 3.0.0](https://swagger.io/specification/).
+- Automatically-generated Python API client using [openapi-python-client](https://github.com/openapi-generators/openapi-python-client).
+- API contract validation implemented using [marshmallow](https://marshmallow.readthedocs.io/en/stable/).
+- Client-side [click](https://click.palletsprojects.com/en/8.1.x/) scripts that allow for uploading, updating, and managing blog posts on the site.
+- Email list integration with [sendinblue](https://www.sendinblue.com/) using their [official Python SDK](https://github.com/sendinblue/APIv3-python-library).
+- A simple Python GUI program for cropping images written with [tkinter](https://docs.python.org/3/library/tkinter.html).
+- Decent unit test coverage with [pytest](https://pytest.org).
 
-## Project Organization 
+Along with this site, I'm also working on two sibling projects:
+- [simple-search](https://github.com/Stefan4472/simple-search-engine): A simple search engine written in Python. It powers queries made via the website search bar.
+- [site-analytics](https://github.com/Stefan4472/site-analytics): A simple web server that collects website traffic and makes it available for analysis.
 
 This repository contains code and templates, but no blog articles. My long-term goal is to make it 100% configurable and extensible, so that anyone _could_ use it to build their own blog.
 
-Important directories:
-- `flaskr`: the Flask code for the website, as well as static resources and templates.
-- `imagecropper`: a Python module that provides a Tkinter GUI to crop an image to a specific size. This is used to create properly-sized thumbnails, for example.
-- `Client`: a Python module that provides a CLI to the blog's API.
-- `example-post`: an example post (including Markdown text, images, and configuration).
-- `renderer`: a Python module for rendering post Markdown into HTML.
-- `stefan-on-software-api-client`: an auto-generated Python client based on the StefanOnSoftware API (`api.yaml`).
+## Project Organization 
+
+- `example-post`: an example post including Markdown text, images, and configuration.
+- `stefan-on-software`: the website implementation. Contains the backend Flask code and the Jinja templates used to render the website.
+- `stefan-on-software-api-client`: client code for the website's API. Most code is auto-generated based on `api.yaml`. See the `bin` directory for scripts to upload, update, and manage blog posts.
+- `stefan-on-software-renderer`: code for rendering article Markdown into HTML. Supports custom XML elements. 
+- `tk-image-cropper`: a Python GUI program used to crop images to a specified size.
+- `api.yaml`: the website's API definition.
+
+## Posts
+
+The website does not (yet) have a graphical interface for writing posts. Therefore, posts are created on your local computer and uploaded to the website via the scripts in `stefan-on-software-api-client/bin`. Each post should have a separate directory that includes:
+1. The Markdown content of the post in a file called `post.md`
+2. The post configuration/metadata (e.g. Title, Byline, Tags) in a file called `post-meta.json`
+
+See the provided example post (in the `example-post` directory) for more information.
 
 ## Setup
 
@@ -27,62 +47,15 @@ Install the required packages:
 pip install -r requirements.txt
 ```
 
-There is a range of configuration values that can be set. See `flaskr/config.py` for more information. I recommend using a `.flaskenv` file and using absolute paths.
+See the package-specific READMEs for more information.
 
 ## Linting
 
 Code should be linted using [black](https://black.readthedocs.io/en/stable) and [isort](https://isort.readthedocs.io/en/latest/). Furthermore, before pushing, you should run [pyflakes](https://github.com/PyCQA/pyflakes) and ensure that there are no errors.
-
-## Usage
-
-To run the site, simply run Flask from the `flaskr` directory. The `python-dotenv` package will use the `.flaskenv` config file to set environment variables for you.
-```
-cd flaskr 
-flask run
-```
-
-To reset the site's database:
-```
-flask reset_site
-```
-
-## Uploading a post
-
-I've included an example post in the `example-post` directory. It provides a good example of how to write posts in Markdown with custom XML tags (described below) and how to configure a post via JSON (`post-meta.json`). To upload it to the site, first make sure the site is running (`flask run`, as per the instructions above). To upload it to the site, execute the following in a command prompt:
-```
-cd sitemanager
-# This assumes SECRET_KEY='x123456', as set by default in `flaskr/.flaskenv`
-python cli.py upload-post ..\example-post --host=http://127.0.0.1:5000 --key=x123456 --publish=true --allow_update=true 
-# Optional: mark the post as "featured"
-python cli.py set-featured gamedev-spritesheets --host=http://127.0.0.1:5000 --key=x123456 --featured=true
-```
-
-This command uses the `sitemanager` CLI to upload a post. The CLI communicates with the website's API to upload all files for you and configure the post properly. It will also open my `ImageCropper` program, allowing you to crop the post's featured image, banner and thumbnail to the correct sizes. Once finished, it will write the new (cropped) images to the file system and update the `post-meta.json`.
-
-To see help information on the `upload-post` command, call `python cli.py upload-post --help`. The `upload-post` command also works on a live deployment--just set the `--host` and `--key` options properly. To see more available commands, run `python cli.py --help`.
-
-## Custom Markdown Rendering
-
-Posts are written in Markdown, which is rendered to HTML. I've found that I need some extra Markdown functionality--for example, rendering images as `<figure>` elements, or rendering code blocks. To make this possible, I created a little rendering program (the `renderer` module) that uses the `markdown2` library to render text to Markdown, and furthermore supports a few custom XML tags.
-
-You can add a figure to your markdown using the custom `x-image` tag:
-```
-<x-image>
-  <path>colorwheel.png</path>
-  <caption>The RGB color wheel ([source](https://cdn.sparkfun.com/r/600-600/assets/learn_tutorials/7/1/0/TertiaryColorWheel_Chart.png))</caption>
-  <alt>Image of the RGB color wheel</alt>
-</x-image>
-```
-
-You can add a code block with [pygments](https://pygments.org/) syntax highlighting using the custom `<x-code>` tag:
-```
-# See the pygments languages documentation for a list of possible "language" arguments (https://pygments.org/languages/). Leave blank for no styling
-<x-code language="python">
-if __name__ == '__main__':
-    print('Hello world')
-</x-code>
+```shell
+black . && isort . && pyflakes .
 ```
 
 ## Generating the API client
 
-In a separate virtual environment, install [openapi-python-client](https://github.com/openapi-generators/openapi-python-client). Then, from the root directory, run `openapi-python-client update --path api.yaml`.
+This project uses [openapi-python-client](https://github.com/openapi-generators/openapi-python-client) to automatically generate a Python client library based on the website's OpenAPI definition. To generate or update the client library, install [openapi-python-client](https://github.com/openapi-generators/openapi-python-client) in a separate virtual environment. Then, from the root directory of this project, run `openapi-python-client update --path api.yaml`.

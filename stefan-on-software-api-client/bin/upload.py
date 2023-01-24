@@ -39,11 +39,6 @@ def upload_post(path: Path, email: str, password: str, host_url: str):
         click.echo(e, err=True)
         sys.exit(1)
 
-    # TODO: remove
-    import datetime
-
-    post.metadata.slug = str(datetime.datetime.now().timestamp()).replace(".", "-")
-
     client = client_util.make_client(host_url, email, password)
 
     # TODO: should file upload reject duplicates explicitly?

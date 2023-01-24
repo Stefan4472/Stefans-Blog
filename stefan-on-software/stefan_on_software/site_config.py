@@ -37,7 +37,6 @@ class SiteConfig:
     Create a dictionary with configured values via `to_dict()`.
     Init a SiteConfig instance from environment variables via `load_from_env()`.
     """
-
     # App secret key
     secret_key: str
     # Path to the instance folder RELATIVE TO APP ROOT.

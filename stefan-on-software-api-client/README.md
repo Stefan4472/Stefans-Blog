@@ -1,89 +1,50 @@
 # stefan-on-software-api-client
-A client library for accessing StefanOnSoftware API
 
-## Usage
+A client library for accessing the StefanOnSoftware API and scripts for performing common operations. The vast majority of the code is generated automatically from an OpenAPI document using [openapi-python-client](https://github.com/openapi-generators/openapi-python-client).
+
+## Using the API
+
 First, create a client:
 
 ```python
-from stefan_on_software_api_client import Client
+from stefan_on_software_api_client.client_util import make_client
 
-client = Client(base_url="https://api.example.com")
+# Utility function that creates a client with HTTP Basic Authentication.
+client = make_client("https://www.stefanonsoftware.com", "YOUR_EMAIL", "YOUR_PASSWORD")
 ```
 
-If the endpoints you're going to hit require authentication, use `AuthenticatedClient` instead:
-
-```python
-from stefan_on_software_api_client import AuthenticatedClient
-
-client = AuthenticatedClient(base_url="https://api.example.com", token="SuperSecretToken")
-```
-
-Now call your endpoint and use your models:
-
-```python
-from stefan_on_software_api_client.models import MyDataModel
-from stefan_on_software_api_client.api.my_tag import get_my_data_model
-from stefan_on_software_api_client.types import Response
-
-my_data: MyDataModel = get_my_data_model.sync(client=client)
-# or if you need more info (e.g. status_code)
-response: Response[MyDataModel] = get_my_data_model.sync_detailed(client=client)
-```
-
-Or do the same thing with an async version:
-
-```python
-from stefan_on_software_api_client.models import MyDataModel
-from stefan_on_software_api_client.api.my_tag import get_my_data_model
-from stefan_on_software_api_client.types import Response
-
-my_data: MyDataModel = await get_my_data_model.asyncio(client=client)
-response: Response[MyDataModel] = await get_my_data_model.asyncio_detailed(client=client)
-```
-
-By default, when you're calling an HTTPS API it will attempt to verify that SSL is working correctly. Using certificate verification is highly recommended most of the time, but sometimes you may need to authenticate to a server (especially an internal server) using a custom certificate bundle.
-
-```python
-client = AuthenticatedClient(
-    base_url="https://internal_api.example.com", 
-    token="SuperSecretToken",
-    verify_ssl="/path/to/certificate_bundle.pem",
-)
-```
-
-You can also disable certificate validation altogether, but beware that **this is a security risk**.
-
-```python
-client = AuthenticatedClient(
-    base_url="https://internal_api.example.com", 
-    token="SuperSecretToken", 
-    verify_ssl=False
-)
-```
-
-There are more settings on the generated `Client` class which let you control more runtime behavior, check out the docstring on that class for more info.
-
-Things to know:
-1. Every path/method combo becomes a Python module with four functions:
+Now call an endpoint from the `api` package and use models defined in the `models` package. See the scripts in `bin` for example usage. In general, every endpoint becomes a Python module with four functions:
     1. `sync`: Blocking request that returns parsed data (if successful) or `None`
     1. `sync_detailed`: Blocking request that always returns a `Request`, optionally with `parsed` set if the request was successful.
     1. `asyncio`: Like `sync` but async instead of blocking
     1. `asyncio_detailed`: Like `sync_detailed` but async instead of blocking
 
-1. All path/query params, and bodies become method arguments.
-1. If your endpoint had any tags on it, the first tag will be used as a module name for the function (my_tag above)
-1. Any endpoint which did not have a tag will be in `stefan_on_software_api_client.api.default`
+## Preparing a post
 
-## Building / publishing this Client
-This project uses [Poetry](https://python-poetry.org/) to manage dependencies  and packaging.  Here are the basics:
-1. Update the metadata in pyproject.toml (e.g. authors, version)
-1. If you're using a private repository, configure it with Poetry
-    1. `poetry config repositories.<your-repository-name> <url-to-your-repository>`
-    1. `poetry config http-basic.<your-repository-name> <username> <password>`
-1. Publish the client with `poetry publish --build -r <your-repository-name>` or, if for public PyPI, just `poetry publish --build`
+`python bin/prepare.py` provides a way to configure a post in a local directory for upload.
+```shell
+python bin/prepare.py ../example-post
+```
 
-If you want to install this client into another project without publishing it (e.g. for development) then:
-1. If that project **is using Poetry**, you can simply do `poetry add <path-to-this-client>` from that project
-1. If that project is not using Poetry:
-    1. Build a wheel with `poetry build -f wheel`
-    1. Install that wheel from the other project `pip install <path-to-wheel>`
+## Uploading a post
+
+`python bin/upload.py` performs the full process of creating a post on the website based on your local post. It will create the post, set its metadata, upload all of its images, add the specified tags, and upload its Markdown content.
+```shell
+python bin/upload.py ../example-post --email=YOUR_EMAIL --password=YOUR_PASSWORD --host_url=https://www.stefanonsoftware.com
+```
+
+## Updating a post
+
+`python bin/update.py` provides a way to update the configuration and Markdown of an existing post and re-upload all of its images.
+```shell
+python bin/update.py ../example-post --email=YOUR_EMAIL --password=YOUR_PASSWORD --host_url=https://www.stefanonsoftware.com
+```
+
+## Managing the site
+
+`python bin/manage.py` provides various utilities for managing existing posts in a site instance. For example:
+```shell
+python bin/manage.py create-tag "SLUG" "NAME" "DESCRIPTION" --email=YOU_EMAIL --password=YOUR PASSWORD" --host_url=https://www.stefanonsoftware.com"
+```
+
+Run `python bin/manage.py --help` for more information.

@@ -24,4 +24,3 @@ if __name__ == '__main__':
 ```
 
 The utility function `find_images()` can be used to get all the `paths` from the `x-image` tags in the string. `is_markdown_valid()` can be used to test whether a given text can be correctly rendered.
-

@@ -19,25 +19,27 @@ from stefan_on_software_api_client.models.post_files_multipart_data import (
 from stefan_on_software_api_client.types import File as UploadFile
 from stefan_on_software_api_client.types import HTTPStatus
 
-"""API constants. Copied from stefan_on_software/api/constants.py."""
-# TODO: cleanup
-# Expected data format for JSON
-DATE_FORMAT = "%m/%d/%y"
 
-# Regex used to match a HEX color for the `title_color` field
-COLOR_REGEX = r"^#[0-9a-fA-F]{6}$"
-# Regex used to validate a post slug
-SLUG_REGEX = r"^[0-9a-zA-Z\-]+$"
+class Constants:
+    """Useful constants for communicating with the API."""
 
-# Prescribed featured-image size (width, height)
-FEATURED_IMAGE_WIDTH = 1000
-FEATURED_IMAGE_HEIGHT = 540
-# Prescribed banner size
-BANNER_WIDTH = 1000
-BANNER_HEIGHT = 175
-# Size of image thumbnails
-THUMBNAIL_WIDTH = 400
-THUMBNAIL_HEIGHT = 400
+    # Expected data format for JSON
+    DATE_FORMAT = "%m/%d/%y"
+
+    # Regex used to match a HEX color for the `title_color` field
+    COLOR_REGEX = r"^#[0-9a-fA-F]{6}$"
+    # Regex used to validate a post slug
+    SLUG_REGEX = r"^[0-9a-zA-Z\-]+$"
+
+    # Prescribed featured-image size (width, height)
+    FEATURED_IMAGE_WIDTH = 1000
+    FEATURED_IMAGE_HEIGHT = 540
+    # Prescribed banner size
+    BANNER_WIDTH = 1000
+    BANNER_HEIGHT = 175
+    # Size of image thumbnails
+    THUMBNAIL_WIDTH = 400
+    THUMBNAIL_HEIGHT = 400
 
 
 @dc.dataclass
@@ -78,12 +80,14 @@ class PostMeta:
 
 
 class PostMetaSchema(msh.Schema):
-    slug = msh.fields.String(validate=msh.validate.Regexp(SLUG_REGEX))
+    slug = msh.fields.String(validate=msh.validate.Regexp(Constants.SLUG_REGEX))
     title = msh.fields.String()
     byline = msh.fields.String()
-    date = msh.fields.Date(format=DATE_FORMAT)
+    date = msh.fields.Date(format=Constants.DATE_FORMAT)
     tags = msh.fields.List(
-        msh.fields.String(data_key="tags", validate=msh.validate.Regexp(SLUG_REGEX))
+        msh.fields.String(
+            data_key="tags", validate=msh.validate.Regexp(Constants.SLUG_REGEX)
+        )
     )
     image = msh.fields.String()
     banner = msh.fields.String()

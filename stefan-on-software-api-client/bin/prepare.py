@@ -5,8 +5,7 @@ from pathlib import Path
 from typing import List, Optional
 
 import click
-from sos_client import constants
-from stefan_on_software_api_client.client_util import PostMeta
+from stefan_on_software_api_client.client_util import Constants, PostMeta
 from tk_image_cropper import image_cropper
 
 
@@ -57,7 +56,7 @@ def prepare_post(path: Path):
 def decide_slug(default: Optional[str]) -> str:
     while True:
         slug = click.prompt("Enter slug:", default=default if default else "", type=str)
-        if re.match(constants.SLUG_REGEX, slug):
+        if re.match(Constants.SLUG_REGEX, slug):
             return slug
         click.echo("The specified slug does not match the required regex.")
 
@@ -80,7 +79,7 @@ def decide_tags(default: Optional[List[str]]) -> List[str]:
     while True:
         tag_str = click.prompt("Enter comma-separated tags", type=str)
         tags = [tag.strip() for tag in tag_str.split(",")]
-        if all(re.match(constants.SLUG_REGEX, tag) for tag in tags):
+        if all(re.match(Constants.SLUG_REGEX, tag) for tag in tags):
             return tags
         click.echo("At least one tag does not match the required regex")
 
@@ -92,8 +91,8 @@ def decide_featured_image(post_dir: Path, default: Optional[Path]) -> Path:
     write_path = post_dir / "featured.jpg"
     image_cropper.run_image_cropper(
         image_path,
-        constants.FEATURED_IMAGE_WIDTH,
-        constants.FEATURED_IMAGE_HEIGHT,
+        Constants.FEATURED_IMAGE_WIDTH,
+        Constants.FEATURED_IMAGE_HEIGHT,
         write_path,
     )
     return write_path
@@ -106,8 +105,8 @@ def decide_banner_image(post_dir: Path, default: Optional[Path]) -> Path:
     write_path = post_dir / "banner.jpg"
     image_cropper.run_image_cropper(
         image_path,
-        constants.BANNER_WIDTH,
-        constants.BANNER_HEIGHT,
+        Constants.BANNER_WIDTH,
+        Constants.BANNER_HEIGHT,
         write_path,
     )
     return write_path
@@ -120,8 +119,8 @@ def decide_thumbnail_image(post_dir: Path, default: Optional[Path]) -> Path:
     write_path = post_dir / "thumbnail.jpg"
     image_cropper.run_image_cropper(
         image_path,
-        constants.THUMBNAIL_WIDTH,
-        constants.THUMBNAIL_HEIGHT,
+        Constants.THUMBNAIL_WIDTH,
+        Constants.THUMBNAIL_HEIGHT,
         write_path,
     )
     return write_path
