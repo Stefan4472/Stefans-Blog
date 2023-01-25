@@ -1,0 +1,6 @@
+# Configuration used when generating the client code using [openapi-python-client](https://github.com/openapi-generators/openapi-python-client).
+# First-time generation: openapi-python-client generate --path api.yaml --config openapi-python-client-config.yaml
+# Update generated library: openapi-python-client update --path api.yaml --config openapi-python-client-config.yaml
+project_name_override: stefan-on-software-client
+package_name_override: stefan_on_software_client
+# use_path_prefixes_for_title_model_names: false

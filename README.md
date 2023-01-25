@@ -42,8 +42,9 @@ See the provided example post (in the `example-post` directory) for more informa
 
 ## Setup
 
-Install the required packages:
+Upgrade pip (recommended) and install the required packages:
 ```
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
