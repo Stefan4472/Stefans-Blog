@@ -33,6 +33,7 @@ def upload_post(path: Path, email: str, password: str, host_url: str):
 
     PATH: path to the directory where the `post.md` and `post-meta.json` live.
     """
+    click.echo(f"upload.py on path={path}")
     try:
         post = client_util.load_post(path)
     except ValueError as e:

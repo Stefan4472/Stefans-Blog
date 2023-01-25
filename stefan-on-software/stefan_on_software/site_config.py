@@ -115,19 +115,34 @@ class SiteConfig:
         """Load config from environment variables."""
         if ConfigKeys.SECRET_KEY not in os.environ:
             raise ValueError(f"{ConfigKeys.SECRET_KEY} is not declared")
+
         # Collect optional settings
-        optional = [
-            ConfigKeys.INSTANCE_PATH,
-            ConfigKeys.STATIC_PATH,
-            ConfigKeys.TESTING,
-            ConfigKeys.USE_SITE_ANALYTICS,
-            ConfigKeys.USE_EMAIL_LIST,
-            ConfigKeys.SITE_ANALYTICS_URL,
-            ConfigKeys.SITE_ANALYTICS_KEY,
-            ConfigKeys.EMAIL_API_KEY,
-            ConfigKeys.EMAIL_LIST_ID,
-            ConfigKeys.SQLALCHEMY_TRACK_MODIFICATIONS,
-            ConfigKeys.PAGINATE_POSTS_PER_PAGE,
-        ]
-        kwargs = {key: os.environ[key] for key in optional if key in os.environ}
+        kwargs = {}
+        if ConfigKeys.INSTANCE_PATH in os.environ:
+            kwargs["rel_instance_path"] = os.environ[ConfigKeys.INSTANCE_PATH]
+        if ConfigKeys.STATIC_PATH in os.environ:
+            kwargs["rel_static_path"] = os.environ[ConfigKeys.STATIC_PATH]
+        if ConfigKeys.TESTING in os.environ:
+            kwargs["testing"] = os.environ[ConfigKeys.TESTING]
+        if ConfigKeys.USE_SITE_ANALYTICS in os.environ:
+            kwargs["use_site_analytics"] = os.environ[ConfigKeys.USE_SITE_ANALYTICS]
+        if ConfigKeys.SITE_ANALYTICS_URL in os.environ:
+            kwargs["site_analytics_url"] = os.environ[ConfigKeys.SITE_ANALYTICS_URL]
+        if ConfigKeys.SITE_ANALYTICS_KEY in os.environ:
+            kwargs["site_analytics_url"] = os.environ[ConfigKeys.SITE_ANALYTICS_KEY]
+        if ConfigKeys.USE_EMAIL_LIST in os.environ:
+            kwargs["use_email_list"] = os.environ[ConfigKeys.USE_EMAIL_LIST]
+        if ConfigKeys.EMAIL_API_KEY in os.environ:
+            kwargs["email_api_key"] = os.environ[ConfigKeys.EMAIL_API_KEY]
+        if ConfigKeys.EMAIL_LIST_ID in os.environ:
+            kwargs["email_list_id"] = os.environ[ConfigKeys.EMAIL_LIST_ID]
+        if ConfigKeys.SQLALCHEMY_TRACK_MODIFICATIONS in os.environ:
+            kwargs["sql_alchemy_track_modifications"] = os.environ[
+                ConfigKeys.SQLALCHEMY_TRACK_MODIFICATIONS
+            ]
+        if ConfigKeys.PAGINATE_POSTS_PER_PAGE in os.environ:
+            kwargs["paginate_posts_per_page"] = os.environ[
+                ConfigKeys.PAGINATE_POSTS_PER_PAGE
+            ]
+
         return SiteConfig(os.environ[ConfigKeys.SECRET_KEY], **kwargs)
