@@ -40,8 +40,8 @@ def posts_page(page: int = 1):
         Post.query.filter(Post.is_published)
         .order_by(desc(Post.publish_date))
         .paginate(
-            page,
-            flask.current_app.config[ConfigKeys.PAGINATE_POSTS_PER_PAGE],
+            page=page,
+            per_page=flask.current_app.config[ConfigKeys.PAGINATE_POSTS_PER_PAGE],
             error_out=False,
         )
     )

@@ -41,7 +41,10 @@ class InvalidMarkdown(Exception):
 def create_post(contract: CreatePostContract, author: User) -> Post:
     current_app.logger.debug(f"Creating a new post with parameters={contract}")
     if contract.slug and not is_slug_valid(contract.slug):
-        raise InvalidSlug("Invalid or duplicate slug")
+        raise InvalidSlug("Invalid slug")
+    # TODO: separate exceptions for Invalid and Duplicate.
+    if Post.query.filter_by(slug=contract.slug).first():
+        raise InvalidSlug("Duplicate slug")
 
     # Calculate the expected ID that will be assigned to the post.
     # Will be used to create a unique slug and title, if none are provided.
@@ -91,6 +94,7 @@ def update_post(post_id: int, contract: UpdatePostContract, user: User) -> Post:
     post = Post.query.filter_by(id=post_id).first()
     if not post:
         raise NoSuchPost()
+    # TODO: ensure no *other* post with the desired slug exists.
     if contract.slug and not is_slug_valid(contract.slug):
         raise InvalidSlug()
     if user != post.author:
@@ -211,5 +215,4 @@ def is_slug_valid(slug: str) -> bool:
         return False
     if not re.match(constants.SLUG_REGEX, slug):
         return False
-    # Ensure no duplicate
-    return not Post.query.filter_by(slug=slug).first()
+    return True

@@ -95,7 +95,7 @@ def update_post(post_id: int):
         post = post_manager.update_post(post_id, contract, current_user)
         return jsonify(post.make_contract().make_json())
     except InvalidSlug:
-        return jsonify("Slug is invalid or non-unique"), 400
+        return jsonify("Slug is invalid"), 400
     except InvalidFile as e:
         return jsonify(f"Invalid file_id {e.file_id}"), 400
     except InsufficientPermission:

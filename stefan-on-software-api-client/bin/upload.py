@@ -93,7 +93,7 @@ def upload_post(path: Path, email: str, password: str, host_url: str):
         if res_add_tag.status_code != HTTPStatus.NO_CONTENT:
             click.echo(f"Warning: failed with content={res_add_tag.content}", err=True)
 
-    with open(post.md_path) as markdown_file:
+    with open(post.md_path, encoding="utf-8", errors="strict") as markdown_file:
         post_md = markdown_file.read()
     # Get the list of image filenames referenced in the Markdown
     for filename in renderer.find_images(post_md):

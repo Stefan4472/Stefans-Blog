@@ -76,12 +76,11 @@ def update_post(post_id: int, path: Path, email: str, password: str, host_url: s
             thumbnail_image=thumbnail_id if thumbnail_id else UNSET,
         ),
     )
-    print(res_update.status_code)
     if res_update.status_code != HTTPStatus.OK:
         click.echo(f"Request failed with content={res_update.content}", err=True)
         sys.exit(1)
 
-    with open(post.md_path) as markdown_file:
+    with open(post.md_path, encoding="utf-8", errors="strict") as markdown_file:
         post_md = markdown_file.read()
     # Get the list of image filenames referenced in the Markdown
     for filename in renderer.find_images(post_md):
@@ -93,7 +92,7 @@ def update_post(post_id: int, path: Path, email: str, password: str, host_url: s
             # TODO: not sure if this will work correctly
             new_filename = client_util.upload_file(
                 client, UploadFile(contents, full_path.name)
-            ).upload_name
+            ).filename
             # Update Markdown to use the new filename TODO: the naive find-and-replace is risky!
             post_md = post_md.replace(filename, new_filename)
 
