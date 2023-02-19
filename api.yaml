@@ -627,6 +627,11 @@ paths:
                 send_email:
                   type: boolean
                   description: Whether to trigger sending an update email to all subscribers.
+                publish_date:
+                  type: string
+                  format: datetime
+                  description: Override the publish_date for this post. Intended for use in migrations.
+                  example: 2022-09-15T10:40:52Z
       responses:
         '204':
           description: The post was published.

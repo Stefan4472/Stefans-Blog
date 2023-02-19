@@ -1,6 +1,7 @@
 import re
 import shutil
 from datetime import datetime
+from typing import Optional
 
 import sqlalchemy
 import stefan_on_software.contracts.constants as constants
@@ -167,16 +168,17 @@ def set_content(post_id: int, content: bytes):
     current_app.logger.debug(f"Updated markdown for post with id={post.id}")
 
 
-def publish(post_id: int, send_email: bool):
+def publish(post_id: int, send_email: bool, publish_date: Optional[datetime] = None):
     # TODO: currently, email sending fails silently. Should this be the case?
     post = Post.query.filter_by(id=post_id).first()
     if not post:
         raise NoSuchPost()
-    if post.is_published:
-        return  # TODO: raise exception?
+    # if post.is_published:
+    #     return  # TODO: raise exception?
 
+    current_app.logger.info(f"Publishing {post.slug} with publish_date {publish_date}")
     post.is_published = True
-    post.publish_date = datetime.now()
+    post.publish_date = publish_date if publish_date else datetime.now()
     db.session.commit()
 
     if send_email:

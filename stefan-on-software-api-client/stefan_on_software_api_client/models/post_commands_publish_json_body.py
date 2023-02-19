@@ -1,6 +1,8 @@
-from typing import Any, Dict, List, Type, TypeVar
+from typing import Any, Dict, List, Type, TypeVar, Union
 
 import attr
+
+from ..types import UNSET, Unset
 
 T = TypeVar("T", bound="PostCommandsPublishJsonBody")
 
@@ -11,15 +13,19 @@ class PostCommandsPublishJsonBody:
     Attributes:
         post_id (int): ID of the post to publish
         send_email (bool): Whether to trigger sending an update email to all subscribers.
+        publish_date (Union[Unset, str]): Override the publish_date for this post. Intended for use in migrations.
+            Example: 2022-09-15 10:40:52+00:00.
     """
 
     post_id: int
     send_email: bool
+    publish_date: Union[Unset, str] = UNSET
     additional_properties: Dict[str, Any] = attr.ib(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         post_id = self.post_id
         send_email = self.send_email
+        publish_date = self.publish_date
 
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -29,6 +35,8 @@ class PostCommandsPublishJsonBody:
                 "send_email": send_email,
             }
         )
+        if publish_date is not UNSET:
+            field_dict["publish_date"] = publish_date
 
         return field_dict
 
@@ -39,9 +47,12 @@ class PostCommandsPublishJsonBody:
 
         send_email = d.pop("send_email")
 
+        publish_date = d.pop("publish_date", UNSET)
+
         post_commands_publish_json_body = cls(
             post_id=post_id,
             send_email=send_email,
+            publish_date=publish_date,
         )
 
         post_commands_publish_json_body.additional_properties = d

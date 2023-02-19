@@ -1,4 +1,5 @@
 import dataclasses as dc
+from datetime import datetime
 from typing import Dict, Optional
 
 import marshmallow as msh
@@ -8,6 +9,7 @@ import marshmallow as msh
 class PublishPostContract:
     post_id: int
     send_email: bool
+    publish_date: Optional[datetime]
 
     @staticmethod
     def get_schema() -> "PublishPostSchema":
@@ -27,6 +29,7 @@ class PublishPostSchema(msh.Schema):
         required=True,
         allow_none=False,
     )
+    publish_date = msh.fields.DateTime()
 
     @msh.post_load
     def make_contract(self, data, **kwargs) -> PublishPostContract:

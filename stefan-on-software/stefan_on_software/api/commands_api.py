@@ -18,7 +18,9 @@ def publish_post():
         return Response(status=400, response="Invalid parameters: {}".format(e))
 
     try:
-        post_manager.publish(contract.post_id, contract.send_email)
+        post_manager.publish(
+            contract.post_id, contract.send_email, contract.publish_date
+        )
         return Response(status=204)
     except NoSuchPost:
         return Response(status=404)
