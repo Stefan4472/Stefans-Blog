@@ -29,7 +29,7 @@ class Constants:
     # Regex used to match a HEX color for the `title_color` field
     COLOR_REGEX = r"^#[0-9a-fA-F]{6}$"
     # Regex used to validate a post slug
-    SLUG_REGEX = r"^[0-9a-zA-Z\-]+$"
+    SLUG_REGEX = r"^[0-9a-zA-Z\-\+]+$"
 
     # Prescribed featured-image size (width, height)
     FEATURED_IMAGE_WIDTH = 1000

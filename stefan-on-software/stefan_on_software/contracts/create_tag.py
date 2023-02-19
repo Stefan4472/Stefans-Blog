@@ -27,6 +27,7 @@ class CreateTagSchema(msh.Schema):
         required=True,
         allow_none=False,
         data_key="slug",
+        validate=validate.Regexp(constants.SLUG_REGEX),
     )
     name = msh.fields.String(
         required=True,

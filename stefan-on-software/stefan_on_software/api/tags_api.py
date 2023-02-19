@@ -52,7 +52,7 @@ def get_single_tag(tag: str):
     return jsonify(tag.make_contract().make_json())
 
 
-@BLUEPRINT.route("/<string:tag>", methods=["POST"])
+@BLUEPRINT.route("/<string:tag>", methods=["PUT"])
 @login_required
 def update_tag(tag: str):
     """Change a tag, given the tag's slug."""

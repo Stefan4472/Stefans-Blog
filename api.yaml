@@ -73,6 +73,7 @@ components:
           type: string
           description: Unique "slug" used to make the URL for this post on the public website. Because the post URL (when published) is based on the slug, changing the slug will change the post's URL.
           example: gamedev-spritesheets
+          pattern: '^[0-9a-zA-Z\-\+]+$'
         title:
           type: string
           description: Title of the post.
@@ -132,6 +133,7 @@ components:
           description: Unique "slug" used to make the URL for this tag on the public website. Cannot be changed.
           readOnly: true
           example: data-analysis
+          pattern: '^[0-9a-zA-Z\-\+]+$'
         name:
           type: string
           description: Human-readable name used when displaying the tag on the website

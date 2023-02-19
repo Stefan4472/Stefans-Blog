@@ -48,7 +48,7 @@ def get_posts():
     )
     # Offset specified but no results: request is out of range
     if contract.offset and not res:
-        return Response(404)
+        return Response(status=404)
     return jsonify([post.make_contract().make_json() for post in res.items])
 
 

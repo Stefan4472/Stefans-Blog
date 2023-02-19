@@ -165,9 +165,7 @@ def test_end_to_end(sos_server: TestInstance):
 
     # TODO: we need to know the slug and ID of the created post
     # Publish the post
-    sos_server.run_script(
-        "manage.py", True, "publish-post", "1", "--send_email=False"
-    )
+    sos_server.run_script("manage.py", True, "publish-post", "1", "--send_email=False")
 
     # Get the post at its URL
     res_published_post = requests.get(
