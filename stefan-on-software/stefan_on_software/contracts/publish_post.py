@@ -9,7 +9,7 @@ import marshmallow as msh
 class PublishPostContract:
     post_id: int
     send_email: bool
-    publish_date: Optional[datetime]
+    publish_date: Optional[datetime] = None
 
     @staticmethod
     def get_schema() -> "PublishPostSchema":

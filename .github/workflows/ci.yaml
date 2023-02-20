@@ -19,5 +19,6 @@ jobs:
         isort . --check
         pyflakes .
     - name: Test with pytest
+      # Run all tests except the end_to_end test, which doesn't work in Github Actions.
       run: |
-        pytest
+        pytest -k 'not end_to_end'
