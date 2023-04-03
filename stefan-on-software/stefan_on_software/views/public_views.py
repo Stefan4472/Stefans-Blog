@@ -98,10 +98,11 @@ def search_page():
     query = flask.request.args.get("query") or ""
     posts = []
 
-    # Perform search and fetch results
+    # Run the query, which will return a list of PostIds. Retrieve them from the database.
+    # TODO: would be great to have a way to unit test this. Possibly merge into the '/posts' page?
     if query:
         posts = [
-            Post.query.filter(Post.slug == result.tag, Post.is_published).first()
+            Post.query.filter(Post.id == int(result.slug), Post.is_published).first()
             for result in flask.current_app.search_engine.search(query)
         ]
 
