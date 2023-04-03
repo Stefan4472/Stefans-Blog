@@ -140,7 +140,9 @@ def generate_slug(string: str) -> str:
     return re.sub(r"[^a-zA-Z0-9\-\+]+", "", string)
 
 
-def make_client(host_url: str, email: str, password: str) -> Client:
+def make_client(
+    host_url: str, email: str, password: str, timeout: float = 30
+) -> Client:
     """
     Create a client with default configuration and basic auth configured.
     `host_url` is the base url of the host, e.g. http://localhost:5000. It must not end with '/'.
@@ -151,7 +153,7 @@ def make_client(host_url: str, email: str, password: str) -> Client:
     return Client(
         host_url,
         headers=make_auth_headers(email, password),
-        timeout=5,
+        timeout=timeout,
         verify_ssl=False,
         raise_on_unexpected_status=True,
     )
