@@ -127,13 +127,6 @@ def about_page():
     return flask.render_template("blog/about.html")
 
 
-@BLUEPRINT.route("/changelog")
-@site_logger.logged_visit
-def changelog_page():
-    """Show the "Changelog" page."""
-    return flask.render_template("blog/changelog.html")
-
-
 @BLUEPRINT.errorhandler(404)
 @site_logger.logged_visit
 def error_page(error):
