@@ -13,7 +13,7 @@
         </span>
     {% endfor %}
 </div>
-<p class="mt-2 post-date">Posted on {{ post.publish_date.strftime('%B %d, %Y') }}</p>
+<p class="mt-2 post-date">Posted on {{ post.publish_date.strftime('%B %d, %Y') }} by {{ post.author.name }}</p>
 <hr>
 <div id="post-content" class="post-content">
   {{ post.render_html()|safe }}
