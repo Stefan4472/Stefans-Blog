@@ -9,6 +9,14 @@
     {% if not page_meta.allow_indexing %}<meta name="robots" content="noindex">{% endif %}
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <!--Open Graph properties https://ogp.me -->
+    <meta property="https://ogp.me/ns#site_name" content="StefanOnSoftware">
+    <meta property="https://ogp.me/ns#title" content="{{ page_meta.title }}">
+    <meta property="https://ogp.me/ns#type" content="website">
+    <!--https://stackoverflow.com/a/68215880-->
+    <meta property="https://ogp.me/ns#url" content="{{ url_for(request.endpoint, _external=True, **request.view_args) }}">
+    <meta property="https://ogp.me/ns#image" content="{{ page_meta.featured_url }}">
+
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
     integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">

@@ -19,8 +19,8 @@ def make_default_metadata(title: str, description: str) -> PageMetadata:
         description,
         "Stefan Kussmaul",
         # TODO: separate default banner for large screen vs. small
-        flask.url_for("static", filename="site-banner.jpg"),
-        flask.url_for("static", filename="site-banner.jpg"),
+        flask.url_for("static", filename="site-banner.jpg", _external=True),
+        flask.url_for("static", filename="site-banner.jpg", _external=True),
     )
 
 
