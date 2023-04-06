@@ -6,7 +6,7 @@ from typing import Optional
 import sqlalchemy
 import stefan_on_software.contracts.constants as constants
 from flask import current_app
-from stefan_on_software import email_provider, image_validator
+from stefan_on_software import email_provider, image_validator, sitemap
 from stefan_on_software.contracts.create_post import CreatePostContract
 from stefan_on_software.contracts.update_post import UpdatePostContract
 from stefan_on_software.database import db
@@ -40,6 +40,8 @@ class InvalidMarkdown(Exception):
 
 
 def create_post(contract: CreatePostContract, author: User) -> Post:
+    # Note: this function does not update the sitemap because the
+    # post starts off in an unpublished state.
     current_app.logger.debug(f"Creating a new post with parameters={contract}")
     if contract.slug and not is_slug_valid(contract.slug):
         raise InvalidSlug("Invalid slug")
@@ -117,6 +119,8 @@ def update_post(post_id: int, contract: UpdatePostContract, user: User) -> Post:
     post.last_modified = datetime.now()
 
     db.session.commit()
+    # Update sitemap
+    sitemap.update_sitemap()
     current_app.logger.info(f"Updated post with id={post.id}")
     return post
 
@@ -145,6 +149,8 @@ def delete_post(post_id: int, user: User):
 
     db.session.delete(post)
     db.session.commit()
+    # Update the sitemap
+    sitemap.update_sitemap()
     current_app.logger.info(f"Deleted post with id={post_id}")
 
 
@@ -165,6 +171,8 @@ def set_content(post_id: int, content: bytes):
     # Add Markdown file to the search engine index
     current_app.search_engine.index_string(markdown, str(post.id), allow_overwrite=True)
     current_app.search_engine.commit()
+    # Update the sitemap
+    sitemap.update_sitemap()
     current_app.logger.debug(f"Updated markdown for post with id={post.id}")
 
 
@@ -180,6 +188,8 @@ def publish(post_id: int, send_email: bool, publish_date: Optional[datetime] = N
     post.is_published = True
     post.publish_date = publish_date if publish_date else datetime.now()
     db.session.commit()
+    # Update the sitemap
+    sitemap.update_sitemap()
 
     if send_email:
         if current_app.config[ConfigKeys.USE_EMAIL_LIST]:

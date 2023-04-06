@@ -2,6 +2,7 @@ import marshmallow
 import stefan_on_software.api.util as util
 from flask import Blueprint, Response, jsonify, request
 from flask_login import login_required
+from stefan_on_software import sitemap
 from stefan_on_software.contracts.create_tag import CreateTagContract
 from stefan_on_software.contracts.update_tag import UpdateTagContract
 from stefan_on_software.database import db
@@ -22,6 +23,7 @@ def get_all_tags():
 @login_required
 def create_tag():
     """Create a tag."""
+    # TODO: move most logic into a `tag_manager.py`
     try:
         contract = CreateTagContract.from_json(request.get_json())
     except marshmallow.exceptions.ValidationError as e:
@@ -39,6 +41,8 @@ def create_tag():
     )
     db.session.add(tag)
     db.session.commit()
+    # Update the sitemap
+    sitemap.update_sitemap()
     return jsonify(tag.make_contract().make_json()), 201
 
 
@@ -82,4 +86,6 @@ def delete_tag(tag: str):
 
     db.session.delete(tag)
     db.session.commit()
+    # Update the sitemap
+    sitemap.update_sitemap()
     return Response(status=204)
