@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Sitemap. Parameters are `tags` and `posts`.-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <!--Hard-coded pages.-->
+    <url>
+        <loc>{{ url_for('blog.index', _external=True) }}</loc>
+    </url>
+    <url>
+        <loc>{{ url_for('blog.posts_page', _external=True) }}</loc>
+    </url>
+    <url>
+        <loc>{{ url_for('blog.portfolio_page', _external=True) }}</loc>
+    </url>
+    <url>
+        <loc>{{ url_for('blog.about_page', _external=True) }}</loc>
+    </url>
+    <url>
+        <loc>{{ url_for('blog.index', _external=True) }}</loc>
+    </url>
+    <url>
+        <loc>{{ url_for('blog.search_page', _external=True) }}</loc>
+    </url>
+    <!--Tags.-->
+    {% for tag in tags -%}
+    <url>
+        <loc>{{ url_for('blog.tag_view', slug=tag.slug, _external=True) }}</loc>
+    </url>
+    {% endfor -%}
+    <!--Posts.-->
+    {% for post in posts -%}
+    {% if post.is_published -%}
+    <url>
+        <loc>{{ url_for('blog.post_view', slug=post.slug, _external=True) }}</loc>
+        <lastmod>{{ post.last_modified.strftime('%Y-%m-%d') }}</lastmod>
+    </url>
+    {% endif -%}
+    {% endfor %}
+</urlset>
