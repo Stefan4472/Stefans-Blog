@@ -203,6 +203,12 @@ def sitemap():
     return flask.send_file(flask.current_app.config[ConfigKeys.SITEMAP_PATH])
 
 
+@BLUEPRINT.route("/robots.txt", methods=["GET"])
+def robots():
+    # For now, just send a reference to the sitemap.
+    return f"Sitemap: {flask.url_for('blog.sitemap', _external=True)}"
+
+
 @BLUEPRINT.route("/login", methods=["POST"])
 def login_auth():
     email = flask.request.form.get("email")
