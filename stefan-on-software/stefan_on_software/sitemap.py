@@ -1,5 +1,5 @@
 """Functionality for the generation and management of a sitemap."""
-import os
+from pathlib import Path
 from typing import Iterable
 
 import flask
@@ -16,13 +16,10 @@ def generate_sitemap(posts: Iterable[Post], tags: Iterable[Tag]) -> str:
     )
 
 
-def generate_and_write_sitemap():
+def generate_and_write_sitemap(output_path: Path):
     """
-    Generates the sitemap dynamically based on the current posts and tags.
-
-    Writes the sitemap into the 'static' folder as 'sitemap.xml'.
+    Dynamically generates the sitemap based on the current posts and tags.
+    Writes the sitemap file to `output_path`.
     """
-    with open(
-        os.path.join(current_app.static_folder, "sitemap.xml"), "w+", encoding="utf-8"
-    ) as out:
+    with open(output_path, "w+", encoding="utf-8") as out:
         out.write(generate_sitemap(Post.query.all(), Tag.query.all()))

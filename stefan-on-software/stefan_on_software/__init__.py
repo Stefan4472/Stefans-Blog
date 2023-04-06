@@ -27,6 +27,9 @@ def create_app(config: SiteConfig = None):
         app.static_folder = os.path.join(app.root_path, my_config.rel_static_path)
         app.logger.info(f"static_folder set to {app.static_folder}")
 
+    # Set path for where the sitemap file should be stored.
+    app.config[ConfigKeys.SITEMAP_PATH] = os.path.join(app.static_folder, "sitemap.xml")
+
     from . import auth, cli, defaults
 
     # Populate app.config with paths that are set by default

@@ -111,7 +111,9 @@ def tag_view(slug):
         "blog/tag_view.html",
         tag=tag,
         posts=tag.posts.filter(Post.is_published).all(),
-        page_meta=make_default_metadata(tag.name, f'Posts tagged under {tag.name}: {tag.description}'),
+        page_meta=make_default_metadata(
+            tag.name, f"Posts tagged under {tag.name}: {tag.description}"
+        ),
     )
 
 
@@ -192,6 +194,13 @@ def login():
         "blog/login.html",
         page_meta=meta,
     )
+
+
+@BLUEPRINT.route("/sitemap.xml", methods=["GET"])
+def sitemap():
+    # As advised by https://stackoverflow.com/a/14625619, the sitemap file
+    # should be stored in 'static' but be served via its own route.
+    return flask.send_file(flask.current_app.config[ConfigKeys.SITEMAP_PATH])
 
 
 @BLUEPRINT.route("/login", methods=["POST"])
