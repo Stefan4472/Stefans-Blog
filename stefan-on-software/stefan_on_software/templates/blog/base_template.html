@@ -2,10 +2,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <title>{{ page_meta.title }} | StefanOnSoftware</title>
     <meta charset="utf-8">
-    <meta name="description" content="Stefan Kussmaul's personal blog about programming, software, and other things">
-    <meta name="keywords" content="Stefan Kussmaul, Software, Programming, Blog, Travel, Tutorials, Python">
-    <meta name="author" content="Stefan Kussmaul">
+    <meta name="description" content="{{ page_meta.description }}">
+    <meta name="author" content="{{ page_meta.author }}">
+    {% if not page_meta.allow_indexing %}<meta name="robots" content="noindex">{% endif %}
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Bootstrap CSS -->
@@ -26,8 +27,6 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
         crossorigin="anonymous"></script>
-
-    {% block title %}<title>Stefan on Software</title>{% endblock %}
 </head>
 <body>
     {% include "blog/banner.html" %}

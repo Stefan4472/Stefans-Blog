@@ -1,5 +1,5 @@
 <!-- The banner is a jumbotron with an image background -->
-<div id="page-banner" class="jumbotron" style="margin-bottom: 0; text-align: center; color: white; background-image: url({{ url_for('static', filename='site-banner.jpg') }}); background-size: cover;">
+<div id="page-banner" class="jumbotron" style="margin-bottom: 0; text-align: center; color: white; background-image: url({{ page_meta.banner_url }}); background-size: cover;">
     <h1 class="display-4" ><a href="/" class="link-override" style="color: white; background-color: black">Stefan on Software</a></h1>
     <p class="lead"><a href="/" class="link-override" style="color: white; background-color: black">(and other things)</a></p>
 </div>
@@ -31,13 +31,13 @@ function setBannerImgForWidth(windowWidth) {
   // Show the post's "featured" image if window width is less than 800 pix.
   if (windowWidth < 800) {
       {% if post and post.featured_image %}
-    banner_element.style.backgroundImage = 'url({{ post.featured_image.make_url() }})';
+    banner_element.style.backgroundImage = 'url({{ page_meta.featured_url }})';
       {% endif %}
   }
   // Show the post's "banner" image otherwise
   else {
       {% if post and post.banner_image %}
-    banner_element.style.backgroundImage = 'url({{ post.banner_image.make_url() }})';
+    banner_element.style.backgroundImage = 'url({{ page_meta.banner_url }})';
       {% endif %}
   }
 }

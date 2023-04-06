@@ -7,9 +7,21 @@ from stefan_on_software.auth import verify_login
 from stefan_on_software.models.post import Post
 from stefan_on_software.models.tag import Tag
 from stefan_on_software.site_config import ConfigKeys
+from stefan_on_software.views.page_metadata import PageMetadata
 
 # Blueprint under which all views will be assigned
 BLUEPRINT = flask.Blueprint("blog", __name__)
+
+
+def make_default_metadata(title: str, description: str) -> PageMetadata:
+    return PageMetadata(
+        title,
+        description,
+        "Stefan Kussmaul",
+        # TODO: separate default banner for large screen vs. small
+        flask.url_for("static", filename="site-banner.jpg"),
+        flask.url_for("static", filename="site-banner.jpg"),
+    )
 
 
 @BLUEPRINT.route("/")
@@ -27,6 +39,10 @@ def index():
         "blog/index.html",
         featured_posts=featured_posts,
         recent_posts=recent_posts,
+        page_meta=make_default_metadata(
+            "Home",
+            "Stefan Kussmaul's personal blog about software, data analysis, and life in general.",
+        ),
     )
 
 
@@ -48,6 +64,9 @@ def posts_page(page: int = 1):
     return flask.render_template(
         "blog/posts.html",
         posts=posts,
+        page_meta=make_default_metadata(
+            f"Posts (page {page})", "Posts published on StefanOnSoftware."
+        ),
     )
 
 
@@ -67,6 +86,13 @@ def post_view(slug):
         post=post,
         prev_post=post.get_prev(),
         next_post=post.get_next(),
+        page_meta=PageMetadata(
+            post.title,
+            post.byline,
+            post.author.name,
+            post.banner_image.make_url(),
+            post.featured_image.make_url(),
+        ),
     )
 
 
@@ -85,6 +111,7 @@ def tag_view(slug):
         "blog/tag_view.html",
         tag=tag,
         posts=tag.posts.filter(Post.is_published).all(),
+        page_meta=make_default_metadata(tag.name, f'Posts tagged under {tag.name}: {tag.description}'),
     )
 
 
@@ -110,6 +137,10 @@ def search_page():
         "blog/search.html",
         query=query,
         posts=posts,
+        page_meta=make_default_metadata(
+            f"Search Results for '{query}'",
+            "Displaying search results for StefanOnSoftware",
+        ),
     )
 
 
@@ -117,28 +148,50 @@ def search_page():
 @site_logger.logged_visit
 def portfolio_page():
     """Show the "Portfolio" page."""
-    return flask.render_template("blog/portfolio.html")
+    return flask.render_template(
+        "blog/portfolio.html",
+        page_meta=make_default_metadata(
+            "Portfolio", "A selection of personal projects created by Stefan."
+        ),
+    )
 
 
 @BLUEPRINT.route("/about")
 @site_logger.logged_visit
 def about_page():
     """Show the "About" page."""
-    return flask.render_template("blog/about.html")
+    return flask.render_template(
+        "blog/about.html",
+        page_meta=make_default_metadata("About", "All you need to know about Stefan"),
+    )
 
 
 @BLUEPRINT.errorhandler(404)
 @site_logger.logged_visit
 def error_page(error):
     """Show the 404 error page."""
-    return flask.render_template("blog/404.html"), 404
+    return (
+        flask.render_template(
+            "blog/404.html",
+            page_meta=make_default_metadata(
+                "404 Error", "The page you are trying to access does not exist"
+            ),
+        ),
+        404,
+    )
 
 
 @BLUEPRINT.route("/login", methods=["GET"])
 def login():
     if current_user.is_authenticated:
         return flask.redirect(flask.url_for("internal.landing"))
-    return flask.render_template("blog/login.html")
+    # Don't allow search engines to crawl this page.
+    meta = make_default_metadata("Login", "Login to the website.")
+    meta.allow_indexing = False
+    return flask.render_template(
+        "blog/login.html",
+        page_meta=meta,
+    )
 
 
 @BLUEPRINT.route("/login", methods=["POST"])
