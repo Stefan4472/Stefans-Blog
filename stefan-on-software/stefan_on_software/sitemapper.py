@@ -24,7 +24,7 @@ def generate_and_write_sitemap(output_path: Path):
     """
     with open(output_path, "w+", encoding="utf-8") as out:
         out.write(generate_sitemap(Post.query.all(), Tag.query.all()))
-    flask.current_app.logger.info(f"Updated and wrote sitemap.")
+    flask.current_app.logger.info("Updated and wrote sitemap.")
 
 
 def ping_google():
@@ -32,10 +32,12 @@ def ping_google():
     Send Google a ping which tells them our sitemap has changed.
     See https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap#addsitemap.
     """
-    requests.get(
+    res = requests.get(
         f"https://www.google.com/ping?sitemap={flask.url_for('blog.sitemap', _external=True)}"
     )
-    flask.current_app.logger.info("Notified Google about sitemap change.")
+    flask.current_app.logger.info(
+        f"Notified Google about sitemap change. Response = {res.content}"
+    )
 
 
 def update_sitemap():

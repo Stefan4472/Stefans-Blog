@@ -4,7 +4,6 @@ import shutil
 import click
 import flask
 from flask import current_app
-from stefan_on_software import sitemap
 from werkzeug.security import generate_password_hash
 
 from .database import db
@@ -39,8 +38,9 @@ def init_site():
     with open(current_app.config[ConfigKeys.SEARCH_INDEX_PATH], "w+") as f:
         # TODO: search engine needs to be fixed to allow empty files
         f.write('{"index": {}, "doc_data": {}}')
-    # Create initial sitemap.
-    sitemap.update_sitemap()
+    # Note: unfortunately we can't write the initial sitemap here. The problem is that we
+    # can't import sitemapper.py because we don't have a full application request context,
+    # which is needed to generate website URLs.
     click.echo("Created site")
 
 

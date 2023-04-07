@@ -1,8 +1,10 @@
+import os.path
+
 import flask
 import werkzeug.exceptions
 from flask_login import current_user, login_user
 from sqlalchemy import desc
-from stefan_on_software import site_logger
+from stefan_on_software import site_logger, sitemapper
 from stefan_on_software.auth import verify_login
 from stefan_on_software.models.post import Post
 from stefan_on_software.models.tag import Tag
@@ -200,6 +202,8 @@ def login():
 def sitemap():
     # As advised by https://stackoverflow.com/a/14625619, the sitemap file
     # should be stored in 'static' but be served via its own route.
+    if not os.path.exists(flask.current_app.config[ConfigKeys.SITEMAP_PATH]):
+        sitemapper.update_sitemap()
     return flask.send_file(flask.current_app.config[ConfigKeys.SITEMAP_PATH])
 
 
