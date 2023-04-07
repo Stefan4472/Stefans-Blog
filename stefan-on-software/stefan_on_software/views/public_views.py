@@ -26,6 +26,7 @@ def make_default_metadata(title: str, description: str) -> PageMetadata:
     )
 
 
+# TODO: consistent naming of view functions.
 @BLUEPRINT.route("/")
 @site_logger.logged_visit
 def index():
