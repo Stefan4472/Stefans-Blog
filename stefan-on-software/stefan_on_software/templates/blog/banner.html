@@ -1,47 +1,16 @@
-<!-- The banner is a jumbotron with an image background -->
-<div id="page-banner" class="jumbotron" style="margin-bottom: 0; text-align: center; color: white; background-image: url({{ page_meta.banner_url }}); background-size: cover;">
-    <h1 class="display-4" ><a href="/" class="link-override" style="color: white; background-color: black">Stefan on Software</a></h1>
-    <p class="lead"><a href="/" class="link-override" style="color: white; background-color: black">(and other things)</a></p>
+<!--Show a banner image. 100% width, no gutters, no margin bottom. -->
+<div id="page-banner" class="container-fluid g-0 mb-0">
+    <a href="/">
+        <!--Choose which image to display based on screen orientation, which
+        we use as a proxy for device (landscape=desktop, portrait=mobile).-->
+        <picture class="w-100">
+            <source
+                media="(orientation: landscape)"
+                srcset="{{ page_meta.banner_url}}">
+            <source
+                media="(orientation: portrait)"
+                srcset="{{ page_meta.featured_url }}">
+            <img src="{{ page_meta.banner_url }}" width="100%" height="auto">
+        </picture>
+    </a>
 </div>
-
-<!-- Responsive banner script. Currently only used for posts -->
-{% if post %}
-<script>
-var banner_element = document.getElementById('page-banner');
-var curr_inner_width = window.innerWidth;
-setBannerImgForWidth(curr_inner_width);
-
-function onWindowSizeChanged() {
-  updateBannerImgResponsively(window.innerWidth);
-}
-
-function updateBannerImgResponsively(windowWidth) {
-  // Change from narrow to wide
-  if (windowWidth < 800 && curr_inner_width >= 800) {
-    setBannerImgForWidth(windowWidth);
-  }
-  // Change from wide to narrow
-  else if (windowWidth >= 800 && curr_inner_width < 800) {
-    setBannerImgForWidth(windowWidth);
-  }
-  curr_inner_width = windowWidth; 
-}
-
-function setBannerImgForWidth(windowWidth) {
-  // Show the post's "featured" image if window width is less than 800 pix.
-  if (windowWidth < 800) {
-      {% if post and post.featured_image %}
-    banner_element.style.backgroundImage = 'url({{ page_meta.featured_url }})';
-      {% endif %}
-  }
-  // Show the post's "banner" image otherwise
-  else {
-      {% if post and post.banner_image %}
-    banner_element.style.backgroundImage = 'url({{ page_meta.banner_url }})';
-      {% endif %}
-  }
-}
-
-window.onresize = onWindowSizeChanged;
-</script>
-{% endif %}
