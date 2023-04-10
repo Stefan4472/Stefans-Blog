@@ -5,11 +5,11 @@
         we use as a proxy for device (landscape=desktop, portrait=mobile).-->
         <picture class="w-100">
             <source
-                media="(orientation: landscape)"
-                srcset="{{ page_meta.banner_url}}">
+                    media="(orientation: landscape)"
+                    srcset="{{ page_meta.banner_url}}">
             <source
-                media="(orientation: portrait)"
-                srcset="{{ page_meta.featured_url }}">
+                    media="(orientation: portrait)"
+                    srcset="{{ page_meta.featured_url }}">
             <img src="{{ page_meta.banner_url }}" width="100%" height="auto">
         </picture>
     </a>

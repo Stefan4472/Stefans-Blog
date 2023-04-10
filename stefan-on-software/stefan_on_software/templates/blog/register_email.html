@@ -3,7 +3,8 @@
         <h5 class="card-title">🚀 Subscribe to the StefanOnSoftware Email Newsletter!</h5>
         <h6 class="card-subtitle mb-2 text-muted">Receive an email whenever I publish a new post.</h6>
         <div class="input-group mb-3">
-            <input id="email_address" aria-label="Email Address" type="email" class="form-control" placeholder="Enter your Email Address">
+            <input id="email_address" aria-label="Email Address" type="email" class="form-control"
+                   placeholder="Enter your Email Address">
             <button id="email_submit" type="button" class="btn btn-primary">Submit</button>
         </div>
     </div>
@@ -39,28 +40,28 @@
 </div>
 
 <script>
-$('#email_submit').on('click', function(event) {
-    // Disable the "Submit" button while waiting for response
-    $('#email_submit').prop('disabled', true);
+    $('#email_submit').on('click', function (event) {
+        // Disable the "Submit" button while waiting for response
+        $('#email_submit').prop('disabled', true);
 
-    // Trigger AJAX request to Email API when user presses the Submit button
-    let xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState !== XMLHttpRequest.DONE) {
-            return;
-        }
-        if (xhr.status === 200) {
-            $('#toast-email-success').toast('show');
-            $('#email_address').val('');
-        } else {
-            $('#email-error').text(xhr.responseText);
-            $('#toast-email-failure').toast('show');
-        }
-        // Re-enable the "Submit" button
-        $('#email_submit').prop('disabled', false);
-    };
-    xhr.open('POST', "{{ url_for('email.register_email') }}", true);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.send(JSON.stringify({'address': $('#email_address').val()}));
-});
+        // Trigger AJAX request to Email API when user presses the Submit button
+        let xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState !== XMLHttpRequest.DONE) {
+                return;
+            }
+            if (xhr.status === 200) {
+                $('#toast-email-success').toast('show');
+                $('#email_address').val('');
+            } else {
+                $('#email-error').text(xhr.responseText);
+                $('#toast-email-failure').toast('show');
+            }
+            // Re-enable the "Submit" button
+            $('#email_submit').prop('disabled', false);
+        };
+        xhr.open('POST', "{{ url_for('email.register_email') }}", true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.send(JSON.stringify({'address': $('#email_address').val()}));
+    });
 </script>

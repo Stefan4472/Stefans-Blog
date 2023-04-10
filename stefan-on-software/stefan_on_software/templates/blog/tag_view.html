@@ -5,6 +5,6 @@
 {% block content %}
 <h2>{{ posts|length }} Post{% if posts|length != 1 %}s{% endif %} Tagged Under "{{ tag.name }}"</h2>
 {% for post in posts %}
-	{{ macros.post_widget(post) }}
+{{ macros.post_widget(post) }}
 {% endfor %}
 {% endblock %}

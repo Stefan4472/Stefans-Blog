@@ -2,57 +2,60 @@
 
 {% block content %}
 <div style="max-width: 800px; margin: auto">
-<h1>{{ post.title }}</h1>
-<div class="d-inline">
-    {% for tag in post.tags %}
+    <h1>{{ post.title }}</h1>
+    <div class="d-inline">
+        {% for tag in post.tags %}
         <span class="badge badge-primary tag" style="background-color: {{ tag.color }};">
             <a
-                class="link-override"
-                href="{{ url_for('blog.tag_view', slug=tag.slug) }}"
+                    class="link-override"
+                    href="{{ url_for('blog.tag_view', slug=tag.slug) }}"
             >{{ tag.name }}</a>
         </span>
-    {% endfor %}
-</div>
-<p class="mt-2 post-date">Posted on {{ post.publish_date.strftime('%B %d, %Y') }} by {{ post.author.name }}</p>
-<hr>
-<div id="post-content" class="post-content">
-  {{ post.render_html()|safe }}
-</div>
+        {% endfor %}
+    </div>
+    <p class="mt-2 post-date">Posted on {{ post.publish_date.strftime('%B %d, %Y') }} by {{ post.author.name }}</p>
+    <hr>
+    <div id="post-content" class="post-content">
+        {{ post.render_html()|safe }}
+    </div>
 
-<!--
-<div class="row">
-  <div class="col-6">
-    <span style="padding: 1rem; margin-top: 2rem;">
-      <i class="fa fa-chevron-left float-left"></i>
-      <a href="#" class="stretched-link">Previous Article: ARTICLE TITLE</a>
-    </span>
-    
-  </div>
-  <div class="col-6">
-    <i class="fa fa-chevron-right float-right"></i>
-    <p class="float-right">Next Article: ARTICLE TITLE</p>
-  </div>
-</div>
--->
+    <!--
+    <div class="row">
+      <div class="col-6">
+        <span style="padding: 1rem; margin-top: 2rem;">
+          <i class="fa fa-chevron-left float-left"></i>
+          <a href="#" class="stretched-link">Previous Article: ARTICLE TITLE</a>
+        </span>
 
-<!-- TODO: MAKE THIS LOOK BETTER. SEE THE ABOVE COMMENTED CODE FOR WHAT I WAS TRYING TO DO 
-ALSO: SHOULD IT INCLUDE THE THUMBNAILS FOR NEXT&PREVIOUS POSTS?-->
-<hr/>
-<div class="row">
-  <div class="col-6">
-    {% if prev_post %}
-{#        TODO: Some kind of rendering function. This will also mean we don't need to send `next_post` and `prev_post` as template args#}
-    <p class="float-left">Previous Post: <a href="{{ url_for('blog.post_view', slug=prev_post.slug) }}">{{ prev_post.title }}</a></p>
-    {% endif %}
-  </div>
-  <div class="col-6">
-    {% if next_post %}
-    <p class="float-right">Next Post: <a href="{{ url_for('blog.post_view', slug=next_post.slug) }}">{{ next_post.title }}</a></p>
-    {% endif %}
-  </div>
-</div>
+      </div>
+      <div class="col-6">
+        <i class="fa fa-chevron-right float-right"></i>
+        <p class="float-right">Next Article: ARTICLE TITLE</p>
+      </div>
+    </div>
+    -->
 
-{% include "blog/register_email.html" %}
+    <!-- TODO: MAKE THIS LOOK BETTER. SEE THE ABOVE COMMENTED CODE FOR WHAT I WAS TRYING TO DO
+    ALSO: SHOULD IT INCLUDE THE THUMBNAILS FOR NEXT&PREVIOUS POSTS?-->
+    <hr/>
+    <div class="row">
+        <div class="col-6">
+            {% if prev_post %}
+            {# TODO: Some kind of rendering function. This will also mean we don't need to send `next_post` and
+            `prev_post` as template args#}
+            <p class="float-left">Previous Post: <a href="{{ url_for('blog.post_view', slug=prev_post.slug) }}">{{
+                prev_post.title }}</a></p>
+            {% endif %}
+        </div>
+        <div class="col-6">
+            {% if next_post %}
+            <p class="float-right">Next Post: <a href="{{ url_for('blog.post_view', slug=next_post.slug) }}">{{
+                next_post.title }}</a></p>
+            {% endif %}
+        </div>
+    </div>
+
+    {% include "blog/register_email.html" %}
 
 </div>
 {% endblock %}

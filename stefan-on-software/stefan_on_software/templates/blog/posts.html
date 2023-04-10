@@ -8,52 +8,53 @@
 <hr/>
 
 {% if posts.total > 0 %}
-<h5>Showing posts {{ (posts.page - 1) * posts.per_page + 1 }} to {{ (posts.page - 1) * posts.per_page + posts.items|length }} of {{ posts.total }} posts</h5>
+<h5>Showing posts {{ (posts.page - 1) * posts.per_page + 1 }} to {{ (posts.page - 1) * posts.per_page +
+    posts.items|length }} of {{ posts.total }} posts</h5>
 {% endif %}
 
 {% for post in posts.items %}
-    {{ macros.post_widget(post) }}
+{{ macros.post_widget(post) }}
 {% endfor %}
 
 <!--Pagination menu-->
 {% if posts.pages > 1 %}
-  <nav>
+<nav>
     <ul class="pagination justify-content-center">
-      {% if posts.has_prev %}
+        {% if posts.has_prev %}
         <li class="page-item">
-          <a class="page-link" href="{{ url_for('blog.posts_page', page=posts.prev_num) }}">Previous Page</a>
+            <a class="page-link" href="{{ url_for('blog.posts_page', page=posts.prev_num) }}">Previous Page</a>
         </li>
-      {% else %}
-        <li class="page-item disabled">
-          <a class="page-link" href="#">Previous Page</a>
-        </li>
-      {% endif %}
-      {% for page in posts.iter_pages() %}
-        {% if page %}
-          {% if page == posts.page %}
-            <li class="page-item">
-              <strong><a class="page-link" href="{{ url_for('blog.posts_page', page=page) }}">{{page}}</a></strong>
-            </li>
-          {% else %}
-            <li class="page-item">
-              <a class="page-link" href="{{ url_for('blog.posts_page', page=page) }}">{{page}}</a>
-            </li>
-          {% endif %}
         {% else %}
-          <span class=ellipsis>…</span>
-        {% endif %}
-      {% endfor %}
-      {% if posts.has_next %}
-        <li class="page-item">
-          <a class="page-link" href="{{ url_for('blog.posts_page', page=posts.next_num) }}">Next Page</a>
-        </li>
-      {% else %}
         <li class="page-item disabled">
-          <a class="page-link" href="#">Next Page</a>
+            <a class="page-link" href="#">Previous Page</a>
         </li>
-      {% endif %}
+        {% endif %}
+        {% for page in posts.iter_pages() %}
+        {% if page %}
+        {% if page == posts.page %}
+        <li class="page-item">
+            <strong><a class="page-link" href="{{ url_for('blog.posts_page', page=page) }}">{{page}}</a></strong>
+        </li>
+        {% else %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('blog.posts_page', page=page) }}">{{page}}</a>
+        </li>
+        {% endif %}
+        {% else %}
+        <span class=ellipsis>…</span>
+        {% endif %}
+        {% endfor %}
+        {% if posts.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('blog.posts_page', page=posts.next_num) }}">Next Page</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link" href="#">Next Page</a>
+        </li>
+        {% endif %}
     </ul>
-  </nav>
+</nav>
 {% endif %}
 
 {% endblock %}
