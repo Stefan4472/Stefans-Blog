@@ -1,0 +1,54 @@
+<!-- Carousel display some number of posts in a slideshow. -->
+<!-- Provide the list of Posts to display as a variable called `posts`. -->
+<!-- Provide a unique HTML ID for the carousel to use as a variable called `html_id`. -->
+<!-- Carousel docs: https://getbootstrap.com/docs/5.2/components/carousel/ -->
+{% macro make_carousel(posts, html_id) -%}
+<div class="card mb-3">
+    <div id="{{ html_id }}" class="carousel slide carousel-fade" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+            {% for i in range(0, posts|length) %}
+            <button
+                    type="button"
+                    data-bs-target="#{{ html_id }}"
+                    data-bs-slide-to="{{ i }}" {% if i== 0 %}class="active" {% endif %}
+                    {% if i== 0 %}aria-current="true" {% endif %}
+                    aria-label="Slide {{ i+1 }}"
+            ></button>
+            {% endfor %}
+        </div>
+        <div class="carousel-inner">
+            {% for i in range(0, posts|length) %}
+            <div class="carousel-item {% if i == 0 %}active{% endif %} carousel-div">
+                <a href="{{ url_for('blog.post_view', slug=posts[i].slug) }}">
+                    <img
+                            src="{{ posts[i].featured_image.make_url() }}"
+                            class="d-block w-100"
+                            alt="{{ posts[i].byline }}"
+                    >
+                </a>
+                <div class="carousel-caption">
+                    <div class="carousel-text">
+                        <h1 class="carousel-overlay">{{ posts[i].title }}</h1>
+                        <!-- Hide the byline on mobile devices, which are too small to display all that text. -->
+                        <p class="carousel-overlay d-none d-sm-none d-md-none d-lg-block ">{{ posts[i].byline }}</p>
+                    </div>
+                    <a
+                            class="btn btn-lg btn-primary carousel-overlay"
+                            href="{{ url_for('blog.post_view', slug=posts[i].slug) }}"
+                            role="button"
+                    >Read More</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#{{ html_id }}" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#{{ html_id }}" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+</div>
+{%- endmacro %}

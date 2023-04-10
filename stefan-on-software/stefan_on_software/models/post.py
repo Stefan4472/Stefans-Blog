@@ -16,6 +16,7 @@ COLOR_REGEX = re.compile("^#[0-9a-fA-F]{6}$")
 
 # TODO: CURRENTLY, MARKDOWN FILES ARE PUBLICLY ACCESSIBLE VIA THE 'STATIC' ROUTE. THIS SHOULD NOT BE THE CASE
 # TODO: hash article text?
+# TODO: a make_url() method which returns the URL of the post page via url_for()
 class Post(db.Model):
     __tablename__ = "post"
     id = db.Column(db.Integer, primary_key=True)

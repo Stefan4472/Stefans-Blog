@@ -1,5 +1,6 @@
 {% extends "blog/base_template.html" %}
 {% import "blog/macros.html" as macros %}
+{% import "blog/posts_carousel.html" as posts_carousel %}
 {% set active_page = "index" %}
 
 {% block content %}
@@ -15,134 +16,9 @@
 </div>
 
 {% if featured_posts %}
-<h2>Featured</h2>
+<h2>Featured Posts</h2>
 <hr/>
-<!-- Carousel showing featured posts -->
-<!-- Carousel docs: https://getbootstrap.com/docs/4.3/components/carousel/ -->
-<div class="card mb-3">
-    <div id="featured-posts-carousel" class="carousel slide" data-ride="carousel" data-interval="7500">
-        <ol class="carousel-indicators">
-            {% for i in range(0, featured_posts|length) %}
-            <li
-                    data-target="#featured-posts-carousel"
-                    data-slide-to="{{ i }}" {% if i== 0 %}class="active" {% endif %}
-            ></li>
-            {% endfor %}
-        </ol>
-        <!--		TODO: black background behind text -->
-        <div id="featured_carousel" class="carousel-inner">
-            {% for i in range(0, featured_posts|length) %}
-            <div class="carousel-item {% if i == 0 %}active{% endif %} carousel-div">
-                <a href="{{ url_for('blog.post_view', slug=featured_posts[i].slug) }}">
-                    <img
-                            src="{{ featured_posts[i].featured_image.make_url() }}"
-                            class="d-block carousel-image"
-                            alt="..."
-                    >
-                </a>
-                <div class="carousel-caption text-left">
-                    <div class="carousel-text">
-                        <h1
-                                id="carousel-title"
-                                class="carousel-overlay"
-                        >{{ featured_posts[i].title }}</h1>
-                        <p
-                                id="carousel-byline"
-                                class="carousel-overlay"
-                        >{{ featured_posts[i].byline }}</p>
-                        <a
-                                id="carousel-button"
-                                class="btn btn-lg btn-primary carousel-overlay"
-                                href="{{ url_for('blog.post_view', slug=featured_posts[i].slug) }}"
-                                role="button"
-                        >Read More</a>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        <a
-                class="carousel-control-prev"
-                href="#featured-posts-carousel"
-                role="button"
-                data-slide="prev"
-        >
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="sr-only">Previous</span>
-        </a>
-        <a
-                class="carousel-control-next"
-                href="#featured-posts-carousel"
-                role="button"
-                data-slide="next"
-        >
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="sr-only">Next</span>
-        </a>
-    </div>
-    <div id="under-carousel-div" class="card-body">
-        <h5 id="under-carousel-title">Title</h5>
-        <p id="under-carousel-byline">Byline</p>
-        <a id="under-carousel-button" class="btn btn-primary float-right" role="button">Read More</a>
-    </div>
-</div>
-
-<script>
-    // Listen for the carousel "slide" event. Copy the carousel displayed
-    // text into the "under-carousel" elements
-    $('#featured-posts-carousel').on('slid.bs.carousel', function (e) {
-        updateUnderCarousel();
-    });
-
-    function updateUnderCarousel() {
-        // Find the div that is a child of 'featured_carousel' and has both the
-        // 'carousel-item' and 'carousel-active' classes
-        active_carousel_div = $('#featured_carousel').children('.carousel-item.active');
-        // Find the 'carousel-text' div
-        carousel_text_div = active_carousel_div.children('.carousel-caption').children('.carousel-text');
-        // Copy the values of the active title, byline, and button to the 'under-carousel'
-        // elements
-        $('#under-carousel-title').text(carousel_text_div.children('#carousel-title').text());
-        $('#under-carousel-byline').text(carousel_text_div.children('#carousel-byline').text());
-        $('#under-carousel-button').attr('href', carousel_text_div.children('#carousel-button').attr('href'));
-    }
-
-    updateUnderCarousel();
-</script>
-
-<script>
-    // Show either carousel-overlay or under-carousel, depending on screen width
-    var curr_inner_width = window.innerWidth;
-    setCarouselForWidth(curr_inner_width);
-
-    function onWindowSizeChanged() {
-        updateCarouselResponsively(window.innerWidth);
-    }
-
-    function updateCarouselResponsively(windowWidth) {
-        // Change from narrow to wide--show carousel text
-        if (windowWidth < 800 && curr_inner_width >= 800) {
-            setCarouselForWidth(windowWidth);
-        }
-        // Change from wide to narrow--show under-carousel text
-        else if (windowWidth >= 800 && curr_inner_width < 800) {
-            setCarouselForWidth(windowWidth);
-        }
-        curr_inner_width = windowWidth;
-    }
-
-    function setCarouselForWidth(windowWidth) {
-        if (windowWidth < 800) {
-            $('#under-carousel-div').show();
-            $('.carousel-overlay').hide();
-        } else {
-            $('#under-carousel-div').hide();
-            $('.carousel-overlay').show();
-        }
-    }
-
-    window.onresize = onWindowSizeChanged;
-</script>
+{{ posts_carousel.make_carousel(featured_posts, "featured-posts-carousel") }}
 {% endif %}
 
 {% include "blog/register_email.html" %}
