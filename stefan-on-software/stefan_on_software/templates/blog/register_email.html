@@ -3,21 +3,22 @@
         <h5 class="card-title">🚀 Subscribe to the StefanOnSoftware Email Newsletter!</h5>
         <h6 class="card-subtitle mb-2 text-muted">Receive an email whenever I publish a new post.</h6>
         <div class="input-group mb-3">
-            <input id="email_address" aria-label="Email Address" type="email" class="form-control"
+            <input id="email-address" aria-label="Email Address" type="email" class="form-control"
                    placeholder="Enter your Email Address">
             <button id="email_submit" type="button" class="btn btn-primary">Submit</button>
         </div>
     </div>
 </div>
 
-<!-- Adapted from https://getbootstrap.com/docs/4.2/components/toasts/ -->
 <!-- Container for toasts that popup when the user register their email. -->
+<!-- Adapted from https://getbootstrap.com/docs/5.2/components/toasts/ -->
 <div class="d-flex justify-content-end">
-    <div id="toast-email-success" class="toast" data-delay="4000">
+    <!-- Toast to show when the registration is successful. -->
+    <div id="toast-email-success" class="toast" role="alert" data-bs-delay="4000">
         <div class="toast-header">
             <span style="height: 1rem; width: 1rem; border-radius: 50%; background-color: #5cb85c;"></span>
             <strong class="mr-auto" style="margin-left: 1rem;">Success!</strong>
-            <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+            <button type="button" class="ml-2 mb-1 btn-close" data-bs-dismiss="toast" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
@@ -25,11 +26,12 @@
             You have successfully subscribed to the email list
         </div>
     </div>
-    <div id="toast-email-failure" class="toast" data-delay="4000">
+    <!-- Toast to show when the registration fails. -->
+    <div id="toast-email-failure" class="toast" role="alert" data-bs-delay="4000">
         <div class="toast-header">
             <span style="height: 1rem; width: 1rem; border-radius: 50%; background-color: #d9534f;"></span>
             <strong class="mr-auto" style="margin-left: 1rem;">Error</strong>
-            <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+            <button type="button" class="ml-2 mb-1 btn-close" data-bs-dismiss="toast" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
@@ -40,9 +42,10 @@
 </div>
 
 <script>
-    $('#email_submit').on('click', function (event) {
+let submitButton = document.getElementById("email_submit");
+submitButton.addEventListener("click", function() {
         // Disable the "Submit" button while waiting for response
-        $('#email_submit').prop('disabled', true);
+        submitButton.disabled = true;
 
         // Trigger AJAX request to Email API when user presses the Submit button
         let xhr = new XMLHttpRequest();
@@ -51,17 +54,17 @@
                 return;
             }
             if (xhr.status === 200) {
-                $('#toast-email-success').toast('show');
-                $('#email_address').val('');
+                document.getElementById("email-address").value = "";
+                bootstrap.Toast.getOrCreateInstance(document.getElementById('toast-email-success')).show();
             } else {
-                $('#email-error').text(xhr.responseText);
-                $('#toast-email-failure').toast('show');
+                document.getElementById('email-error').textContent = xhr.responseText;
+                bootstrap.Toast.getOrCreateInstance(document.getElementById('toast-email-failure')).show();
             }
             // Re-enable the "Submit" button
-            $('#email_submit').prop('disabled', false);
+            submitButton.disabled = false;
         };
         xhr.open('POST', "{{ url_for('email.register_email') }}", true);
         xhr.setRequestHeader("Content-Type", "application/json");
-        xhr.send(JSON.stringify({'address': $('#email_address').val()}));
+        xhr.send(JSON.stringify({'address': document.getElementById("email-address").value}));
     });
 </script>
