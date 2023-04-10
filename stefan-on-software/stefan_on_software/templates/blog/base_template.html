@@ -34,7 +34,7 @@
 <body>
     {% include "blog/banner.html" %}
     {% include "blog/navbar.html" %}
-    <div class="container" class="main-content">
+    <div class="container main-content" style="max-width: 1000px;">
         {% block content %}{% endblock %}
     </div>
     {% include "blog/footer.html" %}

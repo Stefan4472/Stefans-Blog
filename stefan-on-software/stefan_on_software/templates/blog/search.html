@@ -2,15 +2,19 @@
 {% import "blog/macros.html" as macros %}
 
 {% block content %}
-<div class="jumbotron">
-    <h1 class="display-5">You are using StefanSearch</h1>
-    <p class="lead">These search results were generated using a search engine I wrote in Python. It uses an index to find all posts that have at least one of the search queries' terms, and then calculates their relevance using the QL language model.</p>
-    <p class="lead">Keep in mind: search queries are case-sensitive, and do not include the title of the post. This is just a current limitation, and something I'll be improving at some point. You can check out the project on <a href="https://github.com/Stefan4472/simple-search-engine">Github</a>.</p>
+<div class="p-3 bg-light rounded-3">
+    <div class="container-fluid">
+        <h3 class="">You are using StefanSearch</h3>
+        <p>These search results were generated using a search engine I wrote in Python. It uses an index to find all
+            posts that have at least one of the search queries' terms, then calculates their relevance using the QL
+            language model. Queries are case-sensitive. You can check out the project on <a
+                    href="https://github.com/Stefan4472/simple-search-engine">Github</a>.</p>
+    </div>
 </div>
 <h3>Found {{ posts|length }} result{% if posts|length != 1 %}s{% endif %} for "{{ query }}":</h3>
 <hr/>
 <!-- TODO: Provide rank and score of each result?-->
 {% for post in posts %}
-    {{ macros.post_widget(post) }}
+{{ macros.post_widget(post) }}
 {% endfor %}
 {% endblock %}
