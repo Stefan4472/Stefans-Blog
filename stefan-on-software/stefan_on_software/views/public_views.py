@@ -113,7 +113,9 @@ def tag_view(slug):
     return flask.render_template(
         "blog/tag_view.html",
         tag=tag,
-        posts=tag.posts.filter(Post.is_published).all(),
+        posts=tag.posts.filter(Post.is_published)
+        .order_by(desc(Post.publish_date))
+        .all(),
         page_meta=make_default_metadata(
             tag.name, f"Posts tagged under {tag.name}: {tag.description}"
         ),
