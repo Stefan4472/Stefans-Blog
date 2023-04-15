@@ -15,7 +15,7 @@
     <meta property="https://ogp.me/ns#site_name" content="StefanOnSoftware">
     <meta property="https://ogp.me/ns#title" content="{{ page_meta.title }}">
     <meta property="https://ogp.me/ns#type" content="website">
-    <!--https://stackoverflow.com/a/68215880-->
+    <!--Get absolute URL of the current page being served. https://stackoverflow.com/a/68215880-->
     <meta property="https://ogp.me/ns#url"
           content="{{ url_for(request.endpoint, _external=True, **request.view_args) }}">
     <meta property="https://ogp.me/ns#image" content="{{ page_meta.featured_url }}">
@@ -35,6 +35,7 @@
 <body>
 {% include "blog/banner.html" %}
 {% include "blog/navbar.html" %}
+<!--TODO: this is probably bad practice.-->
 <div class="container main-content" style="max-width: 1000px;">
     {% block content %}{% endblock %}
 </div>

@@ -1,8 +1,7 @@
 {% extends "blog/base_template.html" %}
 {% import "blog/macros.html" as macros %}
-{% set active_page = "posts" %}
+{# Expects a variable `posts` which is a Pagination result of Post instances. See https://flask-sqlalchemy.palletsprojects.com/en/3.0.x/pagination/ #}
 
-<!--Note: `posts` is expected to be a Pagination result-->
 {% block content %}
 <h2>Posts</h2>
 <hr/>
@@ -21,6 +20,7 @@
 <nav>
     <ul class="pagination justify-content-center">
         {% if posts.has_prev %}
+        <!-- Show "Previous Page" quick link. -->
         <li class="page-item">
             <a class="page-link" href="{{ url_for('blog.posts_page', page=posts.prev_num) }}">Previous Page</a>
         </li>
@@ -29,22 +29,22 @@
             <a class="page-link" href="#">Previous Page</a>
         </li>
         {% endif %}
+
+        <!-- Show links for the page numbers, in ascending order. -->
         {% for page in posts.iter_pages() %}
         {% if page %}
-        {% if page == posts.page %}
         <li class="page-item">
-            <strong><a class="page-link" href="{{ url_for('blog.posts_page', page=page) }}">{{page}}</a></strong>
+            <!-- Make the link for the current page bold.-->
+            <a class="page-link {% if page == posts.page %}fw-bold{% endif %}"
+               href="{{ url_for('blog.posts_page', page=page) }}">{{page}}</a>
         </li>
-        {% else %}
-        <li class="page-item">
-            <a class="page-link" href="{{ url_for('blog.posts_page', page=page) }}">{{page}}</a>
-        </li>
-        {% endif %}
         {% else %}
         <span class=ellipsis>…</span>
         {% endif %}
         {% endfor %}
+
         {% if posts.has_next %}
+        <!-- Show "Next Page" quick link. -->
         <li class="page-item">
             <a class="page-link" href="{{ url_for('blog.posts_page', page=posts.next_num) }}">Next Page</a>
         </li>

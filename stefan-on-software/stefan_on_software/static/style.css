@@ -17,6 +17,7 @@ p {
   letter-spacing: -0.003em;
 }
 
+/*TODO: replace with bootstrap text utilities*/
 .post-date {
   color: rgb(117, 117, 117);
   font-size: 0.9rem;

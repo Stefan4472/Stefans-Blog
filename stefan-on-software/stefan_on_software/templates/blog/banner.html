@@ -1,6 +1,7 @@
 <!--Show a banner image. 100% width, no gutters, no margin bottom. -->
 <div id="page-banner" class="container-fluid g-0 mb-0">
-    <a href="/">
+    <!-- Clicking the banner brings the user to the homepage. -->
+    <a href="{{ url_for('blog.index') }}">
         <!--Choose which image to display based on screen orientation, which
         we use as a proxy for device (landscape=desktop, portrait=mobile).-->
         <picture class="w-100">
