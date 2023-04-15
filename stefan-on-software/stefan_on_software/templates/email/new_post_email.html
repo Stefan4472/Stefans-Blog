@@ -7,14 +7,14 @@
         <a
             class="badge"
             style="background-color: {{ tag.color }};"
-            href="{{ url_for('blog.tag_view', slug=tag.slug, _external=True) }}"
+            href="{{ tag.absolute_url }}"
         >{{ tag.name }}</a>
     {% endfor %}
 </h3>
 <p><em>{{ post.byline }}</em></p>
 <h3><a
     class="button"
-    href="{{ url_for('blog.post_view', slug=post.slug, _external=True) }}"
+    href="{{ blog.absolute_url }}"
 >Read More</a></h3>
 
 {% endblock %}

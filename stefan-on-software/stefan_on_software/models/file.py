@@ -43,8 +43,16 @@ class File(db.Model):
     def get_path(self) -> Path:
         return Path(current_app.static_folder) / self.filename
 
-    def make_url(self, external: bool = True) -> str:
+    def make_url(self, external: bool) -> str:
         return url_for("static", filename=self.filename, _external=external)
+
+    @property
+    def relative_url(self) -> str:
+        return self.make_url(False)
+
+    @property
+    def absolute_url(self) -> str:
+        return self.make_url(True)
 
     def make_contract(self) -> FileContract:
         return FileContract(
@@ -54,7 +62,7 @@ class File(db.Model):
             uploaded_by=self.uploaded_by.make_contract(),
             filetype=self.filetype,
             filename=self.filename,
-            url=self.make_url(),
+            url=self.absolute_url,
             size=self.size,
             hash=self.hash,
         )

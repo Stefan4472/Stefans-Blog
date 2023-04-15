@@ -126,7 +126,7 @@ class EmailProvider:
         api = EmailCampaignsApi(self._make_client())
         email_html = render_template(
             "email/new_post_email.html",
-            header_url=post.banner_image.make_url(external=True),
+            header_url=post.banner_image.absolute_url,
             post=post,
         )
         # Note: here is how you would set the "scheduled_at" time directly in the API call:

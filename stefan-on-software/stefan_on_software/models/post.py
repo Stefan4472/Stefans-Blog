@@ -16,7 +16,7 @@ COLOR_REGEX = re.compile("^#[0-9a-fA-F]{6}$")
 
 # TODO: CURRENTLY, MARKDOWN FILES ARE PUBLICLY ACCESSIBLE VIA THE 'STATIC' ROUTE. THIS SHOULD NOT BE THE CASE
 # TODO: hash article text?
-# TODO: a make_url() method which returns the URL of the post page via url_for()
+# TODO: It's probably not great practice to mix flask stuff with SQLAlchemy models.
 class Post(db.Model):
     __tablename__ = "post"
     id = db.Column(db.Integer, primary_key=True)
@@ -59,6 +59,18 @@ class Post(db.Model):
     #     backref=db.backref('images', lazy='dynamic'),
     # )
 
+    def make_url(self, external: bool) -> str:
+        """Returns the relative URL for this post."""
+        return flask.url_for("blog.post_view", slug=self.slug, _external=external)
+
+    @property
+    def relative_url(self) -> str:
+        return self.make_url(False)
+
+    @property
+    def absolute_url(self) -> str:
+        return self.make_url(True)
+
     @property
     def featured_image(self) -> Optional[File]:
         return File.query.filter_by(id=self.featured_id).first()
@@ -94,7 +106,7 @@ class Post(db.Model):
             for file_name in renderer.find_images(markdown):
                 found_file = File.query.filter_by(filename=file_name).first()
                 if found_file:
-                    markdown = markdown.replace(file_name, found_file.make_url())
+                    markdown = markdown.replace(file_name, found_file.relative_url)
                 else:
                     flask.current_app.logger.error(
                         f"Couldn't find file reference {file_name} in post {self.slug}"

@@ -9,7 +9,7 @@
         <span class="badge badge-primary tag" style="background-color: {{ tag.color }};">
             <a
                     class="link-override"
-                    href="{{ url_for('blog.tag_view', slug=tag.slug) }}"
+                    href="{{ tag.relative_url }}"
             >{{ tag.name }}</a>
         </span>
         {% endfor %}

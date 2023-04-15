@@ -19,9 +19,9 @@
         <div class="carousel-inner">
             {% for i in range(0, posts|length) %}
             <div class="carousel-item {% if i == 0 %}active{% endif %} carousel-div">
-                <a href="{{ url_for('blog.post_view', slug=posts[i].slug) }}">
+                <a href="{{ posts[i].relative_url }}">
                     <img
-                            src="{{ posts[i].featured_image.make_url() }}"
+                            src="{{ posts[i].featured_image.relative_url }}"
                             class="d-block w-100"
                             alt="{{ posts[i].byline }}"
                     >
@@ -34,7 +34,7 @@
                     </div>
                     <a
                             class="btn btn-lg btn-primary carousel-overlay"
-                            href="{{ url_for('blog.post_view', slug=posts[i].slug) }}"
+                            href="{{ posts[i].relative_url }}"
                             role="button"
                     >Read More</a>
                 </div>

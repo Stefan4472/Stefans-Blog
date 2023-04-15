@@ -93,8 +93,8 @@ def post_view(slug):
             post.title,
             post.byline,
             post.author.name,
-            post.banner_image.make_url(),
-            post.featured_image.make_url(),
+            post.banner_image.absolute_url,
+            post.featured_image.absolute_url,
         ),
     )
 

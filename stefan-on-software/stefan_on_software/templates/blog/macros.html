@@ -5,27 +5,27 @@
         <!-- Image thumbnail inline with text -->
         <div class="row">
             <div class="col-md-3">
-                <a href="{{ url_for('blog.post_view', slug=post.slug) }}">
-                    <img src="{% if post.thumbnail_image %}{{ post.thumbnail_image.make_url() }}{% endif %}"
+                <a href="{{ post.relative_url }}">
+                    <img src="{% if post.thumbnail_image %}{{ post.thumbnail_image.relative_url }}{% endif %}"
                          class="card-img img-thumbnail">
                 </a>
             </div>
             <div class="col-md-9">
                 <h2 class="my-0">
                     <a style="text-decoration: none; color: black"
-                       href="{{ url_for('blog.post_view', slug=post.slug) }}">{{ post.title }}</a>
+                       href="{{ post.relative_url }}">{{ post.title }}</a>
                 </h2>
                 <div class="d-inline">
                     {% for tag in post.tags %}
                     <span class="badge badge-primary tag" style="background-color: {{ tag.color }};">
-                        <a class="link-override" href="{{ url_for('blog.tag_view', slug=tag.slug) }}">{{ tag.name }}</a>
+                        <a class="link-override" href="{{ tag.relative_url }}">{{ tag.name }}</a>
                     </span>
                     {% endfor %}
                 </div>
                 <p class="card-text mt-1 post-date">Posted on {{ post.publish_date.strftime('%B %d, %Y') }} by {{
                     post.author.name }}</p>
                 <p class="card-text">{{ post.byline }}...</p>
-                <a href="{{ url_for('blog.post_view', slug=post.slug) }}" class="btn btn-primary">Read More</a>
+                <a href="{{ post.relative_url }}" class="btn btn-primary">Read More</a>
             </div>
         </div>
     </div>
