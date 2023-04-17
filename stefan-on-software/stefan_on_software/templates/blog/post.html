@@ -1,6 +1,11 @@
 {% extends "blog/base_template.html" %}
 {% import "macros/tag_widget.html" as tag_widget %}
 
+{# Displays a post. Expects three arguments: #}
+{# `post`: the Post to display. #}
+{# `next_post`: the post that came after this one (may be None). #}
+{# `prev_post`: the post that came before this one (may be None). #}
+
 {% block content %}
 <!-- Restrict the width to 800px to keep things compact. -->
 <div style="max-width: 800px; margin: auto">
@@ -16,25 +21,51 @@
     <div id="post-content" class="post-content">
         {{ post.render_html()|safe }}
     </div>
-    <hr/>
-    <!-- Tease the "next" and "previous" posts. -->
-    <div class="row">
-        <div class="col-6">
-            {% if prev_post %}
-            <!-- TODO: make next and previous posts available as accessors and include their thumbnails if possible. -->
-            <p>Previous Post: <a href="{{ url_for('blog.post_view', slug=prev_post.slug) }}">{{
-                prev_post.title }}</a></p>
-            {% endif %}
-        </div>
-        <div class="col-6">
-            {% if next_post %}
-            <p>Next Post: <a href="{{ url_for('blog.post_view', slug=next_post.slug) }}">{{
-                next_post.title }}</a></p>
-            {% endif %}
-        </div>
-    </div>
 
     {% include "blog/register_email.html" %}
 
+    <h5 class="mt-6">Keep reading StefanOnSoftware...</h5>
+    <!-- Tease the "next" and "previous" posts. Each post gets half of the width. -->
+    <div class="row">
+        <div class="col-md-6">
+            {% if prev_post %}
+            <!-- Split this half of the width between the image thumbnail and the title. -->
+            <div class="row">
+                <div class="col-md-6">
+                    <a href="{{ url_for('blog.post_view', slug=prev_post.slug) }}">
+                        <img class="img-fluid img-thumbnail rounded float-start" src="{{ prev_post.thumbnail_image.relative_url }}"
+                             >
+                    </a>
+                </div>
+                <div class="col-md-6">
+                    <div class="ml-1">
+                        <h5>Previous Post:</h5>
+                        <a href="{{ url_for('blog.post_view', slug=prev_post.slug) }}"><p>{{
+                            prev_post.title }}</p></a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            {% if next_post %}
+            <!-- Split this half of the width between the title and the image thumbnail. -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mr-1">
+                        <h5>Next Post:</h5>
+                        <a href="{{ url_for('blog.post_view', slug=next_post.slug) }}"><p>{{
+                            next_post.title }}</p></a>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <a href="{{ url_for('blog.post_view', slug=next_post.slug) }}">
+                        <img class="img-thumbnail rounded float-end" src="{{ next_post.thumbnail_image.relative_url }}">
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
 </div>
 {% endblock %}

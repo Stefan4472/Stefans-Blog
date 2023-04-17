@@ -116,16 +116,20 @@ class Post(db.Model):
             # Render as a template to allow expanding `url_for()` calls (for example)
             return flask.render_template_string(html)
 
-    def get_prev(self) -> "Post":
+    def get_prev(self) -> Optional["Post"]:
         return (
-            Post.query.filter(Post.publish_date < self.publish_date)
+            Post.query.filter(
+                Post.is_published and Post.publish_date < self.publish_date
+            )
             .order_by(desc(Post.publish_date))
             .first()
         )
 
-    def get_next(self) -> "Post":
+    def get_next(self) -> Optional["Post"]:
         return (
-            Post.query.filter(Post.publish_date > self.publish_date)
+            Post.query.filter(
+                Post.is_published and Post.publish_date > self.publish_date
+            )
             .order_by(asc(Post.publish_date))
             .first()
         )
