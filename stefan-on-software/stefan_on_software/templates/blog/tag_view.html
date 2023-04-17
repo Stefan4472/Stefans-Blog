@@ -1,10 +1,10 @@
 <!--Page with all posts categorized under the given tag.-->
 {% extends "blog/base_template.html" %}
-{% import "blog/macros.html" as macros %}
+{% import "macros/post_widget.html" as post_widget %}
 
 {% block content %}
 <h2>{{ posts|length }} Post{% if posts|length != 1 %}s{% endif %} Tagged Under "{{ tag.name }}"</h2>
 {% for post in posts %}
-{{ macros.post_widget(post) }}
+{{ post_widget.make_widget(post) }}
 {% endfor %}
 {% endblock %}

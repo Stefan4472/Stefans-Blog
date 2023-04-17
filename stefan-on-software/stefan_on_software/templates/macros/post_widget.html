@@ -1,5 +1,8 @@
-<!--Displays a Post "thumbnail" (except there's no image).-->
-{% macro post_widget(post) -%}
+{# Displays information about a Post in a compact way, e.g. in a list of results. #}
+{# Accepts a single variable of type Post. #}
+{% import "macros/tag_widget.html" as tag_widget %}
+
+{% macro make_widget(post) -%}
 <div class="card mb-3" style="border-color: #DDDDDD;">
     <div class="card-body">
         <div class="row">
@@ -17,10 +20,7 @@
                 </h2>
                 <div class="d-inline">
                     {% for tag in post.tags %}
-                    <!-- TODO: pull this out into its own macro -->
-                    <span class="badge badge-primary tag" style="background-color: {{ tag.color }};">
-                        <a href="{{ tag.relative_url }}">{{ tag.name }}</a>
-                    </span>
+                    {{ tag_widget.make_widget(tag) }}
                     {% endfor %}
                 </div>
                 <p class="card-text mt-1 text-muted fs-6 fst-italic">

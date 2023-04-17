@@ -1,6 +1,6 @@
 {% extends "blog/base_template.html" %}
-{% import "blog/macros.html" as macros %}
-{% import "blog/posts_carousel.html" as posts_carousel %}
+{% import "macros/post_widget.html" as post_widget %}
+{% import "macros/posts_carousel.html" as posts_carousel %}
 
 {% block content %}
 <div class="p-5 bg-light rounded-3">
@@ -24,7 +24,7 @@
 <h2>Latest Posts</h2>
 <hr/>
 {% for post in recent_posts %}
-{{ macros.post_widget(post) }}
+{{ post_widget.make_widget(post) }}
 {% endfor %}
 
 <div class="d-flex justify-content-center">

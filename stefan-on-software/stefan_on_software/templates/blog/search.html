@@ -1,5 +1,5 @@
 {% extends "blog/base_template.html" %}
-{% import "blog/macros.html" as macros %}
+{% import "macros/post_widget.html" as post_widget %}
 
 {% block content %}
 <div class="p-3 bg-light rounded-3">
@@ -15,6 +15,6 @@
 <hr/>
 <!-- TODO: Provide rank and score of each result?-->
 {% for post in posts %}
-{{ macros.post_widget(post) }}
+{{ post_widget.make_widget(post) }}
 {% endfor %}
 {% endblock %}

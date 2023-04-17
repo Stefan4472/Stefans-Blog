@@ -1,4 +1,5 @@
 {% extends "blog/base_template.html" %}
+{% import "macros/tag_widget.html" as tag_widget %}
 
 {% block content %}
 <!-- Restrict the width to 800px to keep things compact. -->
@@ -6,9 +7,7 @@
     <h1>{{ post.title }}</h1>
     <div class="d-inline">
         {% for tag in post.tags %}
-        <span class="badge badge-primary tag" style="background-color: {{ tag.color }};">
-            <a href="{{ tag.relative_url }}">{{ tag.name }}</a>
-        </span>
+        {{ tag_widget.make_widget(tag) }}
         {% endfor %}
     </div>
     <p class="mt-2 text-muted fs-6 fst-italic">

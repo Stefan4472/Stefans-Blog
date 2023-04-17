@@ -1,7 +1,7 @@
 {% extends "blog/base_template.html" %}
-{% import "blog/macros.html" as macros %}
-{# Expects a variable `posts` which is a Pagination result of Post instances.
-See https://flask-sqlalchemy.palletsprojects.com/en/3.0.x/pagination/ #}
+{% import "macros/post_widget.html" as post_widget %}
+{# Expects a variable `posts` which is a Pagination result of Post instances. #}
+{# See https://flask-sqlalchemy.palletsprojects.com/en/3.0.x/pagination/ #}
 
 {% block content %}
 <h2>Posts</h2>
@@ -13,7 +13,7 @@ See https://flask-sqlalchemy.palletsprojects.com/en/3.0.x/pagination/ #}
 {% endif %}
 
 {% for post in posts.items %}
-{{ macros.post_widget(post) }}
+{{ post_widget.make_widget(post) }}
 {% endfor %}
 
 <!--Pagination menu-->

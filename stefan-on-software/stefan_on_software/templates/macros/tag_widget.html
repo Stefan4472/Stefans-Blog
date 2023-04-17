@@ -1,0 +1,7 @@
+{# Displays a Tag as a colored badge. #}
+{# Accepts a single variable of type Tag. #}
+{% macro make_widget(tag) -%}
+<span class="badge badge-primary tag" style="background-color: {{ tag.color }};">
+    <a href="{{ tag.relative_url }}">{{ tag.name }}</a>
+</span>
+{%- endmacro %}
