@@ -116,15 +116,15 @@ def _create_figure_html(url: str, caption: str = None, alt: str = "") -> str:
             markdown2.markdown(caption).replace(r"<p>", "").replace(r"<\p>", "").strip()
         )
         return (
-            f'<figure class="figure text-center">'
-            f'    <img src="{url}" class="figure-img img-fluid img-thumbnail rounded" alt="{alt}">'
-            f'    <figcaption class="figure-caption">{caption_html}</figcaption>'
+            f'<figure>'
+            f'    <img src="{url}" alt="{alt}">'
+            f'    <figcaption>{caption_html}</figcaption>'
             f"</figure>"
         )
     else:
         return (
-            f'<figure class="figure text-center">'
-            f'    <img src="{url}" class="figure-img img-fluid img-thumbnail rounded" alt="{alt}">'
+            f'<figure>'
+            f'    <img src="{url}" alt="{alt}">'
             f"</figure>"
         )
 
