@@ -1,7 +1,8 @@
 {# Displays a Tag as a colored badge. #}
 {# Accepts a single variable of type Tag. #}
 {% macro make_widget(tag) -%}
-<span class="badge badge-primary tag" style="background-color: {{ tag.color }};">
+<span class="badge badge-primary tag" style="background-color: {{ tag.color }};" data-bs-toggle="tooltip" data-bs-placement="bottom"
+        data-bs-title="{{ tag.description }}">
     <a href="{{ tag.relative_url }}">{{ tag.name }}</a>
 </span>
 {%- endmacro %}
