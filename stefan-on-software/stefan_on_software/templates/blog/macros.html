@@ -2,14 +2,14 @@
 {% macro post_widget(post) -%}
 <div class="card mb-3" style="border-color: #DDDDDD;">
     <div class="card-body">
-        <!-- Image thumbnail inline with text -->
         <div class="row">
+            <!-- Image thumbnail on the left side. -->
             <div class="col-md-3">
                 <a href="{{ post.relative_url }}">
-                    <img src="{% if post.thumbnail_image %}{{ post.thumbnail_image.relative_url }}{% endif %}"
-                         class="card-img img-thumbnail">
+                    <img class="card-img img-thumbnail" src="{{ post.thumbnail_image.relative_url }}">
                 </a>
             </div>
+            <!-- Title, description etc. in the rest of the space. -->
             <div class="col-md-9">
                 <h2 class="my-0">
                     <a style="text-decoration: none; color: black"
@@ -17,15 +17,16 @@
                 </h2>
                 <div class="d-inline">
                     {% for tag in post.tags %}
+                    <!-- TODO: pull this out into its own macro -->
                     <span class="badge badge-primary tag" style="background-color: {{ tag.color }};">
                         <a href="{{ tag.relative_url }}">{{ tag.name }}</a>
                     </span>
                     {% endfor %}
                 </div>
-                <p class="card-text mt-1 post-date">Posted on {{ post.publish_date.strftime('%B %d, %Y') }} by {{
-                    post.author.name }}</p>
+                <p class="card-text mt-1 text-muted fs-6 fst-italic">
+                    Posted on {{ post.publish_date.strftime('%B %d, %Y') }} by {{ post.author.name }}</p>
                 <p class="card-text">{{ post.byline }}...</p>
-                <a href="{{ post.relative_url }}" class="btn btn-primary">Read More</a>
+                <a class="btn btn-primary" href="{{ post.relative_url }}">Read More</a>
             </div>
         </div>
     </div>

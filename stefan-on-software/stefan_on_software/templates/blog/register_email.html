@@ -16,27 +16,29 @@
     <!-- Toast to show when the registration is successful. -->
     <div id="toast-email-success" class="toast" role="alert" data-bs-delay="4000">
         <div class="toast-header">
+            <!-- Add a small green dot. -->
             <span style="height: 1rem; width: 1rem; border-radius: 50%; background-color: #5cb85c;"></span>
-            <strong class="mr-auto" style="margin-left: 1rem;">Success!</strong>
+            <strong class="mr-auto ms-1">Success!</strong>
             <button type="button" class="ml-2 mb-1 btn-close" data-bs-dismiss="toast" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
         <div class="toast-body">
-            You have successfully subscribed to the email list
+            You have successfully subscribed to the email list!
         </div>
     </div>
     <!-- Toast to show when the registration fails. -->
     <div id="toast-email-failure" class="toast" role="alert" data-bs-delay="4000">
         <div class="toast-header">
+            <!-- Add a small red dot. -->
             <span style="height: 1rem; width: 1rem; border-radius: 50%; background-color: #d9534f;"></span>
-            <strong class="mr-auto" style="margin-left: 1rem;">Error</strong>
+            <strong class="mr-auto ms-1">Error</strong>
             <button type="button" class="ml-2 mb-1 btn-close" data-bs-dismiss="toast" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
         <div class="toast-body">
-            There was a problem registering your email address: <span id="email-error"></span>
+            There was a problem registering your email address: <span id="email-error"></span>.
         </div>
     </div>
 </div>
