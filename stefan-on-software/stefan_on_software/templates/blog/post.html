@@ -7,14 +7,11 @@
     <div class="d-inline">
         {% for tag in post.tags %}
         <span class="badge badge-primary tag" style="background-color: {{ tag.color }};">
-            <a
-                    class="link-override"
-                    href="{{ tag.relative_url }}"
-            >{{ tag.name }}</a>
+            <a href="{{ tag.relative_url }}">{{ tag.name }}</a>
         </span>
         {% endfor %}
     </div>
-    <p class="mt-2 post-date">Posted on {{ post.publish_date.strftime('%B %d, %Y') }} by {{ post.author.name }}</p>
+    <p class="mt-2 text-muted fs-6 fst-italic">Posted on {{ post.publish_date.strftime('%B %d, %Y') }} by {{ post.author.name }}</p>
     <hr>
     <div id="post-content" class="post-content">
         {{ post.render_html()|safe }}

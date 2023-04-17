@@ -26,11 +26,11 @@ p {
   font-style: italic;
 }
 
-/*TODO: make this only apply when .post-content is also active?*/
-h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
-  font-weight: 600;
-  font-family: Arial, sans-serif;
-  margin-top: 2rem;
+/* Make text in tags white and remove link styling. */
+.tag a {
+  font-size: 1.5rem;
+  text-decoration: none;
+  color: white;
 }
 
 .post-content a {
@@ -44,16 +44,6 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 .post-content a:hover {
   color: blue;
   border-color: blue;
-}
-
-.link-override {
-  text-decoration: none; 
-  color: white;
-}
-
-.link-override:hover {
-  text-decoration: none; 
-  color: white;
 }
 
 pre {
