@@ -1,6 +1,13 @@
 {% extends "blog/base_template.html" %}
 {% import "macros/post_widget.html" as post_widget %}
 {% import "macros/posts_carousel.html" as posts_carousel %}
+{% import "macros/tag_widget.html" as tag_widget %}
+{# Displays the home page. Expects the following arguments: %}
+{# `featured_posts`: an iterable of type `Post`. #}
+{# `recent_posts`: an iterable of type `Post` with the most recent 5 published posts. #}
+{# `all_tags`: an iterable of type `Tag` with all Tags that should be displayed in the "What are you interested in" section. #}
+{# `tag_counts`: a dict mapping Tag.slug to the number of posts that use the tag. #}
+{# `page_meta`: page metadata. #}
 
 {% block content %}
 <div class="p-5 bg-light rounded-3">
@@ -12,6 +19,24 @@
                     href="https://github.com/Stefan4472/Stefans-Blog/blob/master/CHANGES.md">see the changelog</a>.</p>
     </div>
 </div>
+
+<!-- "What are you interested in" component, which displays a clickable badge for each tag. -->
+<h3 class="text-center">What are you interested in?</h3>
+<!-- Display tags in rows of 5. Only show complete rows (use truncated division). -->
+{% for row in range(all_tags|length // 5) %}
+<!-- Hide all but the first two rows of tags on small screens. Otherwise, it becomes too cramped. -->
+<div class="m-2 text-center {% if row >= 2 %}d-none d-md-block{% endif %}">
+    {% for j in range(row*5, (row+1)*5) %}
+    {% set tag=all_tags[j] %}
+    <span class="badge badge-primary tag p-2 mx-1" style="background-color: {{ tag.color }};"
+          data-bs-toggle="tooltip"
+          data-bs-placement="bottom"
+          data-bs-title="{{ tag_counts[tag.slug] }} {{ tag.description }}">
+        <a href="{{ tag.relative_url }}">{{ tag.name }} <span class="badge text-bg-secondary">{{ tag_counts[tag.slug] }}</span></a>
+    </span>
+    {% endfor %}
+</div>
+{% endfor %}
 
 {% if featured_posts %}
 <h2>Featured Posts</h2>

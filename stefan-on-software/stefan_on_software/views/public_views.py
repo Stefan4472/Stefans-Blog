@@ -38,10 +38,22 @@ def index():
         .all()
     )
     featured_posts = Post.query.filter(Post.is_featured, Post.is_published).all()
+    # Count the number of posts that each tag appears in.
+    # This is algorithmically inefficient, but it's difficult to do better with
+    # SQLAlchemy. Also, Tags is a small collection, and we can cache the index page.
+    all_tags = Tag.query.all()
+    tag_counts = {}
+    for tag in all_tags:
+        tag_counts[tag.slug] = tag.posts.filter(Post.is_published).count()
+    # Sort tags by the number of posts they appear in.
+    all_tags.sort(key=lambda t: tag_counts[t.slug], reverse=True)
+
     return flask.render_template(
         "blog/index.html",
         featured_posts=featured_posts,
         recent_posts=recent_posts,
+        all_tags=all_tags,
+        tag_counts=tag_counts,
         page_meta=make_default_metadata(
             "Home",
             "Stefan Kussmaul's personal blog about software, data analysis, and life in general.",
