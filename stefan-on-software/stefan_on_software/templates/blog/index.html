@@ -11,12 +11,9 @@
 
 {% block content %}
 <div class="p-5 bg-light rounded-3">
-    <div class="container-fluid">
-        <h3 class="">Hello world. Goodbye Wordpress!</h3>
-        <p>This blog runs on a platform I wrote in Python. It has been one of my hobby projects for several years now.
-            You can follow these links to <a href="/post/project-overview-stefanonsoftware">read about the technical
-                details</a>, <a href="https://github.com/Stefan4472/Stefans-Blog">check out the code</a>, or <a
-                    href="https://github.com/Stefan4472/Stefans-Blog/blob/master/CHANGES.md">see the changelog</a>.</p>
+    <div class="container-fluid text-center">
+        <h3>Welcome to Stefan's blog.</h3>
+        <p>I write about programming and other things I'm passionate about. This website was written from scratch using Python flask and is open source. <a href="https://github.com/Stefan4472/Stefans-Blog">See it on Github</a>.</p>
     </div>
 </div>
 
@@ -28,11 +25,14 @@
 <div class="m-2 text-center {% if row >= 2 %}d-none d-md-block{% endif %}">
     {% for j in range(row*5, (row+1)*5) %}
     {% set tag=all_tags[j] %}
-    <span class="badge badge-primary tag p-2 mx-1" style="background-color: {{ tag.color }};"
+    /* Use a fairly dirty trick to override the fade-in animation to a random duration. */
+    <span class="badge badge-primary tag p-2 mx-1 fade-in"
+          style="background-color: {{ tag.color }}; animation-duration: {{ [2,3,4,5,6,7]|random }}s"
           data-bs-toggle="tooltip"
           data-bs-placement="bottom"
           data-bs-title="{{ tag_counts[tag.slug] }} {{ tag.description }}">
-        <a href="{{ tag.relative_url }}">{{ tag.name }} <span class="badge text-bg-secondary">{{ tag_counts[tag.slug] }}</span></a>
+        <a href="{{ tag.relative_url }}">{{ tag.name }} <span
+                class="badge text-bg-secondary">{{ tag_counts[tag.slug] }}</span></a>
     </span>
     {% endfor %}
 </div>
