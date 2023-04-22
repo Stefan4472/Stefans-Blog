@@ -76,3 +76,14 @@ is serif. This makes for a nice contrast. */
   line-height: 1.8;
   letter-spacing: -0.003em;
 }
+
+/* Use this to remove link styling from anchor elements. */
+.no-link-styling {
+  text-decoration: inherit;
+  color: inherit;
+}
+
+.no-link-styling:hover {
+  text-decoration: inherit;
+  color: inherit;
+}
