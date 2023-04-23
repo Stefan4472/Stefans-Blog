@@ -68,4 +68,25 @@
         </div>
     </div>
 </div>
+
+<!-- Google structured data describing the post. -->
+<!-- https://developers.google.com/search/docs/appearance/structured-data/article#article-types. -->
+<!-- TODO: don't hardcode author URL. -->
+<script type="application/ld+json">
+{
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "{{ post.title }}",
+      "image": [
+        "{{ post.featured_image.absolute_url }}",
+       ],
+      "datePublished": "{{ post.publish_date|iso8601 }}",
+      "dateModified": "{{ post.last_modified|iso8601 }}",
+      "author": [{
+          "@type": "Person",
+          "name": "{{ post.author.name }}",
+          "url": "https://www.stefanonsoftware.com/about"
+        }]
+    }
+</script>
 {% endblock %}
