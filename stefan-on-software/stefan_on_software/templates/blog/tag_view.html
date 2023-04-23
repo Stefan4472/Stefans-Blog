@@ -7,4 +7,27 @@
 {% for post in posts %}
 {{ post_widget.make_widget(post) }}
 {% endfor %}
+
+<!-- Structured Breadcrumb https://developers.google.com/search/docs/appearance/structured-data/breadcrumb -->
+<!-- TODO: ideally we'd have some kind of "Tags" page as the first breadcrumb (instead of using Posts). -->
+<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Posts",
+                "item": "{{ url_for('blog.posts_page', _external=True) }}"
+            },
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "{{ tag.name }}",
+                "item": "{{ tag.absolute_url }}"
+            }
+        ]
+    }
+</script>
 {% endblock %}

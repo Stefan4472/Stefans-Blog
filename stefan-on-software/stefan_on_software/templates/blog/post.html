@@ -70,7 +70,7 @@
 </div>
 
 <!-- Google structured data describing the post. -->
-<!-- https://developers.google.com/search/docs/appearance/structured-data/article#article-types. -->
+<!-- https://developers.google.com/search/docs/appearance/structured-data/article#article-types -->
 <!-- TODO: don't hardcode author URL. -->
 <script type="application/ld+json">
     {
@@ -87,6 +87,27 @@
                 "@type": "Person",
                 "name": "{{ post.author.name }}",
                 "url": "https://www.stefanonsoftware.com/about"
+            }
+        ]
+    }
+</script>
+<!-- Structured Breadcrumb https://developers.google.com/search/docs/appearance/structured-data/breadcrumb -->
+<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Posts",
+                "item": "{{ url_for('blog.posts_page', _external=True) }}"
+            },
+            {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "{{ post.title }}",
+                "item": "{{ url_for(request.endpoint, _external=True, **request.view_args) }}"
             }
         ]
     }
