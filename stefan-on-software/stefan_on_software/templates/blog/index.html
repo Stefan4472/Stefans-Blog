@@ -11,13 +11,6 @@
 {# `page_meta`: page metadata. #}
 
 {% block content %}
-<div class="p-5 bg-light rounded-3">
-    <div class="container-fluid text-center">
-        <h3>Welcome to Stefan's blog.</h3>
-        <p>I write about programming and other things I'm passionate about. This website was written from scratch using Python flask and is open source. <a href="https://github.com/Stefan4472/Stefans-Blog">See it on Github</a>.</p>
-    </div>
-</div>
-
 <!-- "What are you interested in" component, which displays a clickable badge for each tag. -->
 <h3 class="text-center">What are you interested in?</h3>
 <!-- Display tags in rows of 5. Only show complete rows (use truncated division). -->
@@ -40,14 +33,12 @@
 {% endfor %}
 
 {% if featured_posts %}
-<h2>Featured Posts</h2>
+<h2>Featured</h2>
 <hr/>
 {{ posts_carousel.make_carousel(featured_posts, "featured-posts-carousel") }}
 {% endif %}
 
-{% include "blog/register_email.html" %}
-
-<h2>Latest Posts</h2>
+<h2>Latest</h2>
 <hr/>
 {% for post in recent_posts %}
 {{ post_widget.make_widget(post) }}
@@ -56,5 +47,29 @@
 <div class="d-flex justify-content-center">
     <a href="{{ url_for('blog.posts_page') }}" class="btn btn-primary m-3 fs-2">See all posts</a>
 </div>
+
+<hr>
+<div class="p-5 bg-light rounded-3">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-4">
+                <img class="w-100" src="{{ url_for('static', filename='stefan_kussmaul.jpg') }}"
+                     alt="Stefan Kussmaul, 2019">
+            </div>
+            <div class="col-md-8">
+                <h2>About Me</h2>
+                <p>I've been writing about programming and other things I'm passionate about since 2017. I created this
+                    website from scratch using Python flask and Bootstrap. <a
+                            href="https://github.com/Stefan4472/Stefans-Blog">It's all on Github!</a></p>
+                <p>Read more on my <a href="{{ url_for('blog.about_page') }}">About Page</a>.</p>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="p-3"></div>
+{% include "blog/register_email.html" %}
+<div class="p-3"></div>
 
 {% endblock %}
