@@ -5,7 +5,7 @@
         <a class="navbar-brand m-2 d-lg-none" href="{{ url_for('blog.index') }}">
             <strong>StefanOnSoftware</strong>
             <img class="d-inline-block align-text-top"
-                 src="{{ url_for('static', filename='favicon.ico') }}" alt="Logo" width="30" height="24">
+                 src="{{ url_for('static', filename='favicon.png') }}" alt="Logo" width="30" height="24">
         </a>
         <!-- Button used to show the dropdown when the navbar is collapsed. -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -19,7 +19,7 @@
                 <a class="navbar-brand m-2 d-none d-md-none d-lg-block" href="{{ url_for('blog.index') }}">
                     <strong>StefanOnSoftware</strong>
                     <img class="d-inline-block align-text-top"
-                         src="{{ url_for('static', filename='favicon.ico') }}" alt="Logo" width="30" height="24">
+                         src="{{ url_for('static', filename='favicon.png') }}" alt="Logo" width="30" height="24">
                 </a>
                 <li class="nav-item m-2">
                     <a class="nav-link {% if request.endpoint == 'blog.index' %}active{% endif %}"
