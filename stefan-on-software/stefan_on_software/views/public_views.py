@@ -21,8 +21,8 @@ def make_default_metadata(title: str, description: str) -> PageMetadata:
         description,
         "Stefan Kussmaul",
         # TODO: separate default banner for large screen vs. small
-        flask.url_for("static", filename="site-banner.jpg", _external=True),
-        flask.url_for("static", filename="site-banner.jpg", _external=True),
+        flask.url_for("static", filename="site-banner.JPG", _external=True),
+        flask.url_for("static", filename="site-banner.JPG", _external=True),
     )
 
 
@@ -48,9 +48,19 @@ def index():
     # Sort tags by the number of posts they appear in.
     all_tags.sort(key=lambda t: tag_counts[t.slug], reverse=True)
 
+    with open('email_example.html', 'w+') as out:
+        out.write(flask.render_template(
+            "email/welcome_email.html",
+            # TODO: don't hardcode this URL. Need a global configuration that sets the filename.
+            # header_image=url_for('static', filename='site-banner.jpg', _external=True),
+            header_url="https://www.stefanonsoftware.com/static/site-banner.JPG",
+            recipient='stefan.kussmaul@gmail.com',
+        ))
+
     return flask.render_template(
         "blog/index.html",
-        featured_posts=featured_posts,
+        # featured_posts=featured_posts,
+        featured_posts=recent_posts,
         recent_posts=recent_posts,
         all_tags=all_tags,
         tag_counts=tag_counts,
