@@ -16,6 +16,7 @@ def register_email():
         current_app.logger.warn(
             "Received call to /register, but email is not configured"
         )
+        # TODO: this should probably be a 400 error.
         return flask.Response(
             status=500,
             response="Email has not been configured by the web administrator",

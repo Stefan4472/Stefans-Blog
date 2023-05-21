@@ -30,7 +30,7 @@ def make_default_metadata(title: str, description: str) -> PageMetadata:
 @BLUEPRINT.route("/")
 @site_logger.logged_visit
 def index():
-    """Site index. Displays featured and recent posts."""
+    """Home page. Displays featured and recent posts."""
     recent_posts = (
         Post.query.filter(Post.is_published)
         .order_by(desc(Post.publish_date))
@@ -48,19 +48,9 @@ def index():
     # Sort tags by the number of posts they appear in.
     all_tags.sort(key=lambda t: tag_counts[t.slug], reverse=True)
 
-    with open('email_example.html', 'w+') as out:
-        out.write(flask.render_template(
-            "email/welcome_email.html",
-            # TODO: don't hardcode this URL. Need a global configuration that sets the filename.
-            # header_image=url_for('static', filename='site-banner.jpg', _external=True),
-            header_url="https://www.stefanonsoftware.com/static/site-banner.JPG",
-            recipient='stefan.kussmaul@gmail.com',
-        ))
-
     return flask.render_template(
         "blog/index.html",
-        # featured_posts=featured_posts,
-        featured_posts=recent_posts,
+        featured_posts=featured_posts,
         recent_posts=recent_posts,
         all_tags=all_tags,
         tag_counts=tag_counts,
