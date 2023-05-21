@@ -4,41 +4,56 @@
 <h1>About Stefan Kussmaul</h1>
 <hr>
 
-<!--        TODO: fix this very fragile link and don't rely on setting an absolute max-width in pixels!!! Also, this page needs an update. -->
+<p>I am a 24-year old software engineer from the US, currently living in Switzerland and working at Google. I got my
+    Bachelor's in Computer Science at UMass Amherst and my Master's in Software Engineering at the Technical University
+    of Munich.</p>
+
 <figure>
     <img src="{{ url_for('static', filename='stefan_kussmaul.jpg') }}" alt="Stefan Kussmaul, 2019">
     <figcaption>Florence, Summer 2019</figcaption>
 </figure>
 
-<p>Hey! My name's Stefan. I'm a recent graduate of the University of Massachusetts Amherst, and am now getting <a
-        href="/post/hello-germany">my Master's degree in Germany</a>. I've always enjoyed writing and coding, so
-    starting a blog was the natural thing to do! The name "Stefan on Software" comes from one of my favorite blogs,
+
+<p class="mt-3">I've been coding since I was 15 years old, when my dad <s>forced</s> <em>persuaded</em> me to take an
+    introductory C++ programming class. I didn't like it—I felt like my brain just wasn't "wired" for coding.</p>
+
+<p>What saved the day was my discovery of Minecraft mods. At the time, people would take the Minecraft source code and
+    add their own code to it. There were some amazing mods—my favorite was one which added industrial machines and
+    factories to the game.</p>
+
+<p>I really wanted to write my own mod, but I would need to become a good programmer first. I began coming up with
+    little programming projects to work on in my spare time, and gradually I started to like it.</p>
+
+<figure>
+    <img src="{{ url_for('static', filename='portfolio/spaceships.gif') }}"
+         alt="A screen recording from the game showing a spaceship dodging through obstacles on the screen."
+         loading="lazy">
+    <figcaption>A game I wrote called GalaxyRun.</figcaption>
+</figure>
+
+<p class="mt-3"> I started this blog in 2017 to experiment with <a href="https://flask.palletsprojects.com/en/2.3.x/">Python
+    Flask</a>. Since then I've spent many hundreds of hours writing posts and improving the code. The name
+    "Stefan on Software" comes from one of my favorite blogs,
     <a href="https://joelonsoftware.com">Joel On Software</a>. I strive to produce high-quality content and hope to
     be as good as Joel some day.</p>
 
-<p>This blog isn't just about software, though. I love travelling, and I've <a href="/tag/travel">posted
-    multiple articles</a> about my travels. My parents both come from Europe (my mom from Poland, my dad from
-    Germany) so I have a good excuse to spend time there. In 2018 I studied abroad at the University of Uppsala in
-    Sweden, and wrote <a href="/tag/study-abroad">a bunch of articles about my time there</a>.</p>
+<!--    Since then, I've come to realize that this is-->
+<!--    the natural state of things&#45;&#45;most people aren't "good" at anything until they put a lot of hard work into it.-->
+<!--    But it does feel like there's a common stereotype that all programmers just <em>naturally</em> knew how to-->
+<!--    code. In any case, I'm glad I learned the way I did, because I now have a special level of empathy for those who-->
+<!--    are new to programming.</p>-->
 
-<p>I've been coding since I was 15 years old, when my dad <s>forced</s> <em>persuaded</em> me to take an intro C++
-    programming course. I was really bad at it--I didn't grasp the concepts naturally, and found it very
-    frustrating. I felt like my brain just wasn't "wired" for coding. Since then, I've come to realize that this is
-    the natural state of things--most people aren't "good" at anything until they put a lot of hard work into it.
-    But it does feel like there's a common stereotype that all programmers just <em>naturally</em> knew how to
-    code. In any case, I'm glad I learned the way I did, because I now have a special level of empathy for those who
-    are new to programming.</p>
+<!--<p>There's nothing more-->
+<!--    satisfying than designing and building a complicated project, and I have notebooks full of sketches and-->
+<!--    specifications I created while brainstorming one project or another. I think coding is an intensely creative-->
+<!--    activity, and it gives individuals the ability to do super cool things with just their computer and their-->
+<!--    brain.</p>-->
 
-<p>Over the past few years, software has been my main hobby, and is now my profession. There's nothing more
-    satisfying than designing and building a complicated project, and I have notebooks full of sketches and
-    specifications I created while brainstorming one project or another. I think coding is an intensely creative
-    activity, and it gives individuals the ability to do super cool things with just their computer and their
-    brain.</p>
+<p>This blog isn't just about software, though. I love traveling, and I regularly <a href="/tag/travel">write posts</a>
+    about my life abroad. I also like to do small <a href="/tag/data-analysis">data analysis</a> projects using Python.
+    With the rest of my free time, I play tennis and explore new places in Switzerland. My
+    favorite TV show is Curb Your Enthusiasm, and my favorite video games are Minecraft and Rome Total War.</p>
 
-<p>My other hobbies include tennis and basketball. Between work, exercise, and personal software projects I don't
-    have a lot of time for video games, but when I do, I play Super Smash or Rome Total War. My favorite TV shows
-    are Arrested Development, Curb Your Enthusiasm, and The Office.</p>
-
-<p>Feel free to contact me <a href="https://linkedin.com/in/stefan-kussmaul">on LinkedIn</a>, or check out my <a
+<p>Feel free to reach out <a href="https://linkedin.com/in/stefan-kussmaul">on LinkedIn</a>, or check out my <a
         href="https://github.com/Stefan4472">Github</a>.</p>
 {% endblock %}
