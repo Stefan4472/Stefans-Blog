@@ -1,8 +1,8 @@
+import copy
+import datetime
 import os
 
 import flask
-import datetime
-import copy
 from stefan_on_software.site_config import ConfigKeys, SiteConfig
 from stefansearch.engine.search_engine import SearchEngine
 
@@ -68,7 +68,7 @@ def create_app(config: SiteConfig = None):
     app.cli.add_command(cli.delete_site)
     app.cli.add_command(cli.add_user)
 
-    @app.template_filter('iso8601')
+    @app.template_filter("iso8601")
     def _jinja2_format_datetime_iso8601(dt: datetime.datetime) -> str:
         """Format the given datetime in ISO8601 with UTC timezone."""
         dt_copy = copy.copy(dt)

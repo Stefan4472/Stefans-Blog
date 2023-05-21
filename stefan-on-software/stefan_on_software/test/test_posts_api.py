@@ -1,4 +1,6 @@
 """Unit tests for the Posts API."""
+import time
+
 import stefan_on_software.test.test_util as util
 from flask.testing import FlaskClient
 from stefan_on_software.test.conftest import DEFAULT_USER, INVALID_USER
@@ -93,6 +95,10 @@ def test_get_all_paginated(client: FlaskClient):
     """Test the `limit` and `offset` parameters when getting all posts."""
     for i in range(1, 26):
         util.create_post(client, DEFAULT_USER, slug=f"slug-{i}")
+        # Add a very short sleep to ensure the timestamps are totally ordered.
+        # (Sometimes the test runs so quickly that multiple posts have the same
+        # timestamp, resulting in unexpected ordering.)
+        time.sleep(0.01)
 
     res1 = util.get_posts(client, DEFAULT_USER, limit=10, offset=1)
     assert res1.status == "200 OK"
@@ -126,6 +132,7 @@ def test_improper_pagination(client: FlaskClient):
 def test_get_featured(client: FlaskClient):
     for i in range(1, 11):
         util.create_post(client, DEFAULT_USER, slug=f"slug-{i}")
+        time.sleep(0.01)
     assert not util.get_posts(client, DEFAULT_USER, featured=True).json
 
     util.feature_post(client, DEFAULT_USER, 3)
@@ -143,6 +150,7 @@ def test_get_featured(client: FlaskClient):
 def test_get_published(client: FlaskClient):
     for i in range(1, 11):
         util.create_post(client, DEFAULT_USER, slug=f"slug-{i}")
+        time.sleep(0.01)
     assert not util.get_posts(client, DEFAULT_USER, published=True).json
 
     util.publish_post(client, DEFAULT_USER, 3, False)
