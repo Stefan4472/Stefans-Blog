@@ -116,17 +116,13 @@ def _create_figure_html(url: str, caption: str = None, alt: str = "") -> str:
             markdown2.markdown(caption).replace(r"<p>", "").replace(r"<\p>", "").strip()
         )
         return (
-            f'<figure>'
+            f"<figure>"
             f'    <img src="{url}" alt="{alt}">'
-            f'    <figcaption>{caption_html}</figcaption>'
+            f"    <figcaption>{caption_html}</figcaption>"
             f"</figure>"
         )
     else:
-        return (
-            f'<figure>'
-            f'    <img src="{url}" alt="{alt}">'
-            f"</figure>"
-        )
+        return f"<figure>" f'    <img src="{url}" alt="{alt}">' f"</figure>"
 
 
 def _render_code(code_elem: bs4.element.Tag, raw_contents: str) -> str:
