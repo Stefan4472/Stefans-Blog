@@ -19,6 +19,7 @@ jobs:
         isort . --check
         pyflakes .
     - name: Test with pytest
-      # Run all tests except the end_to_end test, which doesn't work in Github Actions.
+      # TODO: run the tests in the other packages as well. Also figure out
+      #   how to run the end_to_end test in Github Actions.
       run: |
-        pytest -k 'not end_to_end'
+        pytest stefan-on-software
