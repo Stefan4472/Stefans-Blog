@@ -29,10 +29,9 @@
                 <div class="carousel-caption">
                     <div class="carousel-text">
                         <h1 class="carousel-overlay">
-                            <a class="no-link-styling" href="{{ posts[i].relative_url }}">{{ posts[i].title }}</a></h1>
-                        <!-- Hide the byline on mobile devices, which are too small to display all that text. -->
-                        <p class="carousel-overlay d-none d-lg-block "><a
-                                href="{{ posts[i].relative_url }}">{{ posts[i].byline }}</a></p>
+                            <!-- Display title in white with a black background, so it is readable no matter what color the image is. -->
+                            <a class="no-link-styling" href="{{ posts[i].relative_url }}"
+                               style="background-color: black;">{{ posts[i].title }}</a></h1>
                     </div>
                     <a
                             class="btn btn-lg btn-primary carousel-overlay"

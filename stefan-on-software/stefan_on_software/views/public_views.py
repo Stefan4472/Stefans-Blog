@@ -20,8 +20,10 @@ def make_default_metadata(title: str, description: str) -> PageMetadata:
         title,
         description,
         "Stefan Kussmaul",
-        # TODO: separate default banner for large screen vs. small
         flask.url_for("static", filename="site-banner.JPG", _external=True),
+        # Usage of site-banner.JPG as featured image is intentional. Using an
+        # image with the proper "featured" dimensions takes a lot of space
+        # and didn't look good with the GalaxyRun screenshot.
         flask.url_for("static", filename="site-banner.JPG", _external=True),
     )
 
@@ -37,7 +39,11 @@ def index():
         .limit(5)
         .all()
     )
-    featured_posts = Post.query.filter(Post.is_featured, Post.is_published).all()
+    featured_posts = (
+        Post.query.filter(Post.is_featured, Post.is_published)
+        .order_by(desc(Post.publish_date))
+        .all()
+    )
     # Count the number of posts that each tag appears in.
     # This is algorithmically inefficient, but it's difficult to do better with
     # SQLAlchemy. Also, Tags is a small collection, and we can cache the index page.
