@@ -1,5 +1,14 @@
 # Changelog
 
+### June 11th, 2023
+- "Official" StefanOnSoftware v0.2 release
+- Upgrade to Bootstrap 5.2.
+- Cleaned up Javascript code and dependencies.
+- Automatically-generated sitemap.
+- OpenGraph metadata and Google Structured Data.
+- "What are you interested in" widget on the home page.
+- Minor performance optimizations.
+
 ### January 15th, 2023
 - "Official" StefanOnSoftware v0.1 release!
 - API redesign and full documentation in an OpenApi spec.
